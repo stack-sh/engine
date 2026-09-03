@@ -5,8 +5,9 @@ use std::error::Error;
 use std::fmt;
 
 use stack_compiler::ir::{Diagram, Direction, ElementId, Group, Layout, Node};
-use stack_theme::{Catalog, FontMetrics, Theme, Typography};
+use stack_theme::{Catalog, FontMetrics, NodeShape, Theme, Typography};
 
+use crate::resources::node_visual;
 use crate::routing::{self, Point, SceneEdge};
 
 const NODE_MIN_WIDTH: i64 = 160_000;
@@ -439,9 +440,18 @@ fn node_size(node: &Node, theme: &Theme, metrics: &FontMetrics) -> Size {
             )
     });
 
-    Size {
+    let size = Size {
         width: NODE_MIN_WIDTH.max(content_width + 2 * NODE_HORIZONTAL_PADDING),
         height: NODE_MIN_HEIGHT.max(label_height + detail_height + 2 * NODE_VERTICAL_PADDING),
+    };
+    if matches!(node_visual(theme, node.kind).shape, NodeShape::Circle) {
+        let diameter = size.width.max(size.height);
+        Size {
+            width: diameter,
+            height: diameter,
+        }
+    } else {
+        size
     }
 }
 
@@ -678,7 +688,7 @@ fn resolve_direction(child_count: usize, authored: Option<Direction>) -> SceneDi
     }
 }
 
-fn text_width(text: &str, size_milli_px: u32, metrics: &FontMetrics) -> i64 {
+pub(crate) fn text_width(text: &str, size_milli_px: u32, metrics: &FontMetrics) -> i64 {
     let advance = text
         .chars()
         .map(|character| glyph_advance(character, metrics) as i64)
@@ -710,7 +720,7 @@ fn unicode_scalar(label: &str) -> Option<u32> {
         .and_then(|digits| u32::from_str_radix(digits, 16).ok())
 }
 
-fn line_height(size_milli_px: u32, typography: &Typography) -> i64 {
+pub(crate) fn line_height(size_milli_px: u32, typography: &Typography) -> i64 {
     (i64::from(size_milli_px) * i64::from(typography.line_height_permille) + 999) / 1000
 }
 

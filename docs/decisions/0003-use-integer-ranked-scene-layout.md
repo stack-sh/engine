@@ -27,5 +27,5 @@ The implementation has no layout dependency and no host access. The canonical co
 - Repeated layout for the same normalized IR, catalog revision, and options produces the same scene.
 - Native and WebAssembly builds share integer geometry code and do not require platform font APIs.
 - The automatic policy is intentionally simple and stable; changing it is an observable scene-layout change and requires snapshot review.
-- SVG serialization can consume scene rectangles without owning ranking, measurement, or containment semantics.
+- SVG serialization consumes scene rectangles without owning ranking, measurement, or containment semantics.
 - More advanced routing and constraint optimization can be added behind the scene boundary without changing compiler IR.
