@@ -39,6 +39,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4148590afebada386688f18773da617792bf2ef03ffc1e4cbd2b1d45b023e0ba"
 dependencies = [
  "serde_core",
+ "serde_derive",
 ]
 
 [[package]]
@@ -80,11 +81,29 @@ version = "0.1.0"
 source = "git+https://github.com/stack-sh/compiler.git?rev=17a0abe9c35e641761ff08fdf59b29a42828d9fd#17a0abe9c35e641761ff08fdf59b29a42828d9fd"
 
 [[package]]
+name = "stack-engine"
+version = "0.1.0"
+dependencies = [
+ "stack-compiler",
+ "stack-formatter",
+ "stack-theme",
+]
+
+[[package]]
 name = "stack-formatter"
 version = "0.1.0"
 dependencies = [
  "serde_json",
  "stack-compiler",
+]
+
+[[package]]
+name = "stack-theme"
+version = "0.1.0"
+source = "git+https://github.com/stack-sh/theme.git?rev=ed6c500762fc9ccffc8777172ac672a716dcd916#ed6c500762fc9ccffc8777172ac672a716dcd916"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
