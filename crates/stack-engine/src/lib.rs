@@ -4,7 +4,7 @@
 //! never reads the filesystem, network, process environment, clock, locale, or
 //! host font APIs. Invalid user source is returned as ordered diagnostics in a
 //! successful operation result; [`OperationalError`] is reserved for failures
-//! in the supplied execution inputs or unavailable engine capabilities.
+//! in supplied execution inputs or violated internal pipeline invariants.
 //!
 //! ```
 //! use stack_engine::Engine;
@@ -24,8 +24,10 @@ use std::fmt;
 
 use stack_compiler::diagnostic as compiler_diagnostic;
 
+mod resources;
 mod routing;
 mod scene;
+mod svg;
 
 /// Version of the Rust engine facade.
 pub const ENGINE_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -38,6 +40,13 @@ pub type OperationResult<T> = Result<T, OperationalError>;
 pub struct Engine<'catalog> {
     catalog: &'catalog stack_theme::Catalog,
     catalog_revision: &'catalog str,
+}
+
+#[derive(Debug)]
+struct PreparedScene<'catalog> {
+    scene: scene::Scene,
+    resources: resources::Resources<'catalog>,
+    diagnostics: Vec<Diagnostic>,
 }
 
 impl Engine<'static> {
@@ -119,7 +128,7 @@ impl<'catalog> Engine<'catalog> {
                     reason: "compiler omitted the source map for normalized IR",
                 },
             )?;
-            diagnostics.extend(self.validate_scene(diagram, source_map)?);
+            diagnostics.extend(self.prepare_scene(diagram, source_map)?.diagnostics);
         }
         Ok(CheckOutput {
             diagnostics,
@@ -127,13 +136,11 @@ impl<'catalog> Engine<'catalog> {
         })
     }
 
-    /// Applies compiler error semantics to the reserved render operation.
+    /// Produces a deterministic standalone SVG from valid Stack source.
     ///
     /// Invalid source returns a normal [`RenderOutput`] with ordered diagnostics
-    /// and no SVG. A compiler-valid document reaches the not-yet-integrated
-    /// layout and renderer boundary and returns [`OperationalError::PipelineUnavailable`].
-    /// The latter branch is replaced by deterministic SVG output when the render
-    /// pipeline lands.
+    /// and no SVG. Resource and layout warnings preserve a fallback SVG, while
+    /// invalid catalog or intermediate pipeline state uses [`OperationalError`].
     pub fn render(&self, source: &[u8]) -> OperationResult<RenderOutput> {
         let compiled = stack_compiler::compile_bytes_with_source_map(source);
         let metadata = self.metadata(declared_language_version(source));
@@ -145,17 +152,28 @@ impl<'catalog> Engine<'catalog> {
             });
         }
 
-        if let Some(diagram) = &compiled.diagram {
-            let source_map = compiled.source_map.as_ref().ok_or(
-                OperationalError::InvalidIntermediateRepresentation {
-                    reason: "compiler omitted the source map for normalized IR",
-                },
-            )?;
-            self.validate_scene(diagram, source_map)?;
-        }
-
-        Err(OperationalError::PipelineUnavailable {
-            operation: Operation::Render,
+        let diagram = compiled.diagram.as_ref().ok_or(
+            OperationalError::InvalidIntermediateRepresentation {
+                reason: "compiler omitted normalized IR after successful compilation",
+            },
+        )?;
+        let source_map = compiled.source_map.as_ref().ok_or(
+            OperationalError::InvalidIntermediateRepresentation {
+                reason: "compiler omitted the source map for normalized IR",
+            },
+        )?;
+        let prepared = self.prepare_scene(diagram, source_map)?;
+        let mut diagnostics = portable_diagnostics(compiled.diagnostics);
+        diagnostics.extend(prepared.diagnostics);
+        let svg = svg::render(diagram, &prepared.scene, &prepared.resources, &metadata).map_err(
+            |error| OperationalError::InvalidIntermediateRepresentation {
+                reason: error.reason(),
+            },
+        )?;
+        Ok(RenderOutput {
+            svg: Some(svg),
+            diagnostics,
+            metadata,
         })
     }
 
@@ -168,11 +186,16 @@ impl<'catalog> Engine<'catalog> {
         }
     }
 
-    fn validate_scene(
+    fn prepare_scene(
         &self,
         diagram: &stack_compiler::ir::Diagram,
         source_map: &stack_compiler::source_map::SourceMap,
-    ) -> OperationResult<Vec<Diagnostic>> {
+    ) -> OperationResult<PreparedScene<'catalog>> {
+        let resources = resources::Resources::resolve(diagram, self.catalog).map_err(|error| {
+            OperationalError::InvalidCatalog {
+                reason: error.reason(),
+            }
+        })?;
         let scene = scene::layout(diagram, self.catalog).map_err(|error| {
             OperationalError::InvalidIntermediateRepresentation {
                 reason: error.reason(),
@@ -183,12 +206,61 @@ impl<'catalog> Engine<'catalog> {
                 reason: "layout produced invalid containment or overlap geometry",
             });
         }
-        scene
-            .unsatisfied_orders
+        let mut diagnostics = resources
+            .warnings
             .iter()
-            .map(|scope| order_diagnostic(scope, source_map))
-            .collect()
+            .map(|warning| resource_diagnostic(warning, source_map))
+            .collect::<OperationResult<Vec<_>>>()?;
+        diagnostics.extend(
+            scene
+                .unsatisfied_orders
+                .iter()
+                .map(|scope| order_diagnostic(scope, source_map))
+                .collect::<OperationResult<Vec<_>>>()?,
+        );
+        Ok(PreparedScene {
+            scene,
+            resources,
+            diagnostics,
+        })
     }
+}
+
+fn resource_diagnostic(
+    warning: &resources::ResourceWarning,
+    source_map: &stack_compiler::source_map::SourceMap,
+) -> OperationResult<Diagnostic> {
+    let (code, message, help, origin) = match warning {
+        resources::ResourceWarning::MissingTheme(identifier) => (
+            "STK6001",
+            format!("theme '{identifier}' is unavailable; default theme was used"),
+            "Install the requested theme or select an available theme.",
+            source_map.theme(),
+        ),
+        resources::ResourceWarning::MissingIcon { node_id, icon_id } => (
+            "STK5001",
+            format!("icon '{icon_id}' is unavailable; the missing-icon fallback was used"),
+            "Install the icon in the effective theme or remove the icon property.",
+            source_map.node_icon(node_id).ok_or(
+                OperationalError::InvalidIntermediateRepresentation {
+                    reason: "source map omitted a normalized node",
+                },
+            )?,
+        ),
+    };
+    let span = origin
+        .span()
+        .ok_or(OperationalError::InvalidIntermediateRepresentation {
+            reason: "source map omitted an authored resource identifier",
+        })?;
+    Ok(Diagnostic {
+        code: code.to_owned(),
+        severity: Severity::Warning,
+        message,
+        range: SourceRange::from(span),
+        help: Some(help.to_owned()),
+        related: Vec::new(),
+    })
 }
 
 fn order_diagnostic(
@@ -218,28 +290,7 @@ fn order_diagnostic(
     })
 }
 
-/// Operation whose execution may produce an operational error.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Operation {
-    /// Canonical source formatting.
-    Format,
-    /// Full renderability validation without SVG serialization.
-    Check,
-    /// Full validation followed by standalone SVG serialization.
-    Render,
-}
-
-impl fmt::Display for Operation {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(match self {
-            Self::Format => "format",
-            Self::Check => "check",
-            Self::Render => "render",
-        })
-    }
-}
-
-/// Failure in execution inputs or engine capability, not in Stack source.
+/// Failure in execution inputs or internal pipeline invariants, not in Stack source.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum OperationalError {
@@ -253,11 +304,6 @@ pub enum OperationalError {
         /// Stable explanation of the violated invariant.
         reason: &'static str,
     },
-    /// The requested pure stage has not landed in this engine revision.
-    PipelineUnavailable {
-        /// Operation whose downstream stages are unavailable.
-        operation: Operation,
-    },
 }
 
 impl fmt::Display for OperationalError {
@@ -266,9 +312,6 @@ impl fmt::Display for OperationalError {
             Self::InvalidCatalog { reason } => write!(formatter, "invalid theme catalog: {reason}"),
             Self::InvalidIntermediateRepresentation { reason } => {
                 write!(formatter, "invalid intermediate representation: {reason}")
-            }
-            Self::PipelineUnavailable { operation } => {
-                write!(formatter, "{operation} pipeline is unavailable")
             }
         }
     }
@@ -455,7 +498,7 @@ mod tests {
     use stack_compiler::diagnostic as compiler_diagnostic;
 
     use super::{
-        Diagnostic, ENGINE_VERSION, Engine, LanguageVersion, Operation, OperationalError, Severity,
+        Diagnostic, ENGINE_VERSION, Engine, LanguageVersion, OperationalError, Severity,
         SourcePosition,
     };
 
@@ -603,7 +646,95 @@ mod tests {
     }
 
     #[test]
-    fn invalid_render_input_is_not_an_operational_error() {
+    fn resource_fallbacks_report_authored_ranges_and_render_svg() -> Result<(), Box<dyn Error>> {
+        let source = "stack 1.0 diagram \"Fallbacks\" { theme neon layout { direction right order [b, a] } node a \"A\" { icon \"missing\" } node b \"B\" }";
+        let checked = Engine::bundled().check(source.as_bytes())?;
+        let rendered = Engine::bundled().render(source.as_bytes())?;
+        assert_eq!(checked.diagnostics, rendered.diagnostics);
+        assert_eq!(
+            rendered
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.code.as_str())
+                .collect::<Vec<_>>(),
+            vec!["STK6001", "STK5001", "STK4001"]
+        );
+
+        let theme_start = source.find("neon").ok_or("missing theme identifier")?;
+        assert_eq!(
+            rendered.diagnostics[0].range.start.byte_offset,
+            theme_start as u64
+        );
+        assert_eq!(
+            rendered.diagnostics[0].range.end.byte_offset,
+            (theme_start + "neon".len()) as u64
+        );
+        let icon_start = source.find("\"missing\"").ok_or("missing icon string")?;
+        assert_eq!(
+            rendered.diagnostics[1].range.start.byte_offset,
+            icon_start as u64
+        );
+        assert_eq!(
+            rendered.diagnostics[1].range.end.byte_offset,
+            (icon_start + "\"missing\"".len()) as u64
+        );
+        let svg = rendered.svg.ok_or("render produced no SVG")?;
+        assert!(svg.contains("data-theme-id=\"default\""));
+        assert!(svg.contains("data-icon-id=\"kind-external\""));
+        Ok(())
+    }
+
+    #[test]
+    fn render_is_repeatable_and_escapes_source_text() -> Result<(), Box<dyn Error>> {
+        let source = b"stack 1.0 diagram \"<script>&\" { node client \"\\\" onload=\\\"alert(1)<&>\" edge client -> api \"javascript:alert(1)\" node api \"API\" }";
+        let first = Engine::bundled().render(source)?;
+        let second = Engine::bundled().render(source)?;
+        assert_eq!(first, second);
+        let svg = first.svg.ok_or("render produced no SVG")?;
+        assert!(svg.contains("&lt;script&gt;&amp;"));
+        assert!(svg.contains("&quot; onload=&quot;alert(1)&lt;&amp;&gt;"));
+        assert!(!svg.contains("<script"));
+        assert!(!svg.contains("href="));
+        Ok(())
+    }
+
+    #[cfg(feature = "conformance")]
+    #[test]
+    fn canonical_valid_fixtures_render_standalone_svg() -> Result<(), Box<dyn Error>> {
+        let specification = std::env::var("STACK_SPECIFICATION_DIR")?;
+        let valid_root = std::path::Path::new(&specification).join("conformance/valid");
+        let mut cases = std::fs::read_dir(&valid_root)?.collect::<Result<Vec<_>, _>>()?;
+        cases.sort_by_key(|entry| entry.file_name());
+        if cases.is_empty() {
+            return Err(format!("no valid fixtures found in {}", valid_root.display()).into());
+        }
+
+        for case in cases {
+            let source_path = case.path().join("source.stack");
+            if !source_path.is_file() {
+                continue;
+            }
+            let output = Engine::bundled().render(&std::fs::read(&source_path)?)?;
+            if output
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.severity == Severity::Error)
+            {
+                return Err(
+                    format!("{} produced an error diagnostic", source_path.display()).into(),
+                );
+            }
+            let svg = output
+                .svg
+                .ok_or_else(|| format!("{} produced no standalone SVG", source_path.display()))?;
+            assert!(svg.starts_with("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+            assert!(svg.ends_with("</svg>\n"));
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn render_separates_invalid_input_from_success() -> Result<(), Box<dyn Error>> {
         let engine = Engine::bundled();
         let result = engine.render(b"\xff");
         assert!(result.is_ok());
@@ -613,12 +744,15 @@ mod tests {
             assert_eq!(output.metadata.language_version, None);
         }
 
-        assert_eq!(
-            engine.render(VALID_SOURCE),
-            Err(OperationalError::PipelineUnavailable {
-                operation: Operation::Render,
-            })
+        let output = engine.render(VALID_SOURCE)?;
+        assert!(output.diagnostics.is_empty());
+        assert!(
+            output
+                .svg
+                .as_deref()
+                .is_some_and(|svg| svg.contains("<svg"))
         );
+        Ok(())
     }
 
     #[test]
@@ -684,20 +818,10 @@ mod tests {
     }
 
     #[test]
-    fn operation_and_error_messages_are_stable() {
-        assert_eq!(Operation::Format.to_string(), "format");
-        assert_eq!(Operation::Check.to_string(), "check");
-        assert_eq!(Operation::Render.to_string(), "render");
+    fn operational_error_messages_are_stable() {
         assert_eq!(
             OperationalError::InvalidCatalog { reason: "reason" }.to_string(),
             "invalid theme catalog: reason"
-        );
-        assert_eq!(
-            OperationalError::PipelineUnavailable {
-                operation: Operation::Render,
-            }
-            .to_string(),
-            "render pipeline is unavailable"
         );
         assert_eq!(
             OperationalError::InvalidIntermediateRepresentation { reason: "reason" }.to_string(),

@@ -50,6 +50,9 @@ jobs:
           STACK_SPECIFICATION_DIR: ${{ github.workspace }}/.stack-specification
         run: cargo +stable test -p stack-engine --features conformance --locked
 
+      - name: Validate standalone SVG snapshots
+        run: python3 scripts/validate-svg.py
+
       - name: Build pure engine for WebAssembly
         run: |
           rustup target add wasm32-unknown-unknown wasm32-wasip1 --toolchain stable

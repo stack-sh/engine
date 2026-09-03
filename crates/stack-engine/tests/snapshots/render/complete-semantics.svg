@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="504" height="1168.8" viewBox="0 0 504000 1168800" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.1.0" data-theme-id="dark" data-theme-version="0.1.0" data-theme-revision="sha256:b54ca3435931675d36d6a69b5154a0bd6ce2cbae1cfe14a20a095a8e24f8bae4">
+  <title id="stack-title">Complete semantics</title>
+  <desc id="stack-description">Architecture diagram with 10 nodes, 3 groups, and 8 relationships.</desc>
+  <metadata>stack-engine 0.1.0; language 1.0; theme 0.1.0 at sha256:b54ca3435931675d36d6a69b5154a0bd6ce2cbae1cfe14a20a095a8e24f8bae4</metadata>
+  <rect x="0" y="0" width="504000" height="1168800" fill="#0B1020"/>
+  <defs>
+    <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7500" markerHeight="7500" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
+      <path d="M 0 0 L 10000 5000 L 0 10000 z" fill="#CBD5E1"/>
+    </marker>
+  </defs>
+  <text x="32000" y="50200" fill="#F8FAFC" font-family="system-ui" font-size="13000" font-weight="600">Complete semantics</text>
+  <g data-stack-layer="groups">
+    <g role="group" aria-label="System" data-stack-id="system">
+      <title>System</title>
+      <rect x="32000" y="254200" width="440000" height="882600" rx="12000" fill="#1E293B" fill-opacity="0.55" stroke="#94A3B8" stroke-width="1000"/>
+      <text x="56000" y="291200" fill="#F8FAFC" font-family="system-ui" font-size="13000" font-weight="600">System</text>
+    </g>
+    <g role="group" aria-label="Compute" data-stack-id="compute">
+      <title>Compute</title>
+      <rect x="56000" y="404400" width="392000" height="150200" rx="12000" fill="#1E293B" fill-opacity="0.55" stroke="#94A3B8" stroke-width="1000"/>
+      <text x="80000" y="441400" fill="#F8FAFC" font-family="system-ui" font-size="13000" font-weight="600">Compute</text>
+    </g>
+    <g role="group" aria-label="State" data-stack-id="state">
+      <title>State</title>
+      <rect x="56000" y="578600" width="208000" height="438200" rx="12000" fill="#1E293B" fill-opacity="0.55" stroke="#94A3B8" stroke-width="1000"/>
+      <text x="80000" y="615600" fill="#F8FAFC" font-family="system-ui" font-size="13000" font-weight="600">State</text>
+    </g>
+  </g>
+  <g data-stack-layer="edges">
+    <g role="group" aria-label="User flows to Web app: HTTPS" data-edge-kind="request" data-edge-direction="forward">
+      <title>User flows to Web app: HTTPS</title>
+      <polyline points="112000,230200 112000,308400 136000,308400" fill="none" stroke="#CBD5E1" stroke-width="1750" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Web app is connected bidirectionally with API: WebSocket" data-edge-kind="flow" data-edge-direction="bidirectional">
+      <title>Web app is connected bidirectionally with API: WebSocket</title>
+      <polyline points="216000,344400 240000,344400" fill="none" stroke="#CBD5E1" stroke-width="1750" stroke-linecap="round" stroke-linejoin="round" marker-start="url(#stack-arrow)" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="API flows to Function: Invoke" data-edge-kind="dependency" data-edge-direction="forward">
+      <title>API flows to Function: Invoke</title>
+      <polyline points="240000,344400 240000,494600" fill="none" stroke="#CBD5E1" stroke-width="1750" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Function flows to Database: SQL" data-edge-kind="data" data-edge-direction="forward">
+      <title>Function flows to Database: SQL</title>
+      <polyline points="160000,530600 160000,632800" fill="none" stroke="#CBD5E1" stroke-width="1750" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Function flows to Queue: Job" data-edge-kind="event" data-edge-direction="forward">
+      <title>Function flows to Queue: Job</title>
+      <polyline points="80000,494600 80000,860800" fill="none" stroke="#CBD5E1" stroke-width="1750" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Worker is associated with Storage: Archive" data-edge-kind="data" data-edge-direction="association">
+      <title>Worker is associated with Storage: Archive</title>
+      <polyline points="264000,494600 264000,956800 240000,956800" fill="none" stroke="#CBD5E1" stroke-width="1750" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8000 6000" />
+    </g>
+    <g role="group" aria-label="API flows to Cache: Read" data-edge-kind="data" data-edge-direction="forward">
+      <title>API flows to Cache: Read</title>
+      <polyline points="240000,344400 240000,764800" fill="none" stroke="#CBD5E1" stroke-width="1750" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="API flows to External provider: API" data-edge-kind="request" data-edge-direction="forward">
+      <title>API flows to External provider: API</title>
+      <polyline points="320000,380400 248200,380400 248200,1076800" fill="none" stroke="#CBD5E1" stroke-width="1750" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+  </g>
+  <g data-stack-layer="nodes">
+    <g role="group" aria-label="User: Purchaser" data-stack-id="user" data-node-kind="actor">
+      <title>User: Purchaser</title>
+      <circle cx="112000" cy="150200" r="80000" fill="#141B2D" stroke="#94A3B8" stroke-width="1500"/>
+      <svg x="52000" y="138200" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-actor"><circle cx="12" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+  <path d="M5 20c.8-4 3-6 7-6s6.2 2 7 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/> </svg>
+      <text x="88000" y="141200" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">User</text>
+      <text x="88000" y="160200" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="12000" font-weight="400">Purchaser</text>
+    </g>
+    <g role="group" aria-label="Web app" data-stack-id="web" data-node-kind="client">
+      <title>Web app</title>
+      <rect x="56000" y="308400" width="160000" height="72000" rx="8000" fill="#141B2D" stroke="#94A3B8" stroke-width="1500"/>
+      <svg x="76000" y="332400" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-external"><path d="M11 5H5v14h14v-6M13 5h6v6M19 5l-9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="112000" y="344400" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">Web app</text>
+    </g>
+    <g role="group" aria-label="API" data-stack-id="api" data-node-kind="service">
+      <title>API</title>
+      <rect x="240000" y="308400" width="160000" height="72000" rx="8000" fill="#141B2D" stroke="#69A7FF" stroke-width="1500"/>
+      <svg x="260000" y="332400" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+  <rect x="4" y="15" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+  <path d="M8 9v6M16 9v6" fill="none" stroke="currentColor" stroke-width="2"/> </svg>
+      <text x="296000" y="344400" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">API</text>
+    </g>
+    <g role="group" aria-label="Function" data-stack-id="function" data-node-kind="function">
+      <title>Function</title>
+      <polygon points="96000,458600 224000,458600 240000,494600 224000,530600 96000,530600 80000,494600" fill="#1E293B" stroke="#69A7FF" stroke-width="1500"/>
+      <svg x="100000" y="482600" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-function"><path d="M6 20 11 4h2l5 16M8 14h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="136000" y="494600" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">Function</text>
+    </g>
+    <g role="group" aria-label="Worker" data-stack-id="worker" data-node-kind="worker">
+      <title>Worker</title>
+      <rect x="264000" y="458600" width="160000" height="72000" rx="16000" fill="#141B2D" stroke="#94A3B8" stroke-width="1500"/>
+      <svg x="284000" y="482600" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-worker"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+  <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/> </svg>
+      <text x="320000" y="494600" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">Worker</text>
+    </g>
+    <g role="group" aria-label="Database" data-stack-id="database" data-node-kind="database">
+      <title>Database</title>
+      <path d="M 80000 642800 V 694800 C 80000 704800 240000 704800 240000 694800 V 642800 C 240000 632800 80000 632800 80000 642800 Z" fill="#141B2D" stroke="#69A7FF" stroke-width="1500"/>
+      <ellipse cx="160000" cy="642800" rx="80000" ry="10000" fill="none" stroke="#69A7FF" stroke-width="1500"/>
+      <svg x="100000" y="656800" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-database"><ellipse cx="12" cy="5" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="2"/>
+  <path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" fill="none" stroke="currentColor" stroke-width="2"/> </svg>
+      <text x="136000" y="668800" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">Database</text>
+    </g>
+    <g role="group" aria-label="Cache" data-stack-id="cache" data-node-kind="cache">
+      <title>Cache</title>
+      <path d="M 80000 738800 V 790800 C 80000 800800 240000 800800 240000 790800 V 738800 C 240000 728800 80000 728800 80000 738800 Z" fill="#1E293B" stroke="#94A3B8" stroke-width="1500"/>
+      <ellipse cx="160000" cy="738800" rx="80000" ry="10000" fill="none" stroke="#94A3B8" stroke-width="1500"/>
+      <svg x="100000" y="752800" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-cache"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="136000" y="764800" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">Cache</text>
+    </g>
+    <g role="group" aria-label="Queue" data-stack-id="queue" data-node-kind="queue">
+      <title>Queue</title>
+      <rect x="80000" y="824800" width="160000" height="72000" rx="16000" fill="#1E293B" stroke="#69A7FF" stroke-width="1500"/>
+      <svg x="100000" y="848800" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-queue"><circle cx="5" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="2"/>
+  <circle cx="5" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="2"/>
+  <path d="M7 7h10l3 3-3 3H7M7 17h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="136000" y="860800" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">Queue</text>
+    </g>
+    <g role="group" aria-label="Storage" data-stack-id="storage" data-node-kind="storage">
+      <title>Storage</title>
+      <rect x="80000" y="920800" width="160000" height="72000" rx="4000" fill="#141B2D" stroke="#94A3B8" stroke-width="1500"/>
+      <svg x="100000" y="944800" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-storage"><path d="M3 6h7l2 3h9v10H3V6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M3 9h18" fill="none" stroke="currentColor" stroke-width="2"/> </svg>
+      <text x="136000" y="956800" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">Storage</text>
+    </g>
+    <g role="group" aria-label="External provider" data-stack-id="vendor" data-node-kind="external">
+      <title>External provider</title>
+      <polygon points="72000,1040800 232200,1040800 248200,1076800 232200,1112800 72000,1112800 56000,1076800" fill="#1E293B" stroke="#94A3B8" stroke-width="1500"/>
+      <svg x="76000" y="1064800" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-external"><path d="M11 5H5v14h14v-6M13 5h6v6M19 5l-9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="112000" y="1076800" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">External provider</text>
+    </g>
+  </g>
+  <g data-stack-layer="edge-labels" aria-hidden="true">
+    <g data-edge-label="HTTPS">
+      <rect x="89500" y="269600" width="45000" height="23400" rx="4000" fill="#0B1020"/>
+      <text x="112000" y="281300" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11000">HTTPS</text>
+    </g>
+    <g data-edge-label="WebSocket">
+      <rect x="192025" y="277000" width="71950" height="23400" rx="4000" fill="#0B1020"/>
+      <text x="228000" y="288700" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11000">WebSocket</text>
+    </g>
+    <g data-edge-label="Invoke">
+      <rect x="215850" y="407800" width="48300" height="23400" rx="4000" fill="#0B1020"/>
+      <text x="240000" y="419500" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11000">Invoke</text>
+    </g>
+    <g data-edge-label="SQL">
+      <rect x="144100" y="570000" width="31800" height="23400" rx="4000" fill="#0B1020"/>
+      <text x="160000" y="581700" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11000">SQL</text>
+    </g>
+    <g data-edge-label="Job">
+      <rect x="40200" y="666000" width="31800" height="23400" rx="4000" fill="#0B1020"/>
+      <text x="56100" y="677700" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11000">Job</text>
+    </g>
+    <g data-edge-label="Archive">
+      <rect x="248000" y="726000" width="52150" height="23400" rx="4000" fill="#0B1020"/>
+      <text x="274075" y="737700" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11000">Archive</text>
+    </g>
+    <g data-edge-label="Read">
+      <rect x="220800" y="542900" width="38400" height="23400" rx="4000" fill="#0B1020"/>
+      <text x="240000" y="554600" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11000">Read</text>
+    </g>
+    <g data-edge-label="API">
+      <rect x="248000" y="681000" width="28500" height="23400" rx="4000" fill="#0B1020"/>
+      <text x="262250" y="692700" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11000">API</text>
+    </g>
+  </g>
+</svg>

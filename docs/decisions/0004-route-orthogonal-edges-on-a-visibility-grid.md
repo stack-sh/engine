@@ -24,6 +24,6 @@ After placement, evaluate each authored order list using doubled cross-axis cent
 
 - Routing depends only on normalized IR and existing integer scene geometry.
 - Paths may touch or follow a node boundary but never enter a node interior.
-- Edge declaration order, kind, label, direction, path, markers, and anchors are snapshot-testable before SVG serialization exists.
+- Edge declaration order, kind, label, direction, path, markers, and anchors remain snapshot-testable independently of SVG serialization.
 - The bend penalty favors readable routes without making crossing minimization a semantic guarantee.
 - Layout diagnostics reuse the public compiler sidecar and do not add source spans to portable IR.
