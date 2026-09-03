@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 
-const packages = JSON.parse(
+const packResult = JSON.parse(
   execFileSync(
     "npm",
     ["pack", "--dry-run", "--json", "--workspace", "@stack-sh/engine"],
     { encoding: "utf8" },
   ),
 );
+const packages = Array.isArray(packResult)
+  ? packResult
+  : Object.values(packResult);
 assert.equal(packages.length, 1);
 assert.equal(packages[0].name, "@stack-sh/engine");
 assert.deepEqual(

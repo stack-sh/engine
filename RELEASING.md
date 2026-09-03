@@ -26,6 +26,8 @@ After `@stack-sh/engine` exists on npm, configure its trusted publisher with the
 
 Then create the `v0.1.0` GitHub Release from the same merged revision. The release workflow recognizes that the package version already exists and completes without publishing it twice.
 
+If a published release needs to resume after a workflow-only correction, run the Release workflow manually with the existing exact tag. The recovery path checks out that tag and applies the same version, ancestry, build, test, package-content, and publication checks before it can publish.
+
 ## Subsequent releases
 
 1. Update the workspace and package versions in a pull request.
