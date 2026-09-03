@@ -12,3 +12,11 @@ node|cache|parent=state|rect=80000,641200,160000,72000
 node|queue|parent=state|rect=80000,737200,160000,72000
 node|storage|parent=state|rect=80000,833200,160000,72000
 node|vendor|parent=system|rect=56000,953200,192200,72000
+edge|user|web|direction=Forward|kind=Request|label=HTTPS|markers=None,Arrow|anchor=112000,193700|path=112000,142600;112000,220800;136000,220800
+edge|web|api|direction=Bidirectional|kind=Flow|label=WebSocket|markers=Arrow,Arrow|anchor=228000,256800|path=216000,256800;240000,256800
+edge|api|function|direction=Forward|kind=Dependency|label=Invoke|markers=None,Arrow|anchor=240000,331900|path=240000,256800;240000,407000
+edge|function|database|direction=Forward|kind=Data|label=SQL|markers=None,Arrow|anchor=160000,494100|path=160000,443000;160000,545200
+edge|function|queue|direction=Forward|kind=Event|label=Job|markers=None,Arrow|anchor=80000,590100|path=80000,407000;80000,773200
+edge|worker|storage|direction=Association|kind=Data|label=Archive|markers=None,None|anchor=264000,650100|path=264000,407000;264000,869200;240000,869200
+edge|api|cache|direction=Forward|kind=Data|label=Read|markers=None,Arrow|anchor=240000,467000|path=240000,256800;240000,677200
+edge|api|vendor|direction=Forward|kind=Request|label=API|markers=None,Arrow|anchor=248200,605100|path=320000,292800;248200,292800;248200,989200

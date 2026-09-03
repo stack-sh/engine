@@ -45,10 +45,10 @@ jobs:
           STACK_SPECIFICATION_DIR: ${{ github.workspace }}/.stack-specification
         run: cargo +stable test -p stack-formatter --features conformance --test conformance --locked
 
-      - name: Run canonical layout snapshot
+      - name: Run canonical scene suite
         env:
           STACK_SPECIFICATION_DIR: ${{ github.workspace }}/.stack-specification
-        run: cargo +stable test -p stack-engine --features conformance canonical_complete_semantics_matches_snapshot --locked
+        run: cargo +stable test -p stack-engine --features conformance --locked
 
       - name: Build pure engine for WebAssembly
         run: |
@@ -64,7 +64,7 @@ jobs:
       - name: Verify native and WebAssembly geometry parity
         env:
           CARGO_TARGET_WASM32_WASIP1_RUNNER: wasmtime
-        run: cargo +stable test -p stack-engine --lib --target wasm32-wasip1 geometry_matches_cross_target_numeric_fixture --locked
+        run: cargo +stable test -p stack-engine --lib --target wasm32-wasip1 cross_target_numeric_fixture --locked
 
       - name: Run Clippy
         run: cargo +stable clippy --workspace --all-targets --all-features --locked -- -D warnings

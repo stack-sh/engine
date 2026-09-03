@@ -24,6 +24,7 @@ use std::fmt;
 
 use stack_compiler::diagnostic as compiler_diagnostic;
 
+mod routing;
 mod scene;
 
 /// Version of the Rust engine facade.
@@ -108,14 +109,20 @@ impl<'catalog> Engine<'catalog> {
         })
     }
 
-    /// Runs the currently available compiler stages without producing SVG.
+    /// Runs compiler, theme, layout, and routing validation without producing SVG.
     pub fn check(&self, source: &[u8]) -> OperationResult<CheckOutput> {
-        let compiled = stack_compiler::compile_bytes(source);
+        let compiled = stack_compiler::compile_bytes_with_source_map(source);
+        let mut diagnostics = portable_diagnostics(compiled.diagnostics);
         if let Some(diagram) = &compiled.diagram {
-            self.validate_scene(diagram)?;
+            let source_map = compiled.source_map.as_ref().ok_or(
+                OperationalError::InvalidIntermediateRepresentation {
+                    reason: "compiler omitted the source map for normalized IR",
+                },
+            )?;
+            diagnostics.extend(self.validate_scene(diagram, source_map)?);
         }
         Ok(CheckOutput {
-            diagnostics: portable_diagnostics(compiled.diagnostics),
+            diagnostics,
             metadata: self.metadata(declared_language_version(source)),
         })
     }
@@ -128,7 +135,7 @@ impl<'catalog> Engine<'catalog> {
     /// The latter branch is replaced by deterministic SVG output when the render
     /// pipeline lands.
     pub fn render(&self, source: &[u8]) -> OperationResult<RenderOutput> {
-        let compiled = stack_compiler::compile_bytes(source);
+        let compiled = stack_compiler::compile_bytes_with_source_map(source);
         let metadata = self.metadata(declared_language_version(source));
         if compiled.diagram.is_none() {
             return Ok(RenderOutput {
@@ -139,7 +146,12 @@ impl<'catalog> Engine<'catalog> {
         }
 
         if let Some(diagram) = &compiled.diagram {
-            self.validate_scene(diagram)?;
+            let source_map = compiled.source_map.as_ref().ok_or(
+                OperationalError::InvalidIntermediateRepresentation {
+                    reason: "compiler omitted the source map for normalized IR",
+                },
+            )?;
+            self.validate_scene(diagram, source_map)?;
         }
 
         Err(OperationalError::PipelineUnavailable {
@@ -156,7 +168,11 @@ impl<'catalog> Engine<'catalog> {
         }
     }
 
-    fn validate_scene(&self, diagram: &stack_compiler::ir::Diagram) -> OperationResult<()> {
+    fn validate_scene(
+        &self,
+        diagram: &stack_compiler::ir::Diagram,
+        source_map: &stack_compiler::source_map::SourceMap,
+    ) -> OperationResult<Vec<Diagnostic>> {
         let scene = scene::layout(diagram, self.catalog).map_err(|error| {
             OperationalError::InvalidIntermediateRepresentation {
                 reason: error.reason(),
@@ -167,8 +183,39 @@ impl<'catalog> Engine<'catalog> {
                 reason: "layout produced invalid containment or overlap geometry",
             });
         }
-        Ok(())
+        scene
+            .unsatisfied_orders
+            .iter()
+            .map(|scope| order_diagnostic(scope, source_map))
+            .collect()
     }
+}
+
+fn order_diagnostic(
+    scope: &scene::SceneScope,
+    source_map: &stack_compiler::source_map::SourceMap,
+) -> OperationResult<Diagnostic> {
+    let origin = match scope {
+        scene::SceneScope::Diagram => source_map.diagram_order(),
+        scene::SceneScope::Group(identifier) => source_map.group_order(identifier).ok_or(
+            OperationalError::InvalidIntermediateRepresentation {
+                reason: "source map omitted a normalized group",
+            },
+        )?,
+    };
+    let span = origin
+        .span()
+        .ok_or(OperationalError::InvalidIntermediateRepresentation {
+            reason: "source map omitted an authored order hint",
+        })?;
+    Ok(Diagnostic {
+        code: "STK4001".to_owned(),
+        severity: Severity::Warning,
+        message: "order hint could not be satisfied by deterministic layout".to_owned(),
+        range: SourceRange::from(span),
+        help: Some("Adjust the order hint or same-rank constraints.".to_owned()),
+        related: Vec::new(),
+    })
 }
 
 /// Operation whose execution may produce an operational error.
@@ -265,7 +312,7 @@ pub struct FormatOutput {
 /// Result of the check operation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CheckOutput {
-    /// Compiler and, in later stages, theme and layout diagnostics in deterministic order.
+    /// Compiler, theme, and layout diagnostics in deterministic order.
     pub diagnostics: Vec<Diagnostic>,
     /// Versions that identify the exact operation implementation and inputs.
     pub metadata: EngineMetadata,
@@ -403,6 +450,8 @@ impl From<compiler_diagnostic::SourcePosition> for SourcePosition {
 
 #[cfg(test)]
 mod tests {
+    use std::error::Error;
+
     use stack_compiler::diagnostic as compiler_diagnostic;
 
     use super::{
@@ -480,6 +529,77 @@ mod tests {
                     .all(|pair| pair[0].range.start.byte_offset <= pair[1].range.start.byte_offset)
             );
         }
+    }
+
+    #[test]
+    fn check_emits_order_warning_at_the_authored_statement() -> Result<(), Box<dyn Error>> {
+        let source = "stack 1.0 diagram \"Order\" { layout { direction right order [b, a] } node a \"A\" node b \"B\" }";
+        let output = Engine::bundled().check(source.as_bytes())?;
+        assert_eq!(output.diagnostics.len(), 1);
+        let diagnostic = &output.diagnostics[0];
+        assert_eq!(diagnostic.code, "STK4001");
+        assert_eq!(diagnostic.severity, Severity::Warning);
+        let start = source
+            .find("order [b, a]")
+            .ok_or("missing order statement")?;
+        let end = start + "order [b, a]".len();
+        assert_eq!(diagnostic.range.start.byte_offset, start as u64);
+        assert_eq!(diagnostic.range.end.byte_offset, end as u64);
+        assert_eq!(diagnostic.range.start.line, 1);
+        assert_eq!(diagnostic.range.start.column, start as u64 + 1);
+        assert_eq!(diagnostic.range.end.column, end as u64 + 1);
+        Ok(())
+    }
+
+    #[test]
+    fn check_omits_order_warning_when_rank_placement_satisfies_it() -> Result<(), Box<dyn Error>> {
+        let source = b"stack 1.0 diagram \"Order\" { layout { direction right rank same [a, b] order [b, a] } node a \"A\" node b \"B\" }";
+        let output = Engine::bundled().check(source)?;
+        assert!(output.diagnostics.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn group_order_warning_uses_the_group_source_map_entry() -> Result<(), Box<dyn Error>> {
+        let source = "stack 1.0 diagram \"Group order\" { group pair \"Pair\" { layout { direction down order [b, a] } node a \"A\" node b \"B\" } }";
+        let output = Engine::bundled().check(source.as_bytes())?;
+        assert_eq!(output, Engine::bundled().check(source.as_bytes())?);
+        assert_eq!(
+            output
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.code.as_str())
+                .collect::<Vec<_>>(),
+            vec!["STK4001"]
+        );
+        let start = source
+            .find("order [b, a]")
+            .ok_or("missing order statement")?;
+        assert_eq!(output.diagnostics[0].range.start.byte_offset, start as u64);
+        Ok(())
+    }
+
+    #[test]
+    fn layout_warnings_follow_compiler_warnings() -> Result<(), Box<dyn Error>> {
+        let mut source = String::from(
+            "stack 1.0 diagram \"Warnings\" { layout { direction right order [n1, n0] } node hub \"Hub\" ",
+        );
+        for index in 0..13 {
+            source.push_str(&format!(
+                "node n{index} \"N {index}\" edge hub -> n{index} "
+            ));
+        }
+        source.push('}');
+        let output = Engine::bundled().check(source.as_bytes())?;
+        assert_eq!(
+            output
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.code.as_str())
+                .collect::<Vec<_>>(),
+            vec!["STK4002", "STK4001"]
+        );
+        Ok(())
     }
 
     #[test]
