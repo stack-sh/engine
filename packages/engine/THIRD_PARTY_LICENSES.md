@@ -4,7 +4,7 @@
 
 | Component | Version / revision | Selected license | Source |
 | --- | --- | --- | --- |
-| `stack-compiler` | `17a0abe9c35e641761ff08fdf59b29a42828d9fd` | Apache-2.0 | <https://github.com/stack-sh/compiler> |
+| `stack-compiler` | `3d2379483da1edaeb24a26d43743587a4f5bd645` | Apache-2.0 | <https://github.com/stack-sh/compiler> |
 | `stack-theme` | `ed6c500762fc9ccffc8777172ac672a716dcd916` | Apache-2.0 | <https://github.com/stack-sh/theme> |
 | `serde` / `serde_core` | `1.0.229` | Apache-2.0 | <https://github.com/serde-rs/serde> |
 | `serde_json` | `1.0.151` | Apache-2.0 | <https://github.com/serde-rs/json> |

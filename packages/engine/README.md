@@ -12,6 +12,6 @@ const checked = check(new TextEncoder().encode('stack 1.0 diagram "API" { node a
 const rendered = render('stack 1.0 diagram "API" { node api "API" }');
 ```
 
-Each operation is synchronous after module initialization and accepts either a JavaScript string or `Uint8Array`. Invalid Stack source, including invalid UTF-8 bytes, returns normal portable diagnostics. A JavaScript value of any other type throws `TypeError` at the package boundary.
+Each operation is synchronous after module initialization and accepts either a JavaScript string or `Uint8Array`. Invalid Stack source, including invalid UTF-8 bytes, returns normal portable diagnostics. Diagnostics include the primary range, ordered `expected` values, corrective help, and related source locations. A JavaScript value of any other type throws `TypeError` at the package boundary.
 
 The package does not read files, contact a network service, inspect the DOM, observe a clock, or measure host fonts. Consumers own module loading and all host I/O.

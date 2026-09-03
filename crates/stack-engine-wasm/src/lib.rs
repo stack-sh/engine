@@ -86,6 +86,8 @@ pub struct Diagnostic {
     pub message: String,
     /// Primary end-exclusive source range.
     pub range: SourceRange,
+    /// Ordered source values or constructs valid at the primary range.
+    pub expected: Vec<String>,
     /// Optional corrective guidance.
     pub help: Option<String>,
     /// Other source locations involved in the diagnostic.
@@ -217,6 +219,7 @@ impl From<stack_engine::Diagnostic> for Diagnostic {
             severity: Severity::from(diagnostic.severity),
             message: diagnostic.message,
             range: SourceRange::from(diagnostic.range),
+            expected: diagnostic.expected,
             help: diagnostic.help,
             related: diagnostic
                 .related
@@ -291,6 +294,7 @@ export interface Diagnostic {
   readonly severity: Severity;
   readonly message: string;
   readonly range: SourceRange;
+  readonly expected: readonly string[];
   readonly help: string | null;
   readonly related: readonly RelatedInformation[];
 }
@@ -433,6 +437,11 @@ fn diagnostic_to_js(diagnostic: Diagnostic) -> Result<JsValue, JsValue> {
     )?;
     set(&output, "message", diagnostic.message.into())?;
     set(&output, "range", range_to_js(diagnostic.range)?)?;
+    let expected = Array::new();
+    for value in diagnostic.expected {
+        expected.push(&value.into());
+    }
+    set(&output, "expected", expected.into())?;
     set_optional_string(&output, "help", diagnostic.help)?;
     let related = Array::new();
     for information in diagnostic.related {
@@ -553,6 +562,7 @@ mod tests {
             severity: stack_engine::Severity::Warning,
             message: "fallback used".to_owned(),
             range,
+            expected: vec!["available-resource".to_owned()],
             help: Some("install the resource".to_owned()),
             related: vec![stack_engine::RelatedInformation {
                 message: "requested here".to_owned(),
@@ -560,6 +570,7 @@ mod tests {
             }],
         });
         assert_eq!(converted.severity, Severity::Warning);
+        assert_eq!(converted.expected, ["available-resource"]);
         assert_eq!(converted.help.as_deref(), Some("install the resource"));
         assert_eq!(converted.related[0].message, "requested here");
         assert_eq!(converted.related[0].range.start.byte_offset, 1);

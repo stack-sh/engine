@@ -258,6 +258,7 @@ fn resource_diagnostic(
         severity: Severity::Warning,
         message,
         range: SourceRange::from(span),
+        expected: Vec::new(),
         help: Some(help.to_owned()),
         related: Vec::new(),
     })
@@ -285,6 +286,7 @@ fn order_diagnostic(
         severity: Severity::Warning,
         message: "order hint could not be satisfied by deterministic layout".to_owned(),
         range: SourceRange::from(span),
+        expected: Vec::new(),
         help: Some("Adjust the order hint or same-rank constraints.".to_owned()),
         related: Vec::new(),
     })
@@ -383,6 +385,8 @@ pub struct Diagnostic {
     pub message: String,
     /// Primary end-exclusive source range.
     pub range: SourceRange,
+    /// Ordered source values or constructs valid at the primary range.
+    pub expected: Vec<String>,
     /// Optional corrective guidance.
     pub help: Option<String>,
     /// Other source locations involved in the diagnostic.
@@ -459,6 +463,7 @@ impl From<compiler_diagnostic::Diagnostic> for Diagnostic {
             },
             message: diagnostic.message,
             range: SourceRange::from(diagnostic.span),
+            expected: diagnostic.expected,
             help: diagnostic.help,
             related: diagnostic
                 .related
@@ -780,7 +785,7 @@ mod tests {
     }
 
     #[test]
-    fn diagnostic_conversion_keeps_warning_help_and_related_ranges() {
+    fn diagnostic_conversion_keeps_expected_help_and_related_ranges() {
         let start = compiler_diagnostic::SourcePosition {
             byte_offset: 3,
             line: 2,
@@ -796,6 +801,7 @@ mod tests {
             severity: compiler_diagnostic::Severity::Warning,
             message: "warning".to_owned(),
             span: compiler_diagnostic::Span { start, end },
+            expected: vec!["right".to_owned(), "down".to_owned()],
             help: Some("help".to_owned()),
             related: vec![compiler_diagnostic::RelatedInformation {
                 message: "related".to_owned(),
@@ -805,6 +811,7 @@ mod tests {
 
         let portable = Diagnostic::from(diagnostic);
         assert_eq!(portable.severity, Severity::Warning);
+        assert_eq!(portable.expected, ["right", "down"]);
         assert_eq!(portable.help.as_deref(), Some("help"));
         assert_eq!(portable.related[0].message, "related");
         assert_eq!(

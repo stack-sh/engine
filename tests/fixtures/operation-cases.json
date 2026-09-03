@@ -14,6 +14,13 @@
     }
   },
   {
+    "name": "actionable-error-string",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0\ndiagram \"Example\" {\n  node app \"App\"\n  layout { direction hoo }\n}\n"
+    }
+  },
+  {
     "name": "invalid-utf8-bytes",
     "input": {
       "kind": "bytes",
