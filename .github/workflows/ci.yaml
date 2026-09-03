@@ -42,7 +42,7 @@ jobs:
 
       - name: Run canonical formatter suite
         env:
-          STACK_SPECIFICATION_DIR: .stack-specification
+          STACK_SPECIFICATION_DIR: ${{ github.workspace }}/.stack-specification
         run: cargo +stable test -p stack-formatter --features conformance --test conformance --locked
 
       - name: Run Clippy
