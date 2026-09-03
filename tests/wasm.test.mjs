@@ -66,6 +66,27 @@ test("invalid UTF-8 is a normal diagnostic result for every operation", () => {
   }
 });
 
+test("browser diagnostics preserve actionable compiler guidance", () => {
+  const actionable = wasmOutputs().find(
+    ({ name }) => name === "actionable-error-string",
+  );
+  assert.ok(actionable);
+  assert.equal(actionable.render.svg, null);
+  assert.equal(actionable.check.metadata.engineVersion, "0.2.0");
+  assert.deepEqual(actionable.check.diagnostics[0], {
+    code: "STK2002",
+    severity: "error",
+    message: "Unknown layout direction 'hoo'.",
+    range: {
+      start: { byteOffset: 68, line: 4, column: 22 },
+      end: { byteOffset: 71, line: 4, column: 25 },
+    },
+    expected: ["right", "down"],
+    help: "Use 'right' for horizontal flow or 'down' for vertical flow.",
+    related: [],
+  });
+});
+
 test("the JavaScript boundary rejects unsupported source values consistently", () => {
   for (const operation of [format, check, render]) {
     assert.throws(

@@ -20,6 +20,7 @@ const diagnostic: Diagnostic | undefined = checked.diagnostics[0];
 formatted.formattedSource?.toUpperCase();
 rendered.svg?.startsWith("<svg");
 diagnostic?.range.start.byteOffset.toFixed(0);
+diagnostic?.expected.join(", ");
 
 // @ts-expect-error Stack source is intentionally limited to string or Uint8Array.
 format({ source: text });
