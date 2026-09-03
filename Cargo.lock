@@ -112,11 +112,11 @@ dependencies = [
 [[package]]
 name = "stack-compiler"
 version = "0.1.0"
-source = "git+https://github.com/stack-sh/compiler.git?rev=17a0abe9c35e641761ff08fdf59b29a42828d9fd#17a0abe9c35e641761ff08fdf59b29a42828d9fd"
+source = "git+https://github.com/stack-sh/compiler.git?rev=3d2379483da1edaeb24a26d43743587a4f5bd645#3d2379483da1edaeb24a26d43743587a4f5bd645"
 
 [[package]]
 name = "stack-engine"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "stack-compiler",
  "stack-formatter",
@@ -125,7 +125,7 @@ dependencies = [
 
 [[package]]
 name = "stack-engine-wasm"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "js-sys",
  "serde",
