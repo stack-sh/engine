@@ -4,8 +4,8 @@
 
 | Component | Revision | License | Source | Notes |
 | --- | --- | --- | --- | --- |
-| `stack-compiler` | `17a0abe9c35e641761ff08fdf59b29a42828d9fd` | Apache-2.0 | <https://github.com/stack-sh/compiler> | Unmodified Rust dependency; its license and notice obligations apply to distributions that include it. |
-| `stack-theme` | `ed6c500762fc9ccffc8777172ac672a716dcd916` | Apache-2.0 | <https://github.com/stack-sh/theme> | Unmodified Rust dependency with repository-authored core SVG assets and deterministic metrics; its license and notice obligations apply to distributions that include it. |
+| `stack-compiler` | `3d2379483da1edaeb24a26d43743587a4f5bd645` | Apache-2.0 | <https://github.com/stack-sh/compiler> | Unmodified Rust dependency; its license and notice obligations apply to distributions that include it. |
+| `stack-theme` | `d25b883884420adcc124e4c9c786ad92925eae60` | Apache-2.0 | <https://github.com/stack-sh/theme> | Unmodified Rust dependency with repository-authored fallback and explicit core SVG assets and deterministic metrics; its license and notice obligations apply to distributions that include it. |
 | `serde` / `serde_core` | `1.0.229` | MIT OR Apache-2.0 | <https://github.com/serde-rs/serde> | Runtime catalog data types through `stack-theme`. |
 | `serde_json` | `1.0.151` | MIT OR Apache-2.0 | <https://github.com/serde-rs/json> | Runtime embedded-catalog decoding through `stack-theme`; also used by formatter conformance tests. |
 | `itoa` | `1.0.18` | MIT OR Apache-2.0 | <https://github.com/dtolnay/itoa> | Transitive runtime dependency of `serde_json`. |
@@ -32,6 +32,6 @@
 | `wasm-bindgen-cli` | `0.2.127` | MIT OR Apache-2.0 | <https://github.com/wasm-bindgen/wasm-bindgen> | Version-matched build tool; not shipped in the npm package. |
 | `typescript` | `7.0.2` | Apache-2.0 | <https://github.com/microsoft/TypeScript> | Type-check tool; not shipped in the npm package. |
 
-No third-party visual asset is bundled in a Stack Engine distribution. The npm package includes this inventory and the Apache-2.0, MIT, and Unicode-3.0 license texts required by its compiled dependency choices.
+No third-party visual asset is bundled in a Stack Engine distribution. The bundled fallback and 12 explicit icons are Stack-authored Apache-2.0 assets from `stack-theme`. The npm package includes this inventory and the Apache-2.0, MIT, and Unicode-3.0 license texts required by its compiled dependency choices.
 
 Before publishing a native library, binary-derived artifact, or WASM package, this inventory must list the shipped dependencies and assets, their pinned versions, exact licenses, required license texts, attribution, modifications, and redistribution conditions. Build-only dependencies that are not shipped should be distinguished from distributed code.
