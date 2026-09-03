@@ -34,6 +34,21 @@ jobs:
       - name: Install latest stable Rust toolchain
         run: rustup toolchain install stable --profile minimal --component clippy,rustfmt,llvm-tools-preview
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install JavaScript development dependencies
+        run: npm ci
+
+      - name: Install WebAssembly binding generator
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: wasm-bindgen-cli@0.2.127
+          fallback: none
+
       - name: Check formatting
         run: cargo +stable fmt --check
 
@@ -53,10 +68,19 @@ jobs:
       - name: Validate standalone SVG snapshots
         run: python3 scripts/validate-svg.py
 
-      - name: Build pure engine for WebAssembly
+      - name: Build browser WebAssembly package
         run: |
           rustup target add wasm32-unknown-unknown wasm32-wasip1 --toolchain stable
-          cargo +stable build -p stack-engine --target wasm32-unknown-unknown --locked
+          npm run build:wasm
+
+      - name: Test native and browser operation parity
+        run: npm test
+
+      - name: Check browser package types
+        run: npm run typecheck
+
+      - name: Verify browser package contents
+        run: npm run pack:check
 
       - name: Install WebAssembly test runtime
         uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4

@@ -1,0 +1,23 @@
+[
+  {
+    "name": "valid-string",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"API\" { node web \"Web\" edge web -> api \"HTTPS\" node api \"API\" }"
+    }
+  },
+  {
+    "name": "warning-string",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Fallback\" { theme neon node api \"API\" { icon \"missing\" } }"
+    }
+  },
+  {
+    "name": "invalid-utf8-bytes",
+    "input": {
+      "kind": "bytes",
+      "value": [255]
+    }
+  }
+]

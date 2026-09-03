@@ -1,0 +1,32 @@
+{
+  "name": "@stack-sh/engine",
+  "version": "0.1.0",
+  "description": "Browser WebAssembly adapter for Stack diagram operations",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stack-sh/engine.git"
+  },
+  "sideEffects": false,
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "index.d.ts",
+    "index.js",
+    "LICENSE",
+    "licenses",
+    "README.md",
+    "THIRD_PARTY_LICENSES.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
