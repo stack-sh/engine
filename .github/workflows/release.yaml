@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  npm:
+    name: npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.18.0
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Install current npm CLI
+        run: npm install --global npm@12.0.2
+
+      - name: Install JavaScript development dependencies
+        run: npm ci
+
+      - name: Install stable Rust toolchain
+        run: rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown
+
+      - name: Install WebAssembly binding generator
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b
+        with:
+          tool: wasm-bindgen-cli@0.2.127
+          fallback: none
+
+      - name: Verify release version
+        run: |
+          package_version=$(node --print "require('./packages/engine/package.json').version")
+          workspace_version=$(node --print "require('./package.json').version")
+          test "$package_version" = "$workspace_version"
+          test "$GITHUB_REF_NAME" = "v$package_version"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      - name: Build browser WebAssembly package
+        run: npm run build:wasm
+
+      - name: Test browser package
+        run: npm test
+
+      - name: Check browser package types
+        run: npm run typecheck
+
+      - name: Verify browser package contents
+        run: npm run pack:check
+
+      - name: Check whether version is already published
+        id: package
+        run: |
+          package_version=$(node --print "require('./packages/engine/package.json').version")
+          if npm view "@stack-sh/engine@$package_version" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish package
+        if: steps.package.outputs.published != 'true'
+        run: npm publish --workspace @stack-sh/engine --access public

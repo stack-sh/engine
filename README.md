@@ -49,6 +49,8 @@ The renderer emits fixed-dimension standalone SVG with embedded catalog icons, l
 
 The npm package exports synchronous `format`, `check`, and `render` functions after asynchronous module initialization. Each operation accepts `string | Uint8Array` and returns a specific typed result with camel-case metadata and portable diagnostics. Invalid UTF-8 remains a normal `STK1001` result. Unsupported JavaScript input types and internal operational failures throw at the adapter boundary. Shared fixtures compare complete native and WebAssembly results, including formatted source, diagnostics, SVG, and metadata. Artifact validation audits WebAssembly imports and package contents; browser consumers retain responsibility for loading the module and performing any DOM, filesystem, network, or clock work.
 
+Public npm releases are produced from GitHub Releases after the repository checks pass. See [RELEASING.md](./RELEASING.md) for the first-release bootstrap and subsequent trusted-publishing flow.
+
 ## Architecture
 
 - [`docs/decisions/0001-build-the-formatter-from-compiler-models.md`](./docs/decisions/0001-build-the-formatter-from-compiler-models.md)
