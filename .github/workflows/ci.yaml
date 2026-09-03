@@ -45,6 +45,27 @@ jobs:
           STACK_SPECIFICATION_DIR: ${{ github.workspace }}/.stack-specification
         run: cargo +stable test -p stack-formatter --features conformance --test conformance --locked
 
+      - name: Run canonical layout snapshot
+        env:
+          STACK_SPECIFICATION_DIR: ${{ github.workspace }}/.stack-specification
+        run: cargo +stable test -p stack-engine --features conformance canonical_complete_semantics_matches_snapshot --locked
+
+      - name: Build pure engine for WebAssembly
+        run: |
+          rustup target add wasm32-unknown-unknown wasm32-wasip1 --toolchain stable
+          cargo +stable build -p stack-engine --target wasm32-unknown-unknown --locked
+
+      - name: Install WebAssembly test runtime
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: wasmtime@48.0.1
+          fallback: none
+
+      - name: Verify native and WebAssembly geometry parity
+        env:
+          CARGO_TARGET_WASM32_WASIP1_RUNNER: wasmtime
+        run: cargo +stable test -p stack-engine --lib --target wasm32-wasip1 geometry_matches_cross_target_numeric_fixture --locked
+
       - name: Run Clippy
         run: cargo +stable clippy --workspace --all-targets --all-features --locked -- -D warnings
 
@@ -60,6 +81,8 @@ jobs:
           fallback: none
 
       - name: Enforce unit-test coverage
+        env:
+          STACK_SPECIFICATION_DIR: ${{ github.workspace }}/.stack-specification
         run: cargo +stable llvm-cov --lib --workspace --all-features --locked --fail-under-lines 95 --fail-under-functions 95 --fail-under-regions 95
 
   msrv:
