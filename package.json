@@ -1,0 +1,17 @@
+{
+  "name": "stack-engine-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/engine"
+  ],
+  "scripts": {
+    "build:wasm": "bash scripts/build-wasm.sh",
+    "pack:check": "node scripts/validate-npm-pack.mjs",
+    "test": "node --test tests/wasm.test.mjs && node scripts/validate-wasm-package.mjs",
+    "typecheck": "tsc --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}

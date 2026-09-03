@@ -1,0 +1,30 @@
+[package]
+name = "stack-engine-wasm"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Browser WebAssembly adapter for Stack diagram operations"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde.workspace = true
+stack-engine = { path = "../stack-engine" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = { version = "=0.3.104", default-features = false }
+wasm-bindgen = "=0.2.127"
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints.clippy]
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+unreachable = "deny"
+unwrap_used = "deny"
