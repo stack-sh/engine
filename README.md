@@ -2,11 +2,11 @@
 
 `stack-sh/engine` is the pure Rust execution engine for Stack architecture diagrams.
 
-The first workspace increment provides canonical Stack source formatting. Layout, theme resolution, rendering, and WebAssembly adapters remain planned work.
+The workspace now provides canonical Stack source formatting and the pure `stack-engine` operation facade. Layout, theme resolution, SVG rendering, and WebAssembly adapters remain planned work.
 
 ## Planned workspace
 
-- `stack-engine`: compilation orchestration, theme resolution, deterministic layout, validation beyond the compiler stage, and standalone SVG rendering;
+- `stack-engine`: implemented operation/output boundary plus planned theme resolution, deterministic layout, validation beyond the compiler stage, and standalone SVG rendering;
 - `stack-formatter`: comment-preserving canonical formatting for Stack source files (implemented);
 - a WebAssembly adapter exposing the same pure operations to browser consumers.
 
@@ -32,9 +32,13 @@ cargo doc --workspace --no-deps
 
 `stack-formatter` is pure and accepts source bytes or UTF-8 text. Lexical and syntax errors return diagnostics without formatted output. Syntactically valid source remains formattable when semantic diagnostics exist.
 
+`stack-engine` exposes byte-oriented `format`, `check`, and reserved `render` methods through an engine bound to the embedded or a caller-provided validated catalog. Every normal output carries engine, authored language, theme catalog version, and theme catalog revision metadata. User-source failures stay in ordered portable diagnostics. Invalid provided catalogs and unavailable pipeline stages use a separate operational-error channel. Compiler-valid rendering remains unavailable until layout and SVG integration land.
+
 ## Architecture
 
 - [`docs/decisions/0001-build-the-formatter-from-compiler-models.md`](./docs/decisions/0001-build-the-formatter-from-compiler-models.md)
+- [`docs/decisions/0002-use-a-pure-versioned-engine-facade.md`](./docs/decisions/0002-use-a-pure-versioned-engine-facade.md)
+- [`docs/dependency-audit.md`](./docs/dependency-audit.md)
 
 ## Licensing
 

@@ -1,0 +1,21 @@
+[package]
+name = "stack-engine"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Pure execution facade for Stack diagram operations"
+
+[dependencies]
+stack-compiler.workspace = true
+stack-formatter.workspace = true
+stack-theme.workspace = true
+
+[lints.clippy]
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+unreachable = "deny"
+unwrap_used = "deny"
