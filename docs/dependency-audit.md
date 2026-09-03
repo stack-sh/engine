@@ -1,14 +1,14 @@
 # Dependency and host-I/O audit
 
-Audit date: 2026-09-03
+Audit date: 2026-09-04
 
 ## Runtime graph
 
 `stack-engine` has three direct dependencies:
 
-- `stack-compiler` at `17a0abe9c35e641761ff08fdf59b29a42828d9fd` for byte decoding, parsing, validation, normalized IR, source maps, and compiler diagnostics;
+- `stack-compiler` at `3d2379483da1edaeb24a26d43743587a4f5bd645` for byte decoding, parsing, validation, normalized IR, source maps, and compiler diagnostics;
 - the workspace-local `stack-formatter` for canonical source output;
-- `stack-theme` at `ed6c500762fc9ccffc8777172ac672a716dcd916` for the embedded core catalog, SVG bytes, deterministic font metrics, catalog version, and catalog revision.
+- `stack-theme` at `d25b883884420adcc124e4c9c786ad92925eae60` for the `0.2.0` embedded core catalog, 12 provider-neutral explicit icons, SVG bytes, deterministic font metrics, catalog version, and catalog revision.
 
 `stack-engine-wasm` adds `serde` for its serializable native parity model and, only on `wasm32`, version-matched `wasm-bindgen` and `js-sys` for the JavaScript ABI, typed-array input, and plain object construction. It does not use `web-sys` or a WASI target.
 

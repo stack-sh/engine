@@ -1,0 +1,11 @@
+stack 1.0
+
+diagram "Core icon" {
+  theme dark
+
+  node gateway "Gateway" {
+    kind service
+    detail "Public API"
+    icon "api"
+  }
+}

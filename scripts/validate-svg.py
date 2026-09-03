@@ -62,6 +62,7 @@ def main() -> None:
     assert snapshots, "no render snapshots found"
     documents = {path.stem: validate(path) for path in snapshots}
     complete = documents["complete-semantics"]
+    explicit_icon = documents["explicit-core-icon"]
     assert values(complete, "data-node-kind") == {
         "actor",
         "client",
@@ -86,6 +87,12 @@ def main() -> None:
         "bidirectional",
         "association",
     }
+    assert values(explicit_icon, "data-icon-id") == {"api"}
+    assert explicit_icon.attrib.get("data-theme-version") == "0.2.0"
+    assert (
+        explicit_icon.attrib.get("data-theme-revision")
+        == "sha256:d3a8a5a9d2100e496af3fd7adf389788f4a77508bf749a108183a2abf8f681e1"
+    )
 
 
 if __name__ == "__main__":

@@ -72,7 +72,7 @@ test("browser diagnostics preserve actionable compiler guidance", () => {
   );
   assert.ok(actionable);
   assert.equal(actionable.render.svg, null);
-  assert.equal(actionable.check.metadata.engineVersion, "0.2.0");
+  assert.equal(actionable.check.metadata.engineVersion, "0.3.0");
   assert.deepEqual(actionable.check.diagnostics[0], {
     code: "STK2002",
     severity: "error",
@@ -85,6 +85,23 @@ test("browser diagnostics preserve actionable compiler guidance", () => {
     help: "Use 'right' for horizontal flow or 'down' for vertical flow.",
     related: [],
   });
+});
+
+test("browser rendering resolves the bundled explicit core icon", () => {
+  const explicitIcon = wasmOutputs().find(
+    ({ name }) => name === "explicit-core-icon-string",
+  );
+  assert.ok(explicitIcon);
+  assert.deepEqual(explicitIcon.check.diagnostics, []);
+  assert.deepEqual(explicitIcon.render.diagnostics, []);
+  assert.equal(explicitIcon.render.metadata.engineVersion, "0.3.0");
+  assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.2.0");
+  assert.equal(
+    explicitIcon.render.metadata.themeCatalogRevision,
+    "sha256:d3a8a5a9d2100e496af3fd7adf389788f4a77508bf749a108183a2abf8f681e1",
+  );
+  assert.match(explicitIcon.render.svg, /data-icon-id="api"/);
+  assert.doesNotMatch(explicitIcon.render.svg, /data-icon-id="kind-external"/);
 });
 
 test("the JavaScript boundary rejects unsupported source values consistently", () => {

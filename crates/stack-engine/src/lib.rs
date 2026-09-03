@@ -521,13 +521,63 @@ mod tests {
                 output.metadata.language_version,
                 Some(LanguageVersion { major: 1, minor: 0 })
             );
-            assert_eq!(output.metadata.theme_catalog_version, "0.1.0");
+            assert_eq!(output.metadata.theme_catalog_version, "0.2.0");
             assert_eq!(
                 output.metadata.theme_catalog_revision,
                 stack_theme::CATALOG_REVISION
             );
             assert_eq!(Engine::default().check(VALID_SOURCE), Ok(output));
         }
+    }
+
+    #[test]
+    fn bundled_catalog_resolves_explicit_core_icons() -> Result<(), Box<dyn Error>> {
+        let expected_icons = [
+            ("api", "Application programming interface"),
+            ("web", "Web application"),
+            ("mobile", "Mobile application"),
+            ("desktop", "Desktop application"),
+            ("server", "Server host"),
+            ("container", "Application container"),
+            ("cluster", "Compute cluster"),
+            ("cloud", "Cloud environment"),
+            ("scheduler", "Scheduled execution"),
+            ("webhook", "Webhook endpoint"),
+            ("identity", "Identity and access"),
+            ("observability", "Observability system"),
+        ];
+        let catalog = stack_theme::catalog();
+        assert_eq!(catalog.catalog_version, "0.2.0");
+        assert_eq!(
+            stack_theme::CATALOG_REVISION,
+            "sha256:d3a8a5a9d2100e496af3fd7adf389788f4a77508bf749a108183a2abf8f681e1"
+        );
+        for theme in &catalog.themes {
+            for (identifier, subject) in expected_icons {
+                let icon = theme
+                    .icons
+                    .iter()
+                    .find(|icon| icon.id == identifier)
+                    .ok_or("core icon is unavailable in a bundled theme")?;
+                assert_eq!(icon.subject, subject);
+                assert_eq!(icon.asset.path, format!("assets/core/{identifier}.svg"));
+            }
+        }
+
+        let source = b"stack 1.0 diagram \"Core icon\" { theme dark node gateway \"Gateway\" { kind service detail \"Public API\" icon \"api\" } }";
+        let checked = Engine::bundled().check(source)?;
+        let rendered = Engine::bundled().render(source)?;
+        assert!(checked.diagnostics.is_empty());
+        assert!(rendered.diagnostics.is_empty());
+        assert_eq!(rendered.metadata.theme_catalog_version, "0.2.0");
+        assert_eq!(
+            rendered.metadata.theme_catalog_revision,
+            stack_theme::CATALOG_REVISION
+        );
+        let svg = rendered.svg.ok_or("explicit icon render produced no SVG")?;
+        assert!(svg.contains("data-icon-id=\"api\""));
+        assert!(!svg.contains("data-icon-id=\"kind-external\""));
+        Ok(())
     }
 
     #[test]

@@ -14,6 +14,13 @@
     }
   },
   {
+    "name": "explicit-core-icon-string",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0\ndiagram \"Core icon\" {\n  theme dark\n  node gateway \"Gateway\" {\n    kind service\n    detail \"Public API\"\n    icon \"api\"\n  }\n}\n"
+    }
+  },
+  {
     "name": "actionable-error-string",
     "input": {
       "kind": "string",

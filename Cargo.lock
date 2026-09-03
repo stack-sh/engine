@@ -116,7 +116,7 @@ source = "git+https://github.com/stack-sh/compiler.git?rev=3d2379483da1edaeb24a2
 
 [[package]]
 name = "stack-engine"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "stack-compiler",
  "stack-formatter",
@@ -125,7 +125,7 @@ dependencies = [
 
 [[package]]
 name = "stack-engine-wasm"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "js-sys",
  "serde",
@@ -144,8 +144,8 @@ dependencies = [
 
 [[package]]
 name = "stack-theme"
-version = "0.1.0"
-source = "git+https://github.com/stack-sh/theme.git?rev=ed6c500762fc9ccffc8777172ac672a716dcd916#ed6c500762fc9ccffc8777172ac672a716dcd916"
+version = "0.2.0"
+source = "git+https://github.com/stack-sh/theme.git?rev=d25b883884420adcc124e4c9c786ad92925eae60#d25b883884420adcc124e4c9c786ad92925eae60"
 dependencies = [
  "serde",
  "serde_json",

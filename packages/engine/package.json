@@ -1,6 +1,6 @@
 {
   "name": "@stack-sh/engine",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Browser WebAssembly adapter for Stack diagram operations",
   "type": "module",
   "license": "Apache-2.0",
