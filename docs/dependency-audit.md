@@ -10,7 +10,7 @@ Audit date: 2026-09-03
 - the workspace-local `stack-formatter` for canonical source output;
 - `stack-theme` at `ed6c500762fc9ccffc8777172ac672a716dcd916` for the embedded core catalog, SVG bytes, deterministic font metrics, catalog version, and catalog revision.
 
-The resolved normal dependency graph adds only the `serde` and `serde_json` graph required by `stack-theme`. Exact versions and licenses are recorded in [`THIRD_PARTY_LICENSES.md`](../THIRD_PARTY_LICENSES.md) and pinned in `Cargo.lock`. No layout, SVG, filesystem, network, asynchronous runtime, random, clock, locale, DOM, or platform-font dependency is present.
+The resolved normal dependency graph adds only the `serde` and `serde_json` graph required by `stack-theme`. Exact versions and licenses are recorded in [`THIRD_PARTY_LICENSES.md`](../THIRD_PARTY_LICENSES.md) and pinned in `Cargo.lock`. Scene layout is implemented locally with fixed-width integer arithmetic and versioned catalog metrics. No layout, SVG, filesystem, network, asynchronous runtime, random, clock, locale, DOM, or platform-font dependency is present.
 
 ## Runtime access boundary
 
@@ -27,5 +27,8 @@ Tests and CI may read the pinned specification checkout and invoke toolchains. T
 cargo tree -p stack-engine --edges normal --locked
 cargo metadata --format-version 1 --locked
 cargo test --workspace --locked
+STACK_SPECIFICATION_DIR=../specification cargo test -p stack-engine --features conformance canonical_complete_semantics_matches_snapshot --locked
+cargo build -p stack-engine --target wasm32-unknown-unknown --locked
+CARGO_TARGET_WASM32_WASIP1_RUNNER=wasmtime cargo test -p stack-engine --lib --target wasm32-wasip1 geometry_matches_cross_target_numeric_fixture --locked
 cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 ```

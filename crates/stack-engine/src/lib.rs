@@ -24,6 +24,8 @@ use std::fmt;
 
 use stack_compiler::diagnostic as compiler_diagnostic;
 
+mod scene;
+
 /// Version of the Rust engine facade.
 pub const ENGINE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -109,6 +111,9 @@ impl<'catalog> Engine<'catalog> {
     /// Runs the currently available compiler stages without producing SVG.
     pub fn check(&self, source: &[u8]) -> OperationResult<CheckOutput> {
         let compiled = stack_compiler::compile_bytes(source);
+        if let Some(diagram) = &compiled.diagram {
+            self.validate_scene(diagram)?;
+        }
         Ok(CheckOutput {
             diagnostics: portable_diagnostics(compiled.diagnostics),
             metadata: self.metadata(declared_language_version(source)),
@@ -133,6 +138,10 @@ impl<'catalog> Engine<'catalog> {
             });
         }
 
+        if let Some(diagram) = &compiled.diagram {
+            self.validate_scene(diagram)?;
+        }
+
         Err(OperationalError::PipelineUnavailable {
             operation: Operation::Render,
         })
@@ -145,6 +154,20 @@ impl<'catalog> Engine<'catalog> {
             theme_catalog_version: self.catalog.catalog_version.clone(),
             theme_catalog_revision: self.catalog_revision.to_owned(),
         }
+    }
+
+    fn validate_scene(&self, diagram: &stack_compiler::ir::Diagram) -> OperationResult<()> {
+        let scene = scene::layout(diagram, self.catalog).map_err(|error| {
+            OperationalError::InvalidIntermediateRepresentation {
+                reason: error.reason(),
+            }
+        })?;
+        if !scene.geometry_is_valid() {
+            return Err(OperationalError::InvalidIntermediateRepresentation {
+                reason: "layout produced invalid containment or overlap geometry",
+            });
+        }
+        Ok(())
     }
 }
 
@@ -178,6 +201,11 @@ pub enum OperationalError {
         /// Stable explanation of the violated catalog invariant.
         reason: &'static str,
     },
+    /// Compiler or layout data violates an invariant required by pure execution.
+    InvalidIntermediateRepresentation {
+        /// Stable explanation of the violated invariant.
+        reason: &'static str,
+    },
     /// The requested pure stage has not landed in this engine revision.
     PipelineUnavailable {
         /// Operation whose downstream stages are unavailable.
@@ -189,6 +217,9 @@ impl fmt::Display for OperationalError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidCatalog { reason } => write!(formatter, "invalid theme catalog: {reason}"),
+            Self::InvalidIntermediateRepresentation { reason } => {
+                write!(formatter, "invalid intermediate representation: {reason}")
+            }
             Self::PipelineUnavailable { operation } => {
                 write!(formatter, "{operation} pipeline is unavailable")
             }
@@ -547,6 +578,10 @@ mod tests {
             }
             .to_string(),
             "render pipeline is unavailable"
+        );
+        assert_eq!(
+            OperationalError::InvalidIntermediateRepresentation { reason: "reason" }.to_string(),
+            "invalid intermediate representation: reason"
         );
     }
 }
