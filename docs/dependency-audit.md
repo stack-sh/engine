@@ -27,8 +27,8 @@ Tests and CI may read the pinned specification checkout and invoke toolchains. T
 cargo tree -p stack-engine --edges normal --locked
 cargo metadata --format-version 1 --locked
 cargo test --workspace --locked
-STACK_SPECIFICATION_DIR=../specification cargo test -p stack-engine --features conformance canonical_complete_semantics_matches_snapshot --locked
+STACK_SPECIFICATION_DIR=../specification cargo test -p stack-engine --features conformance --locked
 cargo build -p stack-engine --target wasm32-unknown-unknown --locked
-CARGO_TARGET_WASM32_WASIP1_RUNNER=wasmtime cargo test -p stack-engine --lib --target wasm32-wasip1 geometry_matches_cross_target_numeric_fixture --locked
+CARGO_TARGET_WASM32_WASIP1_RUNNER=wasmtime cargo test -p stack-engine --lib --target wasm32-wasip1 cross_target_numeric_fixture --locked
 cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 ```

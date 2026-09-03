@@ -7,6 +7,8 @@ use std::fmt;
 use stack_compiler::ir::{Diagram, Direction, ElementId, Group, Layout, Node};
 use stack_theme::{Catalog, FontMetrics, Theme, Typography};
 
+use crate::routing::{self, Point, SceneEdge};
+
 const NODE_MIN_WIDTH: i64 = 160_000;
 const NODE_MIN_HEIGHT: i64 = 72_000;
 const NODE_HORIZONTAL_PADDING: i64 = 20_000;
@@ -73,6 +75,14 @@ pub(crate) struct Scene {
     pub(crate) direction: SceneDirection,
     pub(crate) nodes: Vec<SceneNode>,
     pub(crate) groups: Vec<SceneGroup>,
+    pub(crate) edges: Vec<SceneEdge>,
+    pub(crate) unsatisfied_orders: Vec<SceneScope>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum SceneScope {
+    Diagram,
+    Group(String),
 }
 
 impl Scene {
@@ -148,6 +158,10 @@ impl Scene {
             }
         }
 
+        if !routing::geometry_is_valid(&self.edges, &self.nodes, self.bounds) {
+            return false;
+        }
+
         true
     }
 
@@ -168,6 +182,7 @@ pub(crate) enum SceneError {
     MissingTheme,
     MissingFontMetrics,
     InvalidIntermediateRepresentation,
+    EdgeRoutingFailed,
 }
 
 impl SceneError {
@@ -178,6 +193,7 @@ impl SceneError {
             Self::InvalidIntermediateRepresentation => {
                 "normalized containment references are inconsistent"
             }
+            Self::EdgeRoutingFailed => "an edge could not be routed outside node interiors",
         }
     }
 }
@@ -302,6 +318,9 @@ pub(crate) fn layout(diagram: &Diagram, catalog: &Catalog) -> Result<Scene, Scen
             })
         })
         .collect::<Result<Vec<_>, SceneError>>()?;
+    let edges = routing::route(&diagram.edges, &nodes, bounds)
+        .map_err(|_| SceneError::EdgeRoutingFailed)?;
+    let unsatisfied_orders = unsatisfied_orders(diagram, &nodes, &groups)?;
 
     Ok(Scene {
         bounds,
@@ -309,7 +328,82 @@ pub(crate) fn layout(diagram: &Diagram, catalog: &Catalog) -> Result<Scene, Scen
         direction: root.direction,
         nodes,
         groups,
+        edges,
+        unsatisfied_orders,
     })
+}
+
+fn unsatisfied_orders(
+    diagram: &Diagram,
+    nodes: &[SceneNode],
+    groups: &[SceneGroup],
+) -> Result<Vec<SceneScope>, SceneError> {
+    let mut unsatisfied = Vec::new();
+    if let Some(layout) = &diagram.layout {
+        if let Some(order) = &layout.order {
+            let direction = resolve_direction(diagram.children.len(), layout.direction);
+            if !order_is_satisfied(order, direction, nodes, groups) {
+                unsatisfied.push(SceneScope::Diagram);
+            }
+        }
+    }
+
+    for group in &diagram.groups {
+        let Some(layout) = &group.layout else {
+            continue;
+        };
+        let Some(order) = &layout.order else {
+            continue;
+        };
+        let direction = groups
+            .iter()
+            .find(|scene_group| scene_group.id == group.id)
+            .map(|scene_group| scene_group.direction)
+            .ok_or(SceneError::InvalidIntermediateRepresentation)?;
+        if !order_is_satisfied(order, direction, nodes, groups) {
+            unsatisfied.push(SceneScope::Group(group.id.clone()));
+        }
+    }
+    Ok(unsatisfied)
+}
+
+fn order_is_satisfied(
+    order: &[String],
+    direction: SceneDirection,
+    nodes: &[SceneNode],
+    groups: &[SceneGroup],
+) -> bool {
+    order.windows(2).all(|pair| {
+        match (
+            element_rect(&pair[0], nodes, groups),
+            element_rect(&pair[1], nodes, groups),
+        ) {
+            (Some(left), Some(right)) => {
+                cross_axis_position(left, direction) < cross_axis_position(right, direction)
+            }
+            _ => false,
+        }
+    })
+}
+
+fn element_rect(identifier: &str, nodes: &[SceneNode], groups: &[SceneGroup]) -> Option<Rect> {
+    nodes
+        .iter()
+        .find(|node| node.id == identifier)
+        .map(|node| node.rect)
+        .or_else(|| {
+            groups
+                .iter()
+                .find(|group| group.id == identifier)
+                .map(|group| group.rect)
+        })
+}
+
+fn cross_axis_position(rect: Rect, direction: SceneDirection) -> i64 {
+    match direction {
+        SceneDirection::Right => 2 * rect.y + rect.height,
+        SceneDirection::Down => 2 * rect.x + rect.width,
+    }
 }
 
 fn selected_theme<'a>(diagram: &Diagram, catalog: &'a Catalog) -> Result<&'a Theme, SceneError> {
@@ -363,12 +457,6 @@ fn group_size(
         width: (content.width + 2 * GROUP_PADDING).max(label_width + 2 * GROUP_PADDING),
         height: content.height + 2 * GROUP_PADDING + label_height + GROUP_LABEL_GAP,
     }
-}
-
-#[derive(Debug, Clone, Copy)]
-struct Point {
-    x: i64,
-    y: i64,
 }
 
 struct Placer<'a> {
@@ -865,6 +953,10 @@ mod tests {
             SceneError::InvalidIntermediateRepresentation.to_string(),
             "normalized containment references are inconsistent"
         );
+        assert_eq!(
+            SceneError::EdgeRoutingFailed.to_string(),
+            "an edge could not be routed outside node interiors"
+        );
         Ok(())
     }
 
@@ -880,6 +972,31 @@ mod tests {
         let actual = scene_snapshot(&scene);
         let expected = include_str!("../tests/snapshots/complete-semantics.scene.txt");
         assert_eq!(actual, expected);
+        Ok(())
+    }
+
+    #[cfg(feature = "conformance")]
+    #[test]
+    fn canonical_examples_produce_valid_routed_scenes() -> Result<(), Box<dyn Error>> {
+        let specification = std::env::var("STACK_SPECIFICATION_DIR")?;
+        let examples_root = std::path::Path::new(&specification).join("examples");
+        let mut examples = std::fs::read_dir(&examples_root)?.collect::<Result<Vec<_>, _>>()?;
+        examples.sort_by_key(|entry| entry.file_name());
+        if examples.is_empty() {
+            return Err(format!("no examples found in {}", examples_root.display()).into());
+        }
+
+        for entry in examples {
+            let path = entry.path();
+            if path.extension().and_then(|extension| extension.to_str()) != Some("stack") {
+                continue;
+            }
+            let source = std::fs::read(&path)?;
+            let scene = scene_from(&source)?;
+            if !scene.geometry_is_valid() {
+                return Err(format!("{} produced invalid scene geometry", path.display()).into());
+            }
+        }
         Ok(())
     }
 
@@ -922,6 +1039,29 @@ mod tests {
                 node.rect.y,
                 node.rect.width,
                 node.rect.height
+            ));
+        }
+        for edge in &scene.edges {
+            let path = edge
+                .path
+                .iter()
+                .map(|point| format!("{},{}", point.x, point.y))
+                .collect::<Vec<_>>()
+                .join(";");
+            output.push_str(&format!(
+                "edge|{}|{}|direction={:?}|kind={:?}|label={}|markers={:?},{:?}|anchor={}|path={}\n",
+                edge.from,
+                edge.to,
+                edge.direction,
+                edge.kind,
+                edge.label.as_deref().unwrap_or("-"),
+                edge.start_marker,
+                edge.end_marker,
+                edge.label_anchor.map_or_else(
+                    || "-".to_owned(),
+                    |point| format!("{},{}", point.x, point.y)
+                ),
+                path
             ));
         }
         output
