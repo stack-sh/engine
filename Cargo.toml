@@ -1,0 +1,12 @@
+[workspace]
+members = ["crates/stack-formatter"]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.85"
+license = "Apache-2.0"
+repository = "https://github.com/stack-sh/engine"
+
+[workspace.dependencies]
+stack-compiler = { git = "https://github.com/stack-sh/compiler.git", rev = "17a0abe9c35e641761ff08fdf59b29a42828d9fd" }

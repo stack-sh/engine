@@ -2,12 +2,12 @@
 
 `stack-sh/engine` is the pure Rust execution engine for Stack architecture diagrams.
 
-This repository currently contains only its repository foundation. Its crates and public APIs will be introduced incrementally after the compiler, formatter, and theme contracts they depend on are stable.
+The first workspace increment provides canonical Stack source formatting. Layout, theme resolution, rendering, and WebAssembly adapters remain planned work.
 
 ## Planned workspace
 
 - `stack-engine`: compilation orchestration, theme resolution, deterministic layout, validation beyond the compiler stage, and standalone SVG rendering;
-- `stack-formatter`: comment-preserving canonical formatting for Stack source files;
+- `stack-formatter`: comment-preserving canonical formatting for Stack source files (implemented);
 - a WebAssembly adapter exposing the same pure operations to browser consumers.
 
 The native CLI will link the Rust engine directly. Web clients will use the WASM adapter. Shared fixtures will verify that both targets produce equivalent diagnostics, formatted source, and SVG output.
@@ -20,7 +20,21 @@ CLI filesystem behavior, process exit codes, user authentication, billing, entit
 
 ## Development
 
-Repository checks currently validate the foundation files on every push and pull request. Rust formatting, linting, tests, target builds, and WASM package validation will be added with the first workspace increment.
+The workspace uses Rust 2024 with Rust 1.85 as its minimum supported version. Run:
+
+```sh
+cargo test --workspace
+STACK_SPECIFICATION_DIR=../specification cargo test -p stack-formatter --features conformance --test conformance
+cargo fmt --check
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo doc --workspace --no-deps
+```
+
+`stack-formatter` is pure and accepts source bytes or UTF-8 text. Lexical and syntax errors return diagnostics without formatted output. Syntactically valid source remains formattable when semantic diagnostics exist.
+
+## Architecture
+
+- [`docs/decisions/0001-build-the-formatter-from-compiler-models.md`](./docs/decisions/0001-build-the-formatter-from-compiler-models.md)
 
 ## Licensing
 
