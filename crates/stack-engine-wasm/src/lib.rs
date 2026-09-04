@@ -90,6 +90,12 @@ pub struct ProviderNoticeIcon {
     pub id: String,
     /// Official provider product name.
     pub product_name: String,
+    /// Rights-owner source for this brand icon, when the archive is multi-brand.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub brand_source_url: Option<String>,
+    /// Rights-owner usage guidelines for this brand icon, when available.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub brand_guidelines_url: Option<String>,
     /// Pack-local source ID, or `primary` for the primary source.
     pub source_id: String,
 }
@@ -347,6 +353,8 @@ impl From<stack_engine::ProviderNoticeIcon> for ProviderNoticeIcon {
         Self {
             id: icon.id,
             product_name: icon.product_name,
+            brand_source_url: icon.brand_source_url,
+            brand_guidelines_url: icon.brand_guidelines_url,
             source_id: icon.source_id,
         }
     }
@@ -504,6 +512,8 @@ export interface RenderResult {
 export interface ProviderNoticeIcon {
   readonly id: string;
   readonly productName: string;
+  readonly brandSourceUrl?: string;
+  readonly brandGuidelinesUrl?: string;
   readonly sourceId: string;
 }
 
@@ -698,6 +708,16 @@ fn provider_notices_to_js(notices: Vec<ProviderNotice>) -> Result<JsValue, JsVal
             let icon_item = Object::new();
             set(&icon_item, "id", icon.id.into())?;
             set(&icon_item, "productName", icon.product_name.into())?;
+            if let Some(brand_source_url) = icon.brand_source_url {
+                set(&icon_item, "brandSourceUrl", brand_source_url.into())?;
+            }
+            if let Some(brand_guidelines_url) = icon.brand_guidelines_url {
+                set(
+                    &icon_item,
+                    "brandGuidelinesUrl",
+                    brand_guidelines_url.into(),
+                )?;
+            }
             set(&icon_item, "sourceId", icon.source_id.into())?;
             icons.push(&icon_item);
         }

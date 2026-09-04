@@ -191,6 +191,8 @@ impl<'catalog> Resources<'catalog> {
                 notices[notice_index].icons.push(ProviderNoticeIcon {
                     id: resolved.icon.id.clone(),
                     product_name: resolved.icon.product_name.clone(),
+                    brand_source_url: resolved.icon.brand_source_url.clone(),
+                    brand_guidelines_url: resolved.icon.brand_guidelines_url.clone(),
                     source_id: resolved
                         .icon
                         .asset

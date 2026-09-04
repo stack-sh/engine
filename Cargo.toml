@@ -15,4 +15,4 @@ serde_json = "=1.0.151"
 sha2 = "=0.11.0"
 stack-compiler = { git = "https://github.com/stack-sh/compiler.git", rev = "4a18fac42afc2256a1bb3a6ff13d12d732a391e7" }
 stack-formatter = { path = "crates/stack-formatter" }
-stack-theme = { git = "https://github.com/stack-sh/theme.git", rev = "c571e6cea7901706799abab70d8ff961d72db418" }
+stack-theme = { git = "https://github.com/stack-sh/theme.git", rev = "0fe5e7dfdf26801d75549f34db32ec5c0d48e7e3" }

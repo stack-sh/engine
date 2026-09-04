@@ -467,6 +467,10 @@ pub struct ProviderNoticeIcon {
     pub id: String,
     /// Official provider product name.
     pub product_name: String,
+    /// Rights-owner source for this brand icon, when the archive is multi-brand.
+    pub brand_source_url: Option<String>,
+    /// Rights-owner usage guidelines for this brand icon, when available.
+    pub brand_guidelines_url: Option<String>,
     /// Pack-local source ID, or `primary` for the primary source.
     pub source_id: String,
 }

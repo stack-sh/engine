@@ -219,6 +219,14 @@ fn validate_manifest_boundary(manifest: &ProviderPackManifest) -> OperationResul
             || !valid_sha256(&icon.asset.original_sha256)
             || !valid_sha256(&icon.asset.processed_sha256)
             || icon
+                .brand_source_url
+                .as_deref()
+                .is_some_and(|url| !valid_https_url(url))
+            || icon
+                .brand_guidelines_url
+                .as_deref()
+                .is_some_and(|url| !valid_https_url(url))
+            || icon
                 .asset
                 .source_id
                 .as_deref()
@@ -239,6 +247,10 @@ fn valid_source(source: &ProviderPackSource) -> bool {
         && !source.page_url.is_empty()
         && !source.terms_url.is_empty()
         && !source.release.is_empty()
+}
+
+fn valid_https_url(value: &str) -> bool {
+    value.starts_with("https://") && !value.bytes().any(|byte| byte.is_ascii_whitespace())
 }
 
 fn validate_assets(
@@ -590,6 +602,9 @@ mod tests {
                 source: input.manifest.source.clone(),
             });
         input.manifest.icons[0].asset.source_id = Some("categories".to_owned());
+        input.manifest.icons[0].brand_source_url = Some("https://example.com/brand".to_owned());
+        input.manifest.icons[0].brand_guidelines_url =
+            Some("https://example.com/guidelines".to_owned());
         let pack = ProviderPack::new(
             input.manifest,
             input
@@ -606,6 +621,12 @@ mod tests {
         assert_eq!(output.provider_notices[0].sources.len(), 2);
         assert_eq!(output.provider_notices[0].sources[1].id, "categories");
         assert_eq!(output.provider_notices[0].icons[0].source_id, "categories");
+        assert_eq!(
+            output.provider_notices[0].icons[0]
+                .brand_guidelines_url
+                .as_deref(),
+            Some("https://example.com/guidelines")
+        );
         Ok(())
     }
 

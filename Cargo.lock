@@ -229,7 +229,7 @@ dependencies = [
 [[package]]
 name = "stack-theme"
 version = "0.5.0"
-source = "git+https://github.com/stack-sh/theme.git?rev=c571e6cea7901706799abab70d8ff961d72db418#c571e6cea7901706799abab70d8ff961d72db418"
+source = "git+https://github.com/stack-sh/theme.git?rev=0fe5e7dfdf26801d75549f34db32ec5c0d48e7e3#0fe5e7dfdf26801d75549f34db32ec5c0d48e7e3"
 dependencies = [
  "serde",
  "serde_json",
