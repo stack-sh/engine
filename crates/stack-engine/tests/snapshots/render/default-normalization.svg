@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="408" height="174.2" viewBox="0 0 408000 174200" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.5.0" data-theme-id="default" data-theme-version="0.4.0" data-theme-revision="sha256:9cb3de8b504acbf22c93cea5fbea66be50f38734dc1dee18b9cab7084082cc1f">
+<svg xmlns="http://www.w3.org/2000/svg" width="408" height="174.2" viewBox="0 0 408000 174200" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.6.0" data-theme-id="default" data-theme-version="0.5.0" data-theme-revision="sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53">
   <title id="stack-title">Default normalization</title>
   <desc id="stack-description">Architecture diagram with 2 nodes, 0 groups, and 1 relationship.</desc>
-  <metadata>stack-engine 0.5.0; language 1.0; theme 0.4.0 at sha256:9cb3de8b504acbf22c93cea5fbea66be50f38734dc1dee18b9cab7084082cc1f</metadata>
+  <metadata>stack-engine 0.6.0; language 1.0; theme 0.5.0 at sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53</metadata>
   <rect x="0" y="0" width="408000" height="174200" fill="#F3F6FA"/>
   <defs>
     <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7000" markerHeight="7000" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">

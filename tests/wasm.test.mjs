@@ -81,7 +81,7 @@ test("browser diagnostics preserve actionable compiler guidance", () => {
   );
   assert.ok(actionable);
   assert.equal(actionable.render.svg, null);
-  assert.equal(actionable.check.metadata.engineVersion, "0.5.0");
+  assert.equal(actionable.check.metadata.engineVersion, "0.6.0");
   assert.deepEqual(actionable.check.diagnostics[0], {
     code: "STK2002",
     severity: "error",
@@ -103,11 +103,11 @@ test("browser rendering resolves the bundled explicit core icon", () => {
   assert.ok(explicitIcon);
   assert.deepEqual(explicitIcon.check.diagnostics, []);
   assert.deepEqual(explicitIcon.render.diagnostics, []);
-  assert.equal(explicitIcon.render.metadata.engineVersion, "0.5.0");
-  assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.4.0");
+  assert.equal(explicitIcon.render.metadata.engineVersion, "0.6.0");
+  assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.5.0");
   assert.equal(
     explicitIcon.render.metadata.themeCatalogRevision,
-    "sha256:9cb3de8b504acbf22c93cea5fbea66be50f38734dc1dee18b9cab7084082cc1f",
+    "sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53",
   );
   assert.match(explicitIcon.render.svg, /data-icon-id="gateway"/);
   assert.doesNotMatch(explicitIcon.render.svg, /data-icon-id="kind-external"/);
@@ -125,8 +125,18 @@ test("browser rendering resolves local provider packs with native provenance", (
   assert.match(rendered.svg, /fill="#4285f4"/);
   assert.equal(rendered.providerNotices.length, 1);
   assert.equal(rendered.providerNotices[0].providerId, "example");
+  assert.deepEqual(rendered.providerNotices[0].sources, [
+    {
+      id: "primary",
+      pageUrl: "https://example.com/icons",
+      release: "fixture-1",
+      archiveSha256:
+        "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      termsUrl: "https://example.com/terms",
+    },
+  ]);
   assert.deepEqual(rendered.providerNotices[0].icons, [
-    { id: "example:storage", productName: "Example Storage" },
+    { id: "example:storage", productName: "Example Storage", sourceId: "primary" },
   ]);
   assert.match(rendered.providerNotices[0].packRevision, /^sha256:[0-9a-f]{64}$/);
 });

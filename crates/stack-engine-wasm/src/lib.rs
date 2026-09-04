@@ -70,6 +70,8 @@ pub struct ProviderNotice {
     pub archive_sha256: String,
     /// Provider terms URL.
     pub terms_url: String,
+    /// Every audited archive that contributed to this pack.
+    pub sources: Vec<ProviderNoticeSource>,
     /// User-visible attribution.
     pub attribution: String,
     /// User-visible terms summary.
@@ -88,6 +90,24 @@ pub struct ProviderNoticeIcon {
     pub id: String,
     /// Official provider product name.
     pub product_name: String,
+    /// Pack-local source ID, or `primary` for the primary source.
+    pub source_id: String,
+}
+
+/// JavaScript-facing audited provider source.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProviderNoticeSource {
+    /// Pack-local source ID.
+    pub id: String,
+    /// Official source page.
+    pub page_url: String,
+    /// Audited upstream release identifier.
+    pub release: String,
+    /// Complete official source archive SHA-256.
+    pub archive_sha256: String,
+    /// Terms reviewed for this source.
+    pub terms_url: String,
 }
 
 #[derive(Deserialize)]
@@ -305,6 +325,11 @@ impl From<stack_engine::ProviderNotice> for ProviderNotice {
             source_release: notice.source_release,
             archive_sha256: notice.archive_sha256,
             terms_url: notice.terms_url,
+            sources: notice
+                .sources
+                .into_iter()
+                .map(ProviderNoticeSource::from)
+                .collect(),
             attribution: notice.attribution,
             terms_summary: notice.terms_summary,
             non_endorsement: notice.non_endorsement,
@@ -322,6 +347,19 @@ impl From<stack_engine::ProviderNoticeIcon> for ProviderNoticeIcon {
         Self {
             id: icon.id,
             product_name: icon.product_name,
+            source_id: icon.source_id,
+        }
+    }
+}
+
+impl From<stack_engine::ProviderNoticeSource> for ProviderNoticeSource {
+    fn from(source: stack_engine::ProviderNoticeSource) -> Self {
+        Self {
+            id: source.id,
+            page_url: source.page_url,
+            release: source.release,
+            archive_sha256: source.archive_sha256,
+            terms_url: source.terms_url,
         }
     }
 }
@@ -466,6 +504,15 @@ export interface RenderResult {
 export interface ProviderNoticeIcon {
   readonly id: string;
   readonly productName: string;
+  readonly sourceId: string;
+}
+
+export interface ProviderNoticeSource {
+  readonly id: string;
+  readonly pageUrl: string;
+  readonly release: string;
+  readonly archiveSha256: string;
+  readonly termsUrl: string;
 }
 
 export interface ProviderNotice {
@@ -476,6 +523,7 @@ export interface ProviderNotice {
   readonly sourceRelease: string;
   readonly archiveSha256: string;
   readonly termsUrl: string;
+  readonly sources: readonly ProviderNoticeSource[];
   readonly attribution: string;
   readonly termsSummary: string;
   readonly nonEndorsement: string;
@@ -631,6 +679,17 @@ fn provider_notices_to_js(notices: Vec<ProviderNotice>) -> Result<JsValue, JsVal
         set(&item, "sourceRelease", notice.source_release.into())?;
         set(&item, "archiveSha256", notice.archive_sha256.into())?;
         set(&item, "termsUrl", notice.terms_url.into())?;
+        let sources = Array::new();
+        for source in notice.sources {
+            let source_item = Object::new();
+            set(&source_item, "id", source.id.into())?;
+            set(&source_item, "pageUrl", source.page_url.into())?;
+            set(&source_item, "release", source.release.into())?;
+            set(&source_item, "archiveSha256", source.archive_sha256.into())?;
+            set(&source_item, "termsUrl", source.terms_url.into())?;
+            sources.push(&source_item);
+        }
+        set(&item, "sources", sources.into())?;
         set(&item, "attribution", notice.attribution.into())?;
         set(&item, "termsSummary", notice.terms_summary.into())?;
         set(&item, "nonEndorsement", notice.non_endorsement.into())?;
@@ -639,6 +698,7 @@ fn provider_notices_to_js(notices: Vec<ProviderNotice>) -> Result<JsValue, JsVal
             let icon_item = Object::new();
             set(&icon_item, "id", icon.id.into())?;
             set(&icon_item, "productName", icon.product_name.into())?;
+            set(&icon_item, "sourceId", icon.source_id.into())?;
             icons.push(&icon_item);
         }
         set(&item, "icons", icons.into())?;

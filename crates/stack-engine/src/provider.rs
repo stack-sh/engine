@@ -7,6 +7,7 @@ use roxmltree::{Document, NodeType};
 use sha2::{Digest, Sha256};
 use stack_theme::{
     ProviderIcon, ProviderPack as ProviderPackManifest, ProviderPackPermittedOutput,
+    ProviderPackSource,
 };
 
 use crate::{OperationResult, OperationalError};
@@ -153,9 +154,16 @@ impl ProviderPack {
 fn validate_manifest_boundary(manifest: &ProviderPackManifest) -> OperationResult<()> {
     let redistribution = &manifest.rights.redistribution;
     let processing = &manifest.rights.processing;
-    if manifest.schema_version != "1.0"
+    if !matches!(manifest.schema_version.as_str(), "1.0" | "1.1")
         || manifest.icons.is_empty()
         || manifest.icons.len() > 10_000
+        || manifest.additional_sources.len() > 8
+        || (manifest.schema_version == "1.0"
+            && (!manifest.additional_sources.is_empty()
+                || manifest
+                    .icons
+                    .iter()
+                    .any(|icon| icon.asset.source_id.is_some())))
         || !manifest.rights.terms_acceptance_required
         || !manifest
             .rights
@@ -178,13 +186,25 @@ fn validate_manifest_boundary(manifest: &ProviderPackManifest) -> OperationResul
         ));
     }
     if !valid_provider_id(&manifest.provider.id)
-        || !valid_sha256(&manifest.source.archive_sha256)
-        || manifest.source.terms_url.is_empty()
+        || !valid_source(&manifest.source)
         || manifest.notice.attribution.is_empty()
         || manifest.notice.terms_summary.is_empty()
         || manifest.notice.non_endorsement.is_empty()
     {
         return Err(invalid_pack("provider pack identity or notice is invalid"));
+    }
+
+    let mut source_ids = BTreeSet::new();
+    for additional in &manifest.additional_sources {
+        if additional.id == "primary"
+            || !valid_provider_id(&additional.id)
+            || !source_ids.insert(additional.id.as_str())
+            || !valid_source(&additional.source)
+        {
+            return Err(invalid_pack(
+                "provider pack contains an invalid or duplicate source",
+            ));
+        }
     }
 
     let prefix = format!("{}:", manifest.provider.id);
@@ -198,6 +218,11 @@ fn validate_manifest_boundary(manifest: &ProviderPackManifest) -> OperationResul
             || !paths.insert(icon.asset.path.as_str())
             || !valid_sha256(&icon.asset.original_sha256)
             || !valid_sha256(&icon.asset.processed_sha256)
+            || icon
+                .asset
+                .source_id
+                .as_deref()
+                .is_some_and(|source_id| !source_ids.contains(source_id))
             || icon.asset.view_box[2] <= 0
             || icon.asset.view_box[3] <= 0
         {
@@ -207,6 +232,13 @@ fn validate_manifest_boundary(manifest: &ProviderPackManifest) -> OperationResul
         }
     }
     Ok(())
+}
+
+fn valid_source(source: &ProviderPackSource) -> bool {
+    valid_sha256(&source.archive_sha256)
+        && !source.page_url.is_empty()
+        && !source.terms_url.is_empty()
+        && !source.release.is_empty()
 }
 
 fn validate_assets(
@@ -437,6 +469,7 @@ mod tests {
     use std::error::Error;
 
     use serde::Deserialize;
+    use stack_theme::ProviderPackAdditionalSource;
 
     use super::*;
     use crate::{Engine, Severity};
@@ -516,7 +549,10 @@ mod tests {
         assert!(svg.contains(packs[0].revision()));
         assert_eq!(first.provider_notices.len(), 1);
         assert_eq!(first.provider_notices[0].provider_id, "example");
+        assert_eq!(first.provider_notices[0].sources.len(), 1);
+        assert_eq!(first.provider_notices[0].sources[0].id, "primary");
         assert_eq!(first.provider_notices[0].icons[0].id, "example:storage");
+        assert_eq!(first.provider_notices[0].icons[0].source_id, "primary");
         assert_eq!(
             first.provider_notices[0].icons[0].product_name,
             "Example Storage"
@@ -538,6 +574,78 @@ mod tests {
                 .ok_or("missing fallback SVG")?
                 .contains("data-icon-id=\"kind-external\"")
         );
+        Ok(())
+    }
+
+    #[test]
+    fn multi_source_pack_validates_and_reports_exact_icon_provenance() -> Result<(), Box<dyn Error>>
+    {
+        let mut input = fixture_input()?;
+        input.manifest.schema_version = "1.1".to_owned();
+        input
+            .manifest
+            .additional_sources
+            .push(ProviderPackAdditionalSource {
+                id: "categories".to_owned(),
+                source: input.manifest.source.clone(),
+            });
+        input.manifest.icons[0].asset.source_id = Some("categories".to_owned());
+        let pack = ProviderPack::new(
+            input.manifest,
+            input
+                .assets
+                .into_iter()
+                .map(|asset| ProviderAsset::new(asset.path, asset.svg))
+                .collect(),
+        )?;
+        let packs = [pack];
+        let output = Engine::with_provider_packs(&packs)?.render(
+            b"stack 1.0 diagram \"Provider\" { node item \"Storage\" { icon \"example:storage\" } }",
+        )?;
+
+        assert_eq!(output.provider_notices[0].sources.len(), 2);
+        assert_eq!(output.provider_notices[0].sources[1].id, "categories");
+        assert_eq!(output.provider_notices[0].icons[0].source_id, "categories");
+        Ok(())
+    }
+
+    #[test]
+    fn multi_source_pack_rejects_duplicate_unknown_and_version_mismatched_sources()
+    -> Result<(), Box<dyn Error>> {
+        let input = fixture_input()?;
+        let assets = input
+            .assets
+            .iter()
+            .map(|asset| ProviderAsset::new(&asset.path, &asset.svg))
+            .collect::<Vec<_>>();
+
+        let mut duplicate = input.manifest.clone();
+        duplicate.schema_version = "1.1".to_owned();
+        duplicate.additional_sources = vec![
+            ProviderPackAdditionalSource {
+                id: "categories".to_owned(),
+                source: duplicate.source.clone(),
+            },
+            ProviderPackAdditionalSource {
+                id: "categories".to_owned(),
+                source: duplicate.source.clone(),
+            },
+        ];
+        assert!(ProviderPack::new(duplicate, assets.clone()).is_err());
+
+        let mut unknown = input.manifest.clone();
+        unknown.schema_version = "1.1".to_owned();
+        unknown.icons[0].asset.source_id = Some("categories".to_owned());
+        assert!(ProviderPack::new(unknown, assets.clone()).is_err());
+
+        let mut version_mismatch = input.manifest;
+        version_mismatch
+            .additional_sources
+            .push(ProviderPackAdditionalSource {
+                id: "categories".to_owned(),
+                source: version_mismatch.source.clone(),
+            });
+        assert!(ProviderPack::new(version_mismatch, assets).is_err());
         Ok(())
     }
 
