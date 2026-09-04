@@ -87,11 +87,11 @@ def main() -> None:
         "bidirectional",
         "association",
     }
-    assert values(explicit_icon, "data-icon-id") == {"api"}
-    assert explicit_icon.attrib.get("data-theme-version") == "0.3.0"
+    assert values(explicit_icon, "data-icon-id") == {"gateway"}
+    assert explicit_icon.attrib.get("data-theme-version") == "0.4.0"
     assert (
         explicit_icon.attrib.get("data-theme-revision")
-        == "sha256:e4eaad0813fcfef4a203e861909ff38833270646f9097155974c7c92108c5b1e"
+        == "sha256:9cb3de8b504acbf22c93cea5fbea66be50f38734dc1dee18b9cab7084082cc1f"
     )
 
 

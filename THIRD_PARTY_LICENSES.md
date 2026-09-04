@@ -5,7 +5,7 @@
 | Component | Revision | License | Source | Notes |
 | --- | --- | --- | --- | --- |
 | `stack-compiler` | `4a18fac42afc2256a1bb3a6ff13d12d732a391e7` | Apache-2.0 | <https://github.com/stack-sh/compiler> | Unmodified Rust dependency; its license and notice obligations apply to distributions that include it. |
-| `stack-theme` | `5dbe41326370260cfc6b72d4aab4470318d66dab` | Apache-2.0 | <https://github.com/stack-sh/theme> | Unmodified Rust dependency with repository-authored core assets and the asset-free provider-pack contract. |
+| `stack-theme` | `2347315e6e86ab9d2708e05fd3f9b5f3d87e1241` | Apache-2.0 | <https://github.com/stack-sh/theme> | Unmodified Rust dependency with repository-authored core assets and the asset-free provider-pack contract. |
 | `roxmltree` | `0.21.1` | MIT OR Apache-2.0 | <https://github.com/RazrFalcon/roxmltree> | Parses caller-owned processed provider SVG before allowlisted in-memory embedding. |
 | `sha2`, `digest`, `block-buffer`, `crypto-common`, `hybrid-array`, `const-oid`, `typenum` | `0.11.0`, `0.11.3`, `0.12.1`, `0.2.2`, `0.4.14`, `0.10.2`, `1.20.1` | MIT OR Apache-2.0 | <https://github.com/RustCrypto> | Verifies provider asset hashes and computes deterministic provider-pack revisions. |
 | `libc` / `cpufeatures` | `0.2.189`, `0.3.1` | MIT OR Apache-2.0 | <https://github.com/rust-lang/libc>, <https://github.com/RustCrypto/utils> | Target-specific SHA-256 acceleration support. |
@@ -35,6 +35,6 @@
 | `wasm-bindgen-cli` | `0.2.127` | MIT OR Apache-2.0 | <https://github.com/wasm-bindgen/wasm-bindgen> | Version-matched build tool; not shipped in the npm package. |
 | `typescript` | `7.0.2` | Apache-2.0 | <https://github.com/microsoft/TypeScript> | Type-check tool; not shipped in the npm package. |
 
-No third-party visual asset is bundled in a Stack Engine distribution. The bundled fallback and 12 explicit icons are Stack-authored Apache-2.0 assets from `stack-theme`. The npm package includes this inventory and the Apache-2.0, MIT, and Unicode-3.0 license texts required by its compiled dependency choices.
+No third-party visual asset is bundled in a Stack Engine distribution. The bundled fallback and 30 explicit icons are Stack-authored Apache-2.0 assets from `stack-theme`. The npm package includes this inventory and the Apache-2.0, MIT, and Unicode-3.0 license texts required by its compiled dependency choices.
 
 Before publishing a native library, binary-derived artifact, or WASM package, this inventory must list the shipped dependencies and assets, their pinned versions, exact licenses, required license texts, attribution, modifications, and redistribution conditions. Build-only dependencies that are not shipped should be distinguished from distributed code.
