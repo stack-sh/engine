@@ -144,8 +144,8 @@ dependencies = [
 
 [[package]]
 name = "stack-theme"
-version = "0.2.0"
-source = "git+https://github.com/stack-sh/theme.git?rev=d25b883884420adcc124e4c9c786ad92925eae60#d25b883884420adcc124e4c9c786ad92925eae60"
+version = "0.3.0"
+source = "git+https://github.com/stack-sh/theme.git?rev=5dbe41326370260cfc6b72d4aab4470318d66dab#5dbe41326370260cfc6b72d4aab4470318d66dab"
 dependencies = [
  "serde",
  "serde_json",

@@ -8,7 +8,7 @@ Audit date: 2026-09-04
 
 - `stack-compiler` at `3d2379483da1edaeb24a26d43743587a4f5bd645` for byte decoding, parsing, validation, normalized IR, source maps, and compiler diagnostics;
 - the workspace-local `stack-formatter` for canonical source output;
-- `stack-theme` at `d25b883884420adcc124e4c9c786ad92925eae60` for the `0.2.0` embedded core catalog, 12 provider-neutral explicit icons, SVG bytes, deterministic font metrics, catalog version, and catalog revision.
+- `stack-theme` at `5dbe41326370260cfc6b72d4aab4470318d66dab` for the `0.3.0` embedded core catalog, 12 provider-neutral explicit icons, the local-only provider-pack contract, SVG bytes, deterministic font metrics, catalog version, and catalog revision. Vendor asset bytes are not included.
 
 `stack-engine-wasm` adds `serde` for its serializable native parity model and, only on `wasm32`, version-matched `wasm-bindgen` and `js-sys` for the JavaScript ABI, typed-array input, and plain object construction. It does not use `web-sys` or a WASI target.
 

@@ -521,7 +521,7 @@ mod tests {
                 output.metadata.language_version,
                 Some(LanguageVersion { major: 1, minor: 0 })
             );
-            assert_eq!(output.metadata.theme_catalog_version, "0.2.0");
+            assert_eq!(output.metadata.theme_catalog_version, "0.3.0");
             assert_eq!(
                 output.metadata.theme_catalog_revision,
                 stack_theme::CATALOG_REVISION
@@ -547,10 +547,10 @@ mod tests {
             ("observability", "Observability system"),
         ];
         let catalog = stack_theme::catalog();
-        assert_eq!(catalog.catalog_version, "0.2.0");
+        assert_eq!(catalog.catalog_version, "0.3.0");
         assert_eq!(
             stack_theme::CATALOG_REVISION,
-            "sha256:d3a8a5a9d2100e496af3fd7adf389788f4a77508bf749a108183a2abf8f681e1"
+            "sha256:e4eaad0813fcfef4a203e861909ff38833270646f9097155974c7c92108c5b1e"
         );
         for theme in &catalog.themes {
             for (identifier, subject) in expected_icons {
@@ -569,7 +569,7 @@ mod tests {
         let rendered = Engine::bundled().render(source)?;
         assert!(checked.diagnostics.is_empty());
         assert!(rendered.diagnostics.is_empty());
-        assert_eq!(rendered.metadata.theme_catalog_version, "0.2.0");
+        assert_eq!(rendered.metadata.theme_catalog_version, "0.3.0");
         assert_eq!(
             rendered.metadata.theme_catalog_revision,
             stack_theme::CATALOG_REVISION
