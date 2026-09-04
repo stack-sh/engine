@@ -98,7 +98,7 @@ test("browser rendering resolves the bundled explicit core icon", () => {
   assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.2.0");
   assert.equal(
     explicitIcon.render.metadata.themeCatalogRevision,
-    "sha256:d3a8a5a9d2100e496af3fd7adf389788f4a77508bf749a108183a2abf8f681e1",
+    "sha256:e4eaad0813fcfef4a203e861909ff38833270646f9097155974c7c92108c5b1e",
   );
   assert.match(explicitIcon.render.svg, /data-icon-id="api"/);
   assert.doesNotMatch(explicitIcon.render.svg, /data-icon-id="kind-external"/);

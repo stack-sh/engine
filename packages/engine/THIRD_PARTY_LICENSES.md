@@ -5,7 +5,7 @@
 | Component | Version / revision | Selected license | Source |
 | --- | --- | --- | --- |
 | `stack-compiler` | `3d2379483da1edaeb24a26d43743587a4f5bd645` | Apache-2.0 | <https://github.com/stack-sh/compiler> |
-| `stack-theme` | `d25b883884420adcc124e4c9c786ad92925eae60` | Apache-2.0 | <https://github.com/stack-sh/theme> |
+| `stack-theme` | `5dbe41326370260cfc6b72d4aab4470318d66dab` | Apache-2.0 | <https://github.com/stack-sh/theme> |
 | `serde` / `serde_core` | `1.0.229` | Apache-2.0 | <https://github.com/serde-rs/serde> |
 | `serde_json` | `1.0.151` | Apache-2.0 | <https://github.com/serde-rs/json> |
 | `itoa` | `1.0.18` | Apache-2.0 | <https://github.com/dtolnay/itoa> |
