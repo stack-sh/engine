@@ -53,7 +53,7 @@ fn explicit_core_icon_matches_standalone_svg_snapshot() -> Result<(), Box<dyn Er
     let source = include_bytes!("fixtures/explicit-core-icon.stack");
     let output = Engine::bundled().render(source)?;
     assert!(output.diagnostics.is_empty());
-    assert_eq!(output.metadata.theme_catalog_version, "0.4.0");
+    assert_eq!(output.metadata.theme_catalog_version, "0.5.0");
     assert_eq!(
         output.metadata.theme_catalog_revision,
         stack_theme::CATALOG_REVISION

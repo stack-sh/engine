@@ -448,6 +448,8 @@ pub struct ProviderNotice {
     pub archive_sha256: String,
     /// Provider terms reviewed for this pack.
     pub terms_url: String,
+    /// Every audited archive that contributed an icon to this pack.
+    pub sources: Vec<ProviderNoticeSource>,
     /// User-visible attribution text.
     pub attribution: String,
     /// User-visible terms summary.
@@ -465,6 +467,27 @@ pub struct ProviderNoticeIcon {
     pub id: String,
     /// Official provider product name.
     pub product_name: String,
+    /// Rights-owner source for this brand icon, when the archive is multi-brand.
+    pub brand_source_url: Option<String>,
+    /// Rights-owner usage guidelines for this brand icon, when available.
+    pub brand_guidelines_url: Option<String>,
+    /// Pack-local source ID, or `primary` for the primary source.
+    pub source_id: String,
+}
+
+/// One audited archive listed in a rendered-artifact notice.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProviderNoticeSource {
+    /// Pack-local source ID. The primary source always uses `primary`.
+    pub id: String,
+    /// Official source page.
+    pub page_url: String,
+    /// Audited upstream release identifier.
+    pub release: String,
+    /// Complete official source archive SHA-256.
+    pub archive_sha256: String,
+    /// Terms reviewed for this source.
+    pub terms_url: String,
 }
 
 /// Engine-owned portable diagnostic shared by native and future WASM outputs.
@@ -614,7 +637,7 @@ mod tests {
                 output.metadata.language_version,
                 Some(LanguageVersion { major: 1, minor: 0 })
             );
-            assert_eq!(output.metadata.theme_catalog_version, "0.4.0");
+            assert_eq!(output.metadata.theme_catalog_version, "0.5.0");
             assert_eq!(
                 output.metadata.theme_catalog_revision,
                 stack_theme::CATALOG_REVISION
@@ -658,10 +681,10 @@ mod tests {
             ("ai", "Artificial intelligence system"),
         ];
         let catalog = stack_theme::catalog();
-        assert_eq!(catalog.catalog_version, "0.4.0");
+        assert_eq!(catalog.catalog_version, "0.5.0");
         assert_eq!(
             stack_theme::CATALOG_REVISION,
-            "sha256:9cb3de8b504acbf22c93cea5fbea66be50f38734dc1dee18b9cab7084082cc1f"
+            "sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53"
         );
         for theme in &catalog.themes {
             for (identifier, subject) in expected_icons {
@@ -680,7 +703,7 @@ mod tests {
         let rendered = Engine::bundled().render(source)?;
         assert!(checked.diagnostics.is_empty());
         assert!(rendered.diagnostics.is_empty());
-        assert_eq!(rendered.metadata.theme_catalog_version, "0.4.0");
+        assert_eq!(rendered.metadata.theme_catalog_version, "0.5.0");
         assert_eq!(
             rendered.metadata.theme_catalog_revision,
             stack_theme::CATALOG_REVISION

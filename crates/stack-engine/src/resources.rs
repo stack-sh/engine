@@ -3,7 +3,7 @@
 use stack_compiler::ir::{Diagram, NodeKind};
 use stack_theme::{Catalog, FontMetrics, NodeVisual, ProviderIcon, Theme};
 
-use crate::{ProviderNotice, ProviderNoticeIcon, ProviderPack};
+use crate::{ProviderNotice, ProviderNoticeIcon, ProviderNoticeSource, ProviderPack};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ResourceWarning {
@@ -151,6 +151,22 @@ impl<'catalog> Resources<'catalog> {
                 })
                 .unwrap_or_else(|| {
                     let manifest = resolved.pack.manifest();
+                    let mut sources = vec![ProviderNoticeSource {
+                        id: "primary".to_owned(),
+                        page_url: manifest.source.page_url.clone(),
+                        release: manifest.source.release.clone(),
+                        archive_sha256: manifest.source.archive_sha256.clone(),
+                        terms_url: manifest.source.terms_url.clone(),
+                    }];
+                    sources.extend(manifest.additional_sources.iter().map(|additional| {
+                        ProviderNoticeSource {
+                            id: additional.id.clone(),
+                            page_url: additional.source.page_url.clone(),
+                            release: additional.source.release.clone(),
+                            archive_sha256: additional.source.archive_sha256.clone(),
+                            terms_url: additional.source.terms_url.clone(),
+                        }
+                    }));
                     notices.push(ProviderNotice {
                         provider_id: manifest.provider.id.clone(),
                         provider_name: manifest.provider.name.clone(),
@@ -159,6 +175,7 @@ impl<'catalog> Resources<'catalog> {
                         source_release: manifest.source.release.clone(),
                         archive_sha256: manifest.source.archive_sha256.clone(),
                         terms_url: manifest.source.terms_url.clone(),
+                        sources,
                         attribution: manifest.notice.attribution.clone(),
                         terms_summary: manifest.notice.terms_summary.clone(),
                         non_endorsement: manifest.notice.non_endorsement.clone(),
@@ -174,6 +191,14 @@ impl<'catalog> Resources<'catalog> {
                 notices[notice_index].icons.push(ProviderNoticeIcon {
                     id: resolved.icon.id.clone(),
                     product_name: resolved.icon.product_name.clone(),
+                    brand_source_url: resolved.icon.brand_source_url.clone(),
+                    brand_guidelines_url: resolved.icon.brand_guidelines_url.clone(),
+                    source_id: resolved
+                        .icon
+                        .asset
+                        .source_id
+                        .clone()
+                        .unwrap_or_else(|| "primary".to_owned()),
                 });
             }
         }
