@@ -88,10 +88,10 @@ def main() -> None:
         "association",
     }
     assert values(explicit_icon, "data-icon-id") == {"gateway"}
-    assert explicit_icon.attrib.get("data-theme-version") == "0.4.0"
+    assert explicit_icon.attrib.get("data-theme-version") == "0.5.0"
     assert (
         explicit_icon.attrib.get("data-theme-revision")
-        == "sha256:9cb3de8b504acbf22c93cea5fbea66be50f38734dc1dee18b9cab7084082cc1f"
+        == "sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53"
     )
 
 
