@@ -29,6 +29,9 @@ mod routing;
 mod scene;
 mod svg;
 
+mod provider;
+pub use provider::{ProviderAsset, ProviderPack};
+
 /// Version of the Rust engine facade.
 pub const ENGINE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -40,6 +43,7 @@ pub type OperationResult<T> = Result<T, OperationalError>;
 pub struct Engine<'catalog> {
     catalog: &'catalog stack_theme::Catalog,
     catalog_revision: &'catalog str,
+    provider_packs: &'catalog [ProviderPack],
 }
 
 #[derive(Debug)]
@@ -56,6 +60,7 @@ impl Engine<'static> {
         Self {
             catalog: stack_theme::catalog(),
             catalog_revision: stack_theme::CATALOG_REVISION,
+            provider_packs: &[],
         }
     }
 }
@@ -67,6 +72,18 @@ impl Default for Engine<'static> {
 }
 
 impl<'catalog> Engine<'catalog> {
+    /// Creates an engine backed by the bundled catalog and validated provider packs.
+    ///
+    /// Provider assets remain caller-owned in-memory data. The engine performs
+    /// no discovery, file access, download, upload, caching, or terms decision.
+    pub fn with_provider_packs(provider_packs: &'catalog [ProviderPack]) -> OperationResult<Self> {
+        Self::with_catalog_and_provider_packs(
+            stack_theme::catalog(),
+            stack_theme::CATALOG_REVISION,
+            provider_packs,
+        )
+    }
+
     /// Creates an engine from a previously validated catalog and its content revision.
     ///
     /// The catalog document must already have passed the public `stack-theme`
@@ -76,6 +93,18 @@ impl<'catalog> Engine<'catalog> {
     pub fn with_catalog(
         catalog: &'catalog stack_theme::Catalog,
         catalog_revision: &'catalog str,
+    ) -> OperationResult<Self> {
+        Self::with_catalog_and_provider_packs(catalog, catalog_revision, &[])
+    }
+
+    /// Creates an engine from a validated catalog and validated provider packs.
+    ///
+    /// Provider namespaces must be unique. Provider icons cannot replace core
+    /// catalog identifiers because [`ProviderPack::new`] requires namespaced IDs.
+    pub fn with_catalog_and_provider_packs(
+        catalog: &'catalog stack_theme::Catalog,
+        catalog_revision: &'catalog str,
+        provider_packs: &'catalog [ProviderPack],
     ) -> OperationResult<Self> {
         if !valid_catalog_revision(catalog_revision) {
             return Err(OperationalError::InvalidCatalog {
@@ -102,9 +131,26 @@ impl<'catalog> Engine<'catalog> {
             });
         }
 
+        if provider_packs.len() > 32 {
+            return Err(OperationalError::InvalidProviderPack {
+                reason: "an engine may contain at most 32 provider packs",
+            });
+        }
+        for (index, pack) in provider_packs.iter().enumerate() {
+            if provider_packs[..index]
+                .iter()
+                .any(|candidate| candidate.manifest().provider.id == pack.manifest().provider.id)
+            {
+                return Err(OperationalError::InvalidProviderPack {
+                    reason: "provider namespaces must be unique",
+                });
+            }
+        }
+
         Ok(Self {
             catalog,
             catalog_revision,
+            provider_packs,
         })
     }
 
@@ -149,6 +195,7 @@ impl<'catalog> Engine<'catalog> {
                 svg: None,
                 diagnostics: portable_diagnostics(compiled.diagnostics),
                 metadata,
+                provider_notices: Vec::new(),
             });
         }
 
@@ -174,6 +221,7 @@ impl<'catalog> Engine<'catalog> {
             svg: Some(svg),
             diagnostics,
             metadata,
+            provider_notices: prepared.resources.provider_notices(),
         })
     }
 
@@ -191,10 +239,9 @@ impl<'catalog> Engine<'catalog> {
         diagram: &stack_compiler::ir::Diagram,
         source_map: &stack_compiler::source_map::SourceMap,
     ) -> OperationResult<PreparedScene<'catalog>> {
-        let resources = resources::Resources::resolve(diagram, self.catalog).map_err(|error| {
-            OperationalError::InvalidCatalog {
-                reason: error.reason(),
-            }
+        let resources = resources::Resources::resolve(diagram, self.catalog, self.provider_packs)
+            .map_err(|error| OperationalError::InvalidCatalog {
+            reason: error.reason(),
         })?;
         let scene = scene::layout(diagram, self.catalog).map_err(|error| {
             OperationalError::InvalidIntermediateRepresentation {
@@ -301,6 +348,11 @@ pub enum OperationalError {
         /// Stable explanation of the violated catalog invariant.
         reason: &'static str,
     },
+    /// A provider pack violates safe deterministic rendering invariants.
+    InvalidProviderPack {
+        /// Stable explanation of the violated provider-pack invariant.
+        reason: &'static str,
+    },
     /// Compiler or layout data violates an invariant required by pure execution.
     InvalidIntermediateRepresentation {
         /// Stable explanation of the violated invariant.
@@ -312,6 +364,9 @@ impl fmt::Display for OperationalError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidCatalog { reason } => write!(formatter, "invalid theme catalog: {reason}"),
+            Self::InvalidProviderPack { reason } => {
+                write!(formatter, "invalid provider pack: {reason}")
+            }
             Self::InvalidIntermediateRepresentation { reason } => {
                 write!(formatter, "invalid intermediate representation: {reason}")
             }
@@ -372,6 +427,44 @@ pub struct RenderOutput {
     pub diagnostics: Vec<Diagnostic>,
     /// Versions that identify the exact operation implementation and inputs.
     pub metadata: EngineMetadata,
+    /// Provider-specific notices for the exact assets embedded in this output.
+    pub provider_notices: Vec<ProviderNotice>,
+}
+
+/// Notice and provenance for one provider pack used by a rendered artifact.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProviderNotice {
+    /// Stable provider namespace.
+    pub provider_id: String,
+    /// Human-readable provider name.
+    pub provider_name: String,
+    /// Provider-pack semantic version.
+    pub pack_version: String,
+    /// Deterministic hash of the manifest and processed asset bytes.
+    pub pack_revision: String,
+    /// Audited upstream release identifier.
+    pub source_release: String,
+    /// Complete official source archive SHA-256.
+    pub archive_sha256: String,
+    /// Provider terms reviewed for this pack.
+    pub terms_url: String,
+    /// User-visible attribution text.
+    pub attribution: String,
+    /// User-visible terms summary.
+    pub terms_summary: String,
+    /// User-visible non-endorsement statement.
+    pub non_endorsement: String,
+    /// Exact provider icons embedded in the output.
+    pub icons: Vec<ProviderNoticeIcon>,
+}
+
+/// One provider icon listed in a rendered-artifact notice.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProviderNoticeIcon {
+    /// Namespaced provider icon identifier.
+    pub id: String,
+    /// Official provider product name.
+    pub product_name: String,
 }
 
 /// Engine-owned portable diagnostic shared by native and future WASM outputs.
@@ -883,6 +976,10 @@ mod tests {
         assert_eq!(
             OperationalError::InvalidIntermediateRepresentation { reason: "reason" }.to_string(),
             "invalid intermediate representation: reason"
+        );
+        assert_eq!(
+            OperationalError::InvalidProviderPack { reason: "reason" }.to_string(),
+            "invalid provider pack: reason"
         );
     }
 }

@@ -19,6 +19,8 @@ assert.match(declaration, /export type StackSource = string \| Uint8Array;/);
 assert.match(declaration, /export function format\(source: StackSource\): FormatResult;/);
 assert.match(declaration, /export function check\(source: StackSource\): CheckResult;/);
 assert.match(declaration, /export function render\(source: StackSource\): RenderResult;/);
+assert.match(declaration, /export function checkWithProviderPacks/);
+assert.match(declaration, /export function renderWithProviderPacks/);
 
 const module = new WebAssembly.Module(binary);
 const imports = WebAssembly.Module.imports(module);
@@ -38,12 +40,12 @@ assert.doesNotMatch(
   importGlue,
   /\b(?:eval|Function|fetch|XMLHttpRequest|WebSocket|document|window|navigator|location|localStorage|sessionStorage|Date|performance|crypto|process|require|setTimeout|setInterval)\b/,
 );
-for (const requiredPrimitive of ["Array", "Error", "Object", "Reflect", "TypeError", "Uint8Array"]) {
+for (const requiredPrimitive of ["Array", "Error", "JSON", "Object", "Reflect", "TypeError", "Uint8Array"]) {
   assert.match(importGlue, new RegExp(`\\b${requiredPrimitive}\\b`));
 }
 
 const exports = new Set(WebAssembly.Module.exports(module).map(({ name }) => name));
-for (const operation of ["format", "check", "render"]) {
+for (const operation of ["format", "check", "render", "checkWithProviderPacks", "renderWithProviderPacks"]) {
   assert.ok(exports.has(operation), `missing ${operation} WebAssembly export`);
 }
 

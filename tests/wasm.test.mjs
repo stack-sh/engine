@@ -5,12 +5,21 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
-import init, { check, format, render } from "../packages/engine/index.js";
+import init, {
+  check,
+  checkWithProviderPacks,
+  format,
+  render,
+  renderWithProviderPacks,
+} from "../packages/engine/index.js";
 
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const fixturePath = join(repositoryRoot, "tests/fixtures/operation-cases.json");
 const wasmPath = join(repositoryRoot, "packages/engine/dist/stack_engine_bg.wasm");
 const cases = JSON.parse(readFileSync(fixturePath, "utf8"));
+const providerPacks = JSON.parse(
+  readFileSync(join(repositoryRoot, "tests/fixtures/provider-pack-input.json"), "utf8"),
+);
 
 await init({ module_or_path: readFileSync(wasmPath) });
 
@@ -72,7 +81,7 @@ test("browser diagnostics preserve actionable compiler guidance", () => {
   );
   assert.ok(actionable);
   assert.equal(actionable.render.svg, null);
-  assert.equal(actionable.check.metadata.engineVersion, "0.3.0");
+  assert.equal(actionable.check.metadata.engineVersion, "0.4.0");
   assert.deepEqual(actionable.check.diagnostics[0], {
     code: "STK2002",
     severity: "error",
@@ -94,7 +103,7 @@ test("browser rendering resolves the bundled explicit core icon", () => {
   assert.ok(explicitIcon);
   assert.deepEqual(explicitIcon.check.diagnostics, []);
   assert.deepEqual(explicitIcon.render.diagnostics, []);
-  assert.equal(explicitIcon.render.metadata.engineVersion, "0.3.0");
+  assert.equal(explicitIcon.render.metadata.engineVersion, "0.4.0");
   assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.3.0");
   assert.equal(
     explicitIcon.render.metadata.themeCatalogRevision,
@@ -104,6 +113,24 @@ test("browser rendering resolves the bundled explicit core icon", () => {
   assert.doesNotMatch(explicitIcon.render.svg, /data-icon-id="kind-external"/);
 });
 
+test("browser rendering resolves local provider packs with native provenance", () => {
+  const source =
+    'stack 1.0 diagram "Provider" { node item "Example Storage" { kind queue icon "example:storage" } }';
+  const checked = checkWithProviderPacks(source, providerPacks);
+  const rendered = renderWithProviderPacks(source, providerPacks);
+  assert.deepEqual(checked.diagnostics, []);
+  assert.deepEqual(rendered.diagnostics, []);
+  assert.match(rendered.svg, /data-node-kind="queue"/);
+  assert.match(rendered.svg, /data-icon-id="example:storage"/);
+  assert.match(rendered.svg, /fill="#4285f4"/);
+  assert.equal(rendered.providerNotices.length, 1);
+  assert.equal(rendered.providerNotices[0].providerId, "example");
+  assert.deepEqual(rendered.providerNotices[0].icons, [
+    { id: "example:storage", productName: "Example Storage" },
+  ]);
+  assert.match(rendered.providerNotices[0].packRevision, /^sha256:[0-9a-f]{64}$/);
+});
+
 test("the JavaScript boundary rejects unsupported source values consistently", () => {
   for (const operation of [format, check, render]) {
     assert.throws(
@@ -111,4 +138,8 @@ test("the JavaScript boundary rejects unsupported source values consistently", (
       { name: "TypeError", message: "Stack source must be a string or Uint8Array" },
     );
   }
+  assert.throws(
+    () => checkWithProviderPacks("stack 1.0", () => undefined),
+    { name: "TypeError", message: "Provider packs must be JSON-compatible local data" },
+  );
 });

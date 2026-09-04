@@ -4,19 +4,20 @@ Audit date: 2026-09-04
 
 ## Runtime graph
 
-`stack-engine` has three direct dependencies:
+`stack-engine` has six direct dependencies:
 
-- `stack-compiler` at `3d2379483da1edaeb24a26d43743587a4f5bd645` for byte decoding, parsing, validation, normalized IR, source maps, and compiler diagnostics;
+- `stack-compiler` at `4a18fac42afc2256a1bb3a6ff13d12d732a391e7` for byte decoding, parsing, validation, normalized IR, source maps, and compiler diagnostics;
 - the workspace-local `stack-formatter` for canonical source output;
-- `stack-theme` at `5dbe41326370260cfc6b72d4aab4470318d66dab` for the `0.3.0` embedded core catalog, 12 provider-neutral explicit icons, the local-only provider-pack contract, SVG bytes, deterministic font metrics, catalog version, and catalog revision. Vendor asset bytes are not included.
+- `stack-theme` at `5dbe41326370260cfc6b72d4aab4470318d66dab` for the `0.3.0` embedded core catalog, 12 provider-neutral explicit icons, the local-only provider-pack contract, SVG bytes, deterministic font metrics, catalog version, and catalog revision;
+- `roxmltree`, `serde_json`, and `sha2` for pure in-memory provider manifest serialization, processed-asset hash verification, pack revision computation, and defensive SVG validation. Vendor asset bytes are not included.
 
-`stack-engine-wasm` adds `serde` for its serializable native parity model and, only on `wasm32`, version-matched `wasm-bindgen` and `js-sys` for the JavaScript ABI, typed-array input, and plain object construction. It does not use `web-sys` or a WASI target.
+`stack-engine-wasm` adds `serde`, `serde_json`, and the asset-free `stack-theme` types for its serializable native parity model and local provider-pack input, plus, only on `wasm32`, version-matched `wasm-bindgen` and `js-sys` for the JavaScript ABI, typed-array input, JSON-compatible local data, and plain object construction. It does not use `web-sys` or a WASI target.
 
-The resolved normal dependency graph adds only the `serde` and `serde_json` graph required by `stack-theme`. Exact versions and licenses are recorded in [`THIRD_PARTY_LICENSES.md`](../THIRD_PARTY_LICENSES.md) and pinned in `Cargo.lock`. Scene layout is implemented locally with fixed-width integer arithmetic and versioned catalog metrics. Standalone SVG serialization is also local and embeds only validated catalog icon bodies and local marker references. No third-party layout or SVG serializer, filesystem, network, asynchronous runtime, random, clock, locale, DOM, or platform-font dependency is present.
+Exact versions and licenses are recorded in [`THIRD_PARTY_LICENSES.md`](../THIRD_PARTY_LICENSES.md) and pinned in `Cargo.lock`. Scene layout is implemented locally with fixed-width integer arithmetic and versioned catalog metrics. Standalone SVG serialization is also local and embeds only validated catalog or caller-owned provider icon bodies and local marker references. No third-party layout or SVG serializer, filesystem, network, asynchronous runtime, random, clock, locale, DOM, or platform-font dependency is present.
 
 ## Runtime access boundary
 
-- `stack-engine` accepts source bytes plus a borrowed validated catalog and revision, or selects the catalog already embedded by `stack-theme`.
+- `stack-engine` accepts source bytes plus a borrowed validated catalog and revision, or selects the catalog already embedded by `stack-theme`. It may also accept validated caller-owned provider manifests and SVG strings; it hashes and validates them entirely in memory.
 - `stack-compiler` and `stack-formatter` operate entirely on caller-owned bytes and in-memory values.
 - `stack-theme` embeds catalog, schema, and SVG bytes at compile time and parses the trusted generated catalog through an in-memory singleton.
 - No runtime dependency discovers a path, opens a socket, reads process state, observes time, samples randomness, queries a DOM, or measures a system font.

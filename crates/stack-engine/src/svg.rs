@@ -59,13 +59,37 @@ pub(crate) fn render(
         counted(diagram.groups.len(), "group", "groups"),
         counted(diagram.edges.len(), "relationship", "relationships")
     ));
+    let provider_metadata = resources
+        .provider_notices()
+        .into_iter()
+        .map(|notice| {
+            format!(
+                "{} at {} using {}",
+                notice.provider_id,
+                notice.pack_revision,
+                notice
+                    .icons
+                    .iter()
+                    .map(|icon| icon.id.as_str())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("; ");
+    let provider_metadata = if provider_metadata.is_empty() {
+        String::new()
+    } else {
+        format!("; providers {provider_metadata}")
+    };
     output.push_str(&format!(
-        "  <metadata>stack-engine {}; language {}.{}; theme {} at {}</metadata>\n",
+        "  <metadata>stack-engine {}; language {}.{}; theme {} at {}{}</metadata>\n",
         escape_text(&metadata.engine_version),
         metadata.language_version.map_or(0, |version| version.major),
         metadata.language_version.map_or(0, |version| version.minor),
         escape_text(&metadata.theme_catalog_version),
-        escape_text(&metadata.theme_catalog_revision)
+        escape_text(&metadata.theme_catalog_revision),
+        escape_text(&provider_metadata)
     ));
     output.push_str(&format!(
         "  <rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"{}\"/>\n",
@@ -520,7 +544,7 @@ fn render_icon(
     let body = embedded_svg_body(resolved.icon_svg).ok_or(SvgError {
         reason: "embedded icon is not a complete SVG document",
     })?;
-    let view_box = resolved.icon.asset.view_box;
+    let view_box = resolved.icon_view_box;
     output.push_str(&format!(
         "      <svg x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" viewBox=\"{} {} {} {}\" color=\"{}\" aria-hidden=\"true\" focusable=\"false\" data-icon-id=\"{}\">{} </svg>\n",
         rect.x + NODE_HORIZONTAL_PADDING,
@@ -532,7 +556,7 @@ fn render_icon(
         view_box[2],
         view_box[3],
         escape_attribute(palette_color(theme, resolved.visual.accent)),
-        escape_attribute(&resolved.icon.id),
+        escape_attribute(resolved.icon_id),
         body.trim()
     ));
     Ok(())

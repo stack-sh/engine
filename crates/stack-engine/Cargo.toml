@@ -1,6 +1,6 @@
 [package]
 name = "stack-engine"
-version = "0.3.0"
+version = "0.4.0"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
@@ -11,9 +11,15 @@ description = "Pure execution facade for Stack diagram operations"
 conformance = []
 
 [dependencies]
+roxmltree.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
 stack-compiler.workspace = true
 stack-formatter.workspace = true
 stack-theme.workspace = true
+
+[dev-dependencies]
+serde.workspace = true
 
 [lints.clippy]
 expect_used = "deny"

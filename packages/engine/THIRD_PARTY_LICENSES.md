@@ -4,8 +4,11 @@
 
 | Component | Version / revision | Selected license | Source |
 | --- | --- | --- | --- |
-| `stack-compiler` | `3d2379483da1edaeb24a26d43743587a4f5bd645` | Apache-2.0 | <https://github.com/stack-sh/compiler> |
+| `stack-compiler` | `4a18fac42afc2256a1bb3a6ff13d12d732a391e7` | Apache-2.0 | <https://github.com/stack-sh/compiler> |
 | `stack-theme` | `5dbe41326370260cfc6b72d4aab4470318d66dab` | Apache-2.0 | <https://github.com/stack-sh/theme> |
+| `roxmltree` | `0.21.1` | Apache-2.0 | <https://github.com/RazrFalcon/roxmltree> |
+| `sha2`, `digest`, `block-buffer`, `crypto-common`, `hybrid-array`, `const-oid`, `typenum` | `0.11.0`, `0.11.3`, `0.12.1`, `0.2.2`, `0.4.14`, `0.10.2`, `1.20.1` | Apache-2.0 | <https://github.com/RustCrypto> |
+| `libc` / `cpufeatures` | `0.2.189`, `0.3.1` | Apache-2.0 | <https://github.com/rust-lang/libc>, <https://github.com/RustCrypto/utils> |
 | `serde` / `serde_core` | `1.0.229` | Apache-2.0 | <https://github.com/serde-rs/serde> |
 | `serde_json` | `1.0.151` | Apache-2.0 | <https://github.com/serde-rs/json> |
 | `itoa` | `1.0.18` | Apache-2.0 | <https://github.com/dtolnay/itoa> |
