@@ -8,11 +8,11 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
-use serde::Serialize;
-use stack_engine::{Engine, OperationResult};
+use serde::{Deserialize, Serialize};
+use stack_engine::{Engine, OperationResult, ProviderAsset, ProviderPack};
 
 #[cfg(target_arch = "wasm32")]
-use js_sys::{Array, Object, Reflect, TypeError, Uint8Array};
+use js_sys::{Array, JSON, Object, Reflect, TypeError, Uint8Array};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::{JsCast, JsValue, prelude::wasm_bindgen};
 
@@ -48,6 +48,60 @@ pub struct RenderResult {
     pub diagnostics: Vec<Diagnostic>,
     /// Engine and input provenance.
     pub metadata: EngineMetadata,
+    /// Provider-specific notices for the exact embedded assets.
+    pub provider_notices: Vec<ProviderNotice>,
+}
+
+/// JavaScript-facing provider provenance for one rendered pack.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProviderNotice {
+    /// Stable provider namespace.
+    pub provider_id: String,
+    /// Human-readable provider name.
+    pub provider_name: String,
+    /// Provider-pack semantic version.
+    pub pack_version: String,
+    /// Deterministic manifest-and-assets SHA-256.
+    pub pack_revision: String,
+    /// Audited upstream release.
+    pub source_release: String,
+    /// Complete official archive SHA-256.
+    pub archive_sha256: String,
+    /// Provider terms URL.
+    pub terms_url: String,
+    /// User-visible attribution.
+    pub attribution: String,
+    /// User-visible terms summary.
+    pub terms_summary: String,
+    /// User-visible non-endorsement statement.
+    pub non_endorsement: String,
+    /// Exact provider icons embedded in the output.
+    pub icons: Vec<ProviderNoticeIcon>,
+}
+
+/// JavaScript-facing provider icon notice.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProviderNoticeIcon {
+    /// Namespaced provider icon identifier.
+    pub id: String,
+    /// Official provider product name.
+    pub product_name: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ProviderPackInput {
+    manifest: stack_theme::ProviderPack,
+    assets: Vec<ProviderAssetInput>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ProviderAssetInput {
+    path: String,
+    svg: String,
 }
 
 /// Version metadata attached to every operation result.
@@ -151,6 +205,50 @@ pub fn render_bytes(source: &[u8]) -> OperationResult<RenderResult> {
     Engine::bundled().render(source).map(RenderResult::from)
 }
 
+/// Checks source against caller-owned provider packs encoded as local JSON data.
+pub fn check_with_provider_packs_bytes(
+    source: &[u8],
+    provider_packs_json: &str,
+) -> OperationResult<CheckResult> {
+    let provider_packs = parse_provider_packs(provider_packs_json)?;
+    Engine::with_provider_packs(&provider_packs)?
+        .check(source)
+        .map(CheckResult::from)
+}
+
+/// Renders source against caller-owned provider packs encoded as local JSON data.
+pub fn render_with_provider_packs_bytes(
+    source: &[u8],
+    provider_packs_json: &str,
+) -> OperationResult<RenderResult> {
+    let provider_packs = parse_provider_packs(provider_packs_json)?;
+    Engine::with_provider_packs(&provider_packs)?
+        .render(source)
+        .map(RenderResult::from)
+}
+
+fn parse_provider_packs(provider_packs_json: &str) -> OperationResult<Vec<ProviderPack>> {
+    let inputs: Vec<ProviderPackInput> =
+        serde_json::from_str(provider_packs_json).map_err(|_| {
+            stack_engine::OperationalError::InvalidProviderPack {
+                reason: "provider pack input is not valid JSON",
+            }
+        })?;
+    inputs
+        .into_iter()
+        .map(|input| {
+            ProviderPack::new(
+                input.manifest,
+                input
+                    .assets
+                    .into_iter()
+                    .map(|asset| ProviderAsset::new(asset.path, asset.svg))
+                    .collect(),
+            )
+        })
+        .collect()
+}
+
 impl From<stack_engine::FormatOutput> for FormatResult {
     fn from(output: stack_engine::FormatOutput) -> Self {
         Self {
@@ -188,6 +286,42 @@ impl From<stack_engine::RenderOutput> for RenderResult {
                 .map(Diagnostic::from)
                 .collect(),
             metadata: EngineMetadata::from(output.metadata),
+            provider_notices: output
+                .provider_notices
+                .into_iter()
+                .map(ProviderNotice::from)
+                .collect(),
+        }
+    }
+}
+
+impl From<stack_engine::ProviderNotice> for ProviderNotice {
+    fn from(notice: stack_engine::ProviderNotice) -> Self {
+        Self {
+            provider_id: notice.provider_id,
+            provider_name: notice.provider_name,
+            pack_version: notice.pack_version,
+            pack_revision: notice.pack_revision,
+            source_release: notice.source_release,
+            archive_sha256: notice.archive_sha256,
+            terms_url: notice.terms_url,
+            attribution: notice.attribution,
+            terms_summary: notice.terms_summary,
+            non_endorsement: notice.non_endorsement,
+            icons: notice
+                .icons
+                .into_iter()
+                .map(ProviderNoticeIcon::from)
+                .collect(),
+        }
+    }
+}
+
+impl From<stack_engine::ProviderNoticeIcon> for ProviderNoticeIcon {
+    fn from(icon: stack_engine::ProviderNoticeIcon) -> Self {
+        Self {
+            id: icon.id,
+            product_name: icon.product_name,
         }
     }
 }
@@ -326,11 +460,43 @@ export interface RenderResult {
   readonly svg: string | null;
   readonly diagnostics: readonly Diagnostic[];
   readonly metadata: EngineMetadata;
+  readonly providerNotices: readonly ProviderNotice[];
+}
+
+export interface ProviderNoticeIcon {
+  readonly id: string;
+  readonly productName: string;
+}
+
+export interface ProviderNotice {
+  readonly providerId: string;
+  readonly providerName: string;
+  readonly packVersion: string;
+  readonly packRevision: string;
+  readonly sourceRelease: string;
+  readonly archiveSha256: string;
+  readonly termsUrl: string;
+  readonly attribution: string;
+  readonly termsSummary: string;
+  readonly nonEndorsement: string;
+  readonly icons: readonly ProviderNoticeIcon[];
+}
+
+export interface ProviderAssetInput {
+  readonly path: string;
+  readonly svg: string;
+}
+
+export interface ProviderPackInput {
+  readonly manifest: Readonly<Record<string, unknown>>;
+  readonly assets: readonly ProviderAssetInput[];
 }
 
 export function format(source: StackSource): FormatResult;
 export function check(source: StackSource): CheckResult;
 export function render(source: StackSource): RenderResult;
+export function checkWithProviderPacks(source: StackSource, providerPacks: readonly ProviderPackInput[]): CheckResult;
+export function renderWithProviderPacks(source: StackSource, providerPacks: readonly ProviderPackInput[]): RenderResult;
 "#;
 
 #[cfg(target_arch = "wasm32")]
@@ -358,6 +524,40 @@ pub fn render_js(source: JsValue) -> Result<JsValue, JsValue> {
     render_bytes(&source_bytes(source)?)
         .map_err(operation_error)
         .and_then(render_to_js)
+}
+
+#[cfg(target_arch = "wasm32")]
+/// Checks source using provider packs supplied as caller-owned JavaScript data.
+#[wasm_bindgen(js_name = checkWithProviderPacks, skip_typescript)]
+pub fn check_with_provider_packs_js(
+    source: JsValue,
+    provider_packs: JsValue,
+) -> Result<JsValue, JsValue> {
+    let provider_packs = provider_packs_json(provider_packs)?;
+    check_with_provider_packs_bytes(&source_bytes(source)?, &provider_packs)
+        .map_err(operation_error)
+        .and_then(check_to_js)
+}
+
+#[cfg(target_arch = "wasm32")]
+/// Renders source using provider packs supplied as caller-owned JavaScript data.
+#[wasm_bindgen(js_name = renderWithProviderPacks, skip_typescript)]
+pub fn render_with_provider_packs_js(
+    source: JsValue,
+    provider_packs: JsValue,
+) -> Result<JsValue, JsValue> {
+    let provider_packs = provider_packs_json(provider_packs)?;
+    render_with_provider_packs_bytes(&source_bytes(source)?, &provider_packs)
+        .map_err(operation_error)
+        .and_then(render_to_js)
+}
+
+#[cfg(target_arch = "wasm32")]
+fn provider_packs_json(provider_packs: JsValue) -> Result<String, JsValue> {
+    JSON::stringify(&provider_packs)
+        .map_err(|_| TypeError::new("Provider packs must be JSON-compatible local data"))?
+        .as_string()
+        .ok_or_else(|| TypeError::new("Provider packs must be JSON-compatible local data").into())
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -411,6 +611,39 @@ fn render_to_js(result: RenderResult) -> Result<JsValue, JsValue> {
         diagnostics_to_js(result.diagnostics)?,
     )?;
     set(&output, "metadata", metadata_to_js(result.metadata)?)?;
+    set(
+        &output,
+        "providerNotices",
+        provider_notices_to_js(result.provider_notices)?,
+    )?;
+    Ok(output.into())
+}
+
+#[cfg(target_arch = "wasm32")]
+fn provider_notices_to_js(notices: Vec<ProviderNotice>) -> Result<JsValue, JsValue> {
+    let output = Array::new();
+    for notice in notices {
+        let item = Object::new();
+        set(&item, "providerId", notice.provider_id.into())?;
+        set(&item, "providerName", notice.provider_name.into())?;
+        set(&item, "packVersion", notice.pack_version.into())?;
+        set(&item, "packRevision", notice.pack_revision.into())?;
+        set(&item, "sourceRelease", notice.source_release.into())?;
+        set(&item, "archiveSha256", notice.archive_sha256.into())?;
+        set(&item, "termsUrl", notice.terms_url.into())?;
+        set(&item, "attribution", notice.attribution.into())?;
+        set(&item, "termsSummary", notice.terms_summary.into())?;
+        set(&item, "nonEndorsement", notice.non_endorsement.into())?;
+        let icons = Array::new();
+        for icon in notice.icons {
+            let icon_item = Object::new();
+            set(&icon_item, "id", icon.id.into())?;
+            set(&icon_item, "productName", icon.product_name.into())?;
+            icons.push(&icon_item);
+        }
+        set(&item, "icons", icons.into())?;
+        output.push(&item);
+    }
     Ok(output.into())
 }
 
@@ -518,7 +751,10 @@ fn set(object: &Object, name: &str, value: JsValue) -> Result<(), JsValue> {
 mod tests {
     use std::error::Error;
 
-    use super::{Diagnostic, Severity, check_bytes, format_bytes, render_bytes};
+    use super::{
+        Diagnostic, Severity, check_bytes, check_with_provider_packs_bytes, format_bytes,
+        render_bytes, render_with_provider_packs_bytes,
+    };
 
     #[test]
     fn native_results_keep_operation_shapes_and_invalid_utf8() -> Result<(), Box<dyn Error>> {
@@ -574,5 +810,25 @@ mod tests {
         assert_eq!(converted.help.as_deref(), Some("install the resource"));
         assert_eq!(converted.related[0].message, "requested here");
         assert_eq!(converted.related[0].range.start.byte_offset, 1);
+    }
+
+    #[test]
+    fn provider_pack_helpers_match_the_native_engine_contract() -> Result<(), Box<dyn Error>> {
+        let source = b"stack 1.0 diagram \"Provider\" { node item \"Example Storage\" { kind queue icon \"example:storage\" } }";
+        let packs = include_str!("../../../tests/fixtures/provider-pack-input.json");
+        let checked = check_with_provider_packs_bytes(source, packs)?;
+        let rendered = render_with_provider_packs_bytes(source, packs)?;
+        assert!(checked.diagnostics.is_empty());
+        assert!(rendered.diagnostics.is_empty());
+        assert_eq!(rendered.provider_notices[0].provider_id, "example");
+        assert_eq!(rendered.provider_notices[0].icons[0].id, "example:storage");
+        assert!(
+            rendered
+                .svg
+                .ok_or("missing provider SVG")?
+                .contains("data-icon-id=\"example:storage\"")
+        );
+        assert!(check_with_provider_packs_bytes(source, "not json").is_err());
+        Ok(())
     }
 }

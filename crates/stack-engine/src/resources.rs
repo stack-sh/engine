@@ -1,7 +1,9 @@
 //! Deterministic theme and icon resolution for scene validation and rendering.
 
 use stack_compiler::ir::{Diagram, NodeKind};
-use stack_theme::{Catalog, FontMetrics, Icon, NodeVisual, Theme};
+use stack_theme::{Catalog, FontMetrics, NodeVisual, ProviderIcon, Theme};
+
+use crate::{ProviderNotice, ProviderNoticeIcon, ProviderPack};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ResourceWarning {
@@ -24,8 +26,16 @@ impl ResourceError {
 pub(crate) struct ResolvedNode<'catalog> {
     pub(crate) node_id: String,
     pub(crate) visual: &'catalog NodeVisual,
-    pub(crate) icon: &'catalog Icon,
-    pub(crate) icon_svg: &'static str,
+    pub(crate) icon_id: &'catalog str,
+    pub(crate) icon_view_box: [i32; 4],
+    pub(crate) icon_svg: &'catalog str,
+    provider: Option<ResolvedProviderIcon<'catalog>>,
+}
+
+#[derive(Debug)]
+struct ResolvedProviderIcon<'catalog> {
+    pack: &'catalog ProviderPack,
+    icon: &'catalog ProviderIcon,
 }
 
 #[derive(Debug)]
@@ -40,6 +50,7 @@ impl<'catalog> Resources<'catalog> {
     pub(crate) fn resolve(
         diagram: &Diagram,
         catalog: &'catalog Catalog,
+        provider_packs: &'catalog [ProviderPack],
     ) -> Result<Self, ResourceError> {
         let requested_theme = catalog
             .themes
@@ -70,6 +81,17 @@ impl<'catalog> Resources<'catalog> {
         for node in &diagram.nodes {
             let visual = node_visual(theme, node.kind);
             let requested_icon = node.icon_id.as_deref().unwrap_or(&visual.fallback_icon_id);
+            if let Some((pack, icon, svg)) = provider_icon(provider_packs, requested_icon) {
+                nodes.push(ResolvedNode {
+                    node_id: node.id.clone(),
+                    visual,
+                    icon_id: &icon.id,
+                    icon_view_box: icon.asset.view_box,
+                    icon_svg: svg,
+                    provider: Some(ResolvedProviderIcon { pack, icon }),
+                });
+                continue;
+            }
             let icon = match theme.icons.iter().find(|icon| icon.id == requested_icon) {
                 Some(icon) => icon,
                 None if node.icon_id.is_some() => {
@@ -97,8 +119,10 @@ impl<'catalog> Resources<'catalog> {
             nodes.push(ResolvedNode {
                 node_id: node.id.clone(),
                 visual,
-                icon,
+                icon_id: &icon.id,
+                icon_view_box: icon.asset.view_box,
                 icon_svg,
+                provider: None,
             });
         }
 
@@ -113,6 +137,64 @@ impl<'catalog> Resources<'catalog> {
     pub(crate) fn node(&self, identifier: &str) -> Option<&ResolvedNode<'catalog>> {
         self.nodes.iter().find(|node| node.node_id == identifier)
     }
+
+    pub(crate) fn provider_notices(&self) -> Vec<ProviderNotice> {
+        let mut notices = Vec::new();
+        for node in &self.nodes {
+            let Some(resolved) = &node.provider else {
+                continue;
+            };
+            let notice_index = notices
+                .iter()
+                .position(|notice: &ProviderNotice| {
+                    notice.provider_id == resolved.pack.manifest().provider.id
+                })
+                .unwrap_or_else(|| {
+                    let manifest = resolved.pack.manifest();
+                    notices.push(ProviderNotice {
+                        provider_id: manifest.provider.id.clone(),
+                        provider_name: manifest.provider.name.clone(),
+                        pack_version: manifest.pack_version.clone(),
+                        pack_revision: resolved.pack.revision().to_owned(),
+                        source_release: manifest.source.release.clone(),
+                        archive_sha256: manifest.source.archive_sha256.clone(),
+                        terms_url: manifest.source.terms_url.clone(),
+                        attribution: manifest.notice.attribution.clone(),
+                        terms_summary: manifest.notice.terms_summary.clone(),
+                        non_endorsement: manifest.notice.non_endorsement.clone(),
+                        icons: Vec::new(),
+                    });
+                    notices.len() - 1
+                });
+            if !notices[notice_index]
+                .icons
+                .iter()
+                .any(|icon| icon.id == resolved.icon.id)
+            {
+                notices[notice_index].icons.push(ProviderNoticeIcon {
+                    id: resolved.icon.id.clone(),
+                    product_name: resolved.icon.product_name.clone(),
+                });
+            }
+        }
+        notices
+    }
+}
+
+fn provider_icon<'catalog>(
+    provider_packs: &'catalog [ProviderPack],
+    identifier: &str,
+) -> Option<(
+    &'catalog ProviderPack,
+    &'catalog ProviderIcon,
+    &'catalog str,
+)> {
+    for pack in provider_packs {
+        if let Some((icon, svg)) = pack.icon(identifier) {
+            return Some((pack, icon, svg));
+        }
+    }
+    None
 }
 
 pub(crate) fn node_visual(theme: &Theme, kind: NodeKind) -> &NodeVisual {

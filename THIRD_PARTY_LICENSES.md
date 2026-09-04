@@ -4,8 +4,11 @@
 
 | Component | Revision | License | Source | Notes |
 | --- | --- | --- | --- | --- |
-| `stack-compiler` | `3d2379483da1edaeb24a26d43743587a4f5bd645` | Apache-2.0 | <https://github.com/stack-sh/compiler> | Unmodified Rust dependency; its license and notice obligations apply to distributions that include it. |
-| `stack-theme` | `d25b883884420adcc124e4c9c786ad92925eae60` | Apache-2.0 | <https://github.com/stack-sh/theme> | Unmodified Rust dependency with repository-authored fallback and explicit core SVG assets and deterministic metrics; its license and notice obligations apply to distributions that include it. |
+| `stack-compiler` | `4a18fac42afc2256a1bb3a6ff13d12d732a391e7` | Apache-2.0 | <https://github.com/stack-sh/compiler> | Unmodified Rust dependency; its license and notice obligations apply to distributions that include it. |
+| `stack-theme` | `5dbe41326370260cfc6b72d4aab4470318d66dab` | Apache-2.0 | <https://github.com/stack-sh/theme> | Unmodified Rust dependency with repository-authored core assets and the asset-free provider-pack contract. |
+| `roxmltree` | `0.21.1` | MIT OR Apache-2.0 | <https://github.com/RazrFalcon/roxmltree> | Parses caller-owned processed provider SVG before allowlisted in-memory embedding. |
+| `sha2`, `digest`, `block-buffer`, `crypto-common`, `hybrid-array`, `const-oid`, `typenum` | `0.11.0`, `0.11.3`, `0.12.1`, `0.2.2`, `0.4.14`, `0.10.2`, `1.20.1` | MIT OR Apache-2.0 | <https://github.com/RustCrypto> | Verifies provider asset hashes and computes deterministic provider-pack revisions. |
+| `libc` / `cpufeatures` | `0.2.189`, `0.3.1` | MIT OR Apache-2.0 | <https://github.com/rust-lang/libc>, <https://github.com/RustCrypto/utils> | Target-specific SHA-256 acceleration support. |
 | `serde` / `serde_core` | `1.0.229` | MIT OR Apache-2.0 | <https://github.com/serde-rs/serde> | Runtime catalog data types through `stack-theme`. |
 | `serde_json` | `1.0.151` | MIT OR Apache-2.0 | <https://github.com/serde-rs/json> | Runtime embedded-catalog decoding through `stack-theme`; also used by formatter conformance tests. |
 | `itoa` | `1.0.18` | MIT OR Apache-2.0 | <https://github.com/dtolnay/itoa> | Transitive runtime dependency of `serde_json`. |
