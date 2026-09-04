@@ -53,13 +53,13 @@ fn explicit_core_icon_matches_standalone_svg_snapshot() -> Result<(), Box<dyn Er
     let source = include_bytes!("fixtures/explicit-core-icon.stack");
     let output = Engine::bundled().render(source)?;
     assert!(output.diagnostics.is_empty());
-    assert_eq!(output.metadata.theme_catalog_version, "0.3.0");
+    assert_eq!(output.metadata.theme_catalog_version, "0.4.0");
     assert_eq!(
         output.metadata.theme_catalog_revision,
         stack_theme::CATALOG_REVISION
     );
     let svg = output.svg.ok_or("explicit icon fixture produced no SVG")?;
-    assert!(svg.contains("data-icon-id=\"api\""));
+    assert!(svg.contains("data-icon-id=\"gateway\""));
     let snapshot =
         Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/snapshots/render/explicit-core-icon.svg");
     if std::env::var_os("UPDATE_STACK_SNAPSHOTS").is_some() {

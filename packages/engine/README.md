@@ -18,4 +18,4 @@ Each operation is synchronous after module initialization and accepts either a J
 
 The package does not read files, contact a network service, inspect the DOM, observe a clock, or measure host fonts. Consumers own module loading and all host I/O.
 
-The bundled catalog resolves `api`, `web`, `mobile`, `desktop`, `server`, `container`, `cluster`, `cloud`, `scheduler`, `webhook`, `identity`, and `observability` as first-party explicit icons in the `default`, `light`, and `dark` themes. Missing authored icon identifiers still produce `STK5001` and render the theme's fallback icon.
+The bundled catalog resolves 30 first-party explicit icons in the `default`, `light`, and `dark` themes: `api`, `web`, `mobile`, `desktop`, `server`, `container`, `cluster`, `cloud`, `scheduler`, `webhook`, `identity`, `observability`, `gateway`, `load-balancer`, `dns`, `cdn`, `firewall`, `network`, `event`, `stream`, `search`, `analytics`, `repository`, `pipeline`, `secret`, `document`, `task`, `chat`, `email`, and `ai`. Missing authored icon identifiers still produce `STK5001` and render the theme's fallback icon.

@@ -5,7 +5,7 @@
 | Component | Version / revision | Selected license | Source |
 | --- | --- | --- | --- |
 | `stack-compiler` | `4a18fac42afc2256a1bb3a6ff13d12d732a391e7` | Apache-2.0 | <https://github.com/stack-sh/compiler> |
-| `stack-theme` | `5dbe41326370260cfc6b72d4aab4470318d66dab` | Apache-2.0 | <https://github.com/stack-sh/theme> |
+| `stack-theme` | `2347315e6e86ab9d2708e05fd3f9b5f3d87e1241` | Apache-2.0 | <https://github.com/stack-sh/theme> |
 | `roxmltree` | `0.21.1` | Apache-2.0 | <https://github.com/RazrFalcon/roxmltree> |
 | `sha2`, `digest`, `block-buffer`, `crypto-common`, `hybrid-array`, `const-oid`, `typenum` | `0.11.0`, `0.11.3`, `0.12.1`, `0.2.2`, `0.4.14`, `0.10.2`, `1.20.1` | Apache-2.0 | <https://github.com/RustCrypto> |
 | `libc` / `cpufeatures` | `0.2.189`, `0.3.1` | Apache-2.0 | <https://github.com/rust-lang/libc>, <https://github.com/RustCrypto/utils> |

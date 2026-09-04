@@ -81,7 +81,7 @@ test("browser diagnostics preserve actionable compiler guidance", () => {
   );
   assert.ok(actionable);
   assert.equal(actionable.render.svg, null);
-  assert.equal(actionable.check.metadata.engineVersion, "0.4.0");
+  assert.equal(actionable.check.metadata.engineVersion, "0.5.0");
   assert.deepEqual(actionable.check.diagnostics[0], {
     code: "STK2002",
     severity: "error",
@@ -103,13 +103,13 @@ test("browser rendering resolves the bundled explicit core icon", () => {
   assert.ok(explicitIcon);
   assert.deepEqual(explicitIcon.check.diagnostics, []);
   assert.deepEqual(explicitIcon.render.diagnostics, []);
-  assert.equal(explicitIcon.render.metadata.engineVersion, "0.4.0");
-  assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.3.0");
+  assert.equal(explicitIcon.render.metadata.engineVersion, "0.5.0");
+  assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.4.0");
   assert.equal(
     explicitIcon.render.metadata.themeCatalogRevision,
-    "sha256:e4eaad0813fcfef4a203e861909ff38833270646f9097155974c7c92108c5b1e",
+    "sha256:9cb3de8b504acbf22c93cea5fbea66be50f38734dc1dee18b9cab7084082cc1f",
   );
-  assert.match(explicitIcon.render.svg, /data-icon-id="api"/);
+  assert.match(explicitIcon.render.svg, /data-icon-id="gateway"/);
   assert.doesNotMatch(explicitIcon.render.svg, /data-icon-id="kind-external"/);
 });
 

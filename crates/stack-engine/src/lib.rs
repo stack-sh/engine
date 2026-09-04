@@ -614,7 +614,7 @@ mod tests {
                 output.metadata.language_version,
                 Some(LanguageVersion { major: 1, minor: 0 })
             );
-            assert_eq!(output.metadata.theme_catalog_version, "0.3.0");
+            assert_eq!(output.metadata.theme_catalog_version, "0.4.0");
             assert_eq!(
                 output.metadata.theme_catalog_revision,
                 stack_theme::CATALOG_REVISION
@@ -638,12 +638,30 @@ mod tests {
             ("webhook", "Webhook endpoint"),
             ("identity", "Identity and access"),
             ("observability", "Observability system"),
+            ("gateway", "Network gateway"),
+            ("load-balancer", "Load balancer"),
+            ("dns", "Domain name service"),
+            ("cdn", "Content delivery network"),
+            ("firewall", "Network firewall"),
+            ("network", "Network topology"),
+            ("event", "Discrete event"),
+            ("stream", "Event stream"),
+            ("search", "Search service"),
+            ("analytics", "Analytics system"),
+            ("repository", "Source code repository"),
+            ("pipeline", "Delivery pipeline"),
+            ("secret", "Secret or credential"),
+            ("document", "Document or knowledge base"),
+            ("task", "Task or issue tracker"),
+            ("chat", "Chat or messaging tool"),
+            ("email", "Email delivery"),
+            ("ai", "Artificial intelligence system"),
         ];
         let catalog = stack_theme::catalog();
-        assert_eq!(catalog.catalog_version, "0.3.0");
+        assert_eq!(catalog.catalog_version, "0.4.0");
         assert_eq!(
             stack_theme::CATALOG_REVISION,
-            "sha256:e4eaad0813fcfef4a203e861909ff38833270646f9097155974c7c92108c5b1e"
+            "sha256:9cb3de8b504acbf22c93cea5fbea66be50f38734dc1dee18b9cab7084082cc1f"
         );
         for theme in &catalog.themes {
             for (identifier, subject) in expected_icons {
@@ -657,18 +675,18 @@ mod tests {
             }
         }
 
-        let source = b"stack 1.0 diagram \"Core icon\" { theme dark node gateway \"Gateway\" { kind service detail \"Public API\" icon \"api\" } }";
+        let source = b"stack 1.0 diagram \"Core icon\" { theme dark node gateway \"Gateway\" { kind service detail \"Public API\" icon \"gateway\" } }";
         let checked = Engine::bundled().check(source)?;
         let rendered = Engine::bundled().render(source)?;
         assert!(checked.diagnostics.is_empty());
         assert!(rendered.diagnostics.is_empty());
-        assert_eq!(rendered.metadata.theme_catalog_version, "0.3.0");
+        assert_eq!(rendered.metadata.theme_catalog_version, "0.4.0");
         assert_eq!(
             rendered.metadata.theme_catalog_revision,
             stack_theme::CATALOG_REVISION
         );
         let svg = rendered.svg.ok_or("explicit icon render produced no SVG")?;
-        assert!(svg.contains("data-icon-id=\"api\""));
+        assert!(svg.contains("data-icon-id=\"gateway\""));
         assert!(!svg.contains("data-icon-id=\"kind-external\""));
         Ok(())
     }

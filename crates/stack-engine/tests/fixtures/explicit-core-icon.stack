@@ -6,6 +6,6 @@ diagram "Core icon" {
   node gateway "Gateway" {
     kind service
     detail "Public API"
-    icon "api"
+    icon "gateway"
   }
 }
