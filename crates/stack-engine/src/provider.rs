@@ -17,11 +17,13 @@ const MAX_PROVIDER_PACK_BYTES: usize = 32 * 1024 * 1024;
 const SVG_NAMESPACE: &str = "http://www.w3.org/2000/svg";
 const ALLOWED_ELEMENTS: &[&str] = &[
     "circle",
+    "clipPath",
     "defs",
     "ellipse",
     "g",
     "line",
     "linearGradient",
+    "mask",
     "path",
     "polygon",
     "polyline",
@@ -32,16 +34,24 @@ const ALLOWED_ELEMENTS: &[&str] = &[
 ];
 const ALLOWED_ATTRIBUTES: &[&str] = &[
     "aria-hidden",
+    "clip-path",
     "clip-rule",
     "cx",
     "cy",
     "d",
     "fill",
+    "fill-opacity",
     "fill-rule",
+    "fx",
+    "fy",
     "gradientTransform",
     "gradientUnits",
     "height",
+    "href",
     "id",
+    "isolation",
+    "mask",
+    "maskUnits",
     "opacity",
     "offset",
     "points",
@@ -54,6 +64,7 @@ const ALLOWED_ATTRIBUTES: &[&str] = &[
     "stroke",
     "stroke-linecap",
     "stroke-linejoin",
+    "stroke-miterlimit",
     "stroke-width",
     "transform",
     "viewBox",
@@ -329,9 +340,16 @@ fn validate_svg(svg: &str, expected_view_box: [i32; 4]) -> OperationResult<()> {
             || node.tag_name().namespace() != Some(SVG_NAMESPACE)
             || (name == "svg" && node != root)
             || (name == "defs" && parent_name != Some("svg"))
-            || (matches!(name, "linearGradient" | "radialGradient") && parent_name != Some("defs"))
+            || (matches!(
+                name,
+                "linearGradient" | "radialGradient" | "clipPath" | "mask"
+            ) && parent_name != Some("defs"))
             || (name == "stop" && !matches!(parent_name, Some("linearGradient" | "radialGradient")))
-            || (parent_name == Some("defs") && !matches!(name, "linearGradient" | "radialGradient"))
+            || (parent_name == Some("defs")
+                && !matches!(
+                    name,
+                    "linearGradient" | "radialGradient" | "clipPath" | "mask"
+                ))
         {
             return Err(unsafe_svg());
         }
@@ -344,14 +362,24 @@ fn validate_svg(svg: &str, expected_view_box: [i32; 4]) -> OperationResult<()> {
                 return Err(unsafe_svg());
             }
             if attribute_name == "id"
-                && (!matches!(name, "linearGradient" | "radialGradient")
-                    || !attribute.value().starts_with("stack-")
+                && (!matches!(
+                    name,
+                    "linearGradient" | "radialGradient" | "clipPath" | "mask"
+                ) || !attribute.value().starts_with("stack-")
                     || !declared.insert(attribute.value()))
             {
                 return Err(unsafe_svg());
             }
-            if let Some(identifier) = local_reference(attribute.value()) {
-                if !matches!(attribute_name, "fill" | "stroke") {
+            if let Some(identifier) = local_url_reference(attribute.value()) {
+                if !matches!(attribute_name, "fill" | "stroke" | "clip-path" | "mask") {
+                    return Err(unsafe_svg());
+                }
+                referenced.insert(identifier);
+            } else if attribute_name == "href" {
+                let Some(identifier) = fragment_reference(attribute.value()) else {
+                    return Err(unsafe_svg());
+                };
+                if !matches!(name, "linearGradient" | "radialGradient") {
                     return Err(unsafe_svg());
                 }
                 referenced.insert(identifier);
@@ -413,11 +441,15 @@ fn parse_view_box(value: Option<&str>) -> Option<[i32; 4]> {
         .then(|| [values[0], values[1], values[2], values[3]])
 }
 
-fn local_reference(value: &str) -> Option<&str> {
+fn local_url_reference(value: &str) -> Option<&str> {
     value
         .strip_prefix("url(#")
         .and_then(|value| value.strip_suffix(')'))
         .filter(|value| !value.is_empty())
+}
+
+fn fragment_reference(value: &str) -> Option<&str> {
+    value.strip_prefix('#').filter(|value| !value.is_empty())
 }
 
 fn contains_unsafe_reference(value: &str) -> bool {
@@ -812,6 +844,12 @@ mod tests {
     #[test]
     fn namespaced_local_gradients_are_accepted() {
         let svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><defs><linearGradient id=\"stack-paint\"><stop offset=\"0\" stop-color=\"#000000\"/><stop offset=\"1\" stop-color=\"#ffffff\"/></linearGradient></defs><path fill=\"url(#stack-paint)\" d=\"M0 0h24v24H0z\"/></svg>";
+        assert!(pack_with_svg(svg).is_ok());
+    }
+
+    #[test]
+    fn namespaced_local_clip_paths_masks_and_gradient_inheritance_are_accepted() {
+        let svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><defs><clipPath id=\"stack-clip\"><rect x=\"0\" y=\"0\" width=\"24\" height=\"24\"/></clipPath><mask id=\"stack-mask\" maskUnits=\"userSpaceOnUse\"><rect x=\"0\" y=\"0\" width=\"24\" height=\"24\" fill=\"#ffffff\"/></mask><linearGradient id=\"stack-base\"><stop offset=\"0\" stop-color=\"#000000\"/><stop offset=\"1\" stop-color=\"#ffffff\"/></linearGradient><linearGradient id=\"stack-paint\" href=\"#stack-base\"/></defs><path clip-path=\"url(#stack-clip)\" mask=\"url(#stack-mask)\" fill=\"url(#stack-paint)\" fill-opacity=\"0.5\" d=\"M0 0h24v24H0z\"/></svg>";
         assert!(pack_with_svg(svg).is_ok());
     }
 
