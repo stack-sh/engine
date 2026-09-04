@@ -95,7 +95,7 @@ test("browser rendering resolves the bundled explicit core icon", () => {
   assert.deepEqual(explicitIcon.check.diagnostics, []);
   assert.deepEqual(explicitIcon.render.diagnostics, []);
   assert.equal(explicitIcon.render.metadata.engineVersion, "0.3.0");
-  assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.2.0");
+  assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.3.0");
   assert.equal(
     explicitIcon.render.metadata.themeCatalogRevision,
     "sha256:e4eaad0813fcfef4a203e861909ff38833270646f9097155974c7c92108c5b1e",
