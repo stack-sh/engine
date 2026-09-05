@@ -18,7 +18,7 @@ jobs:
 
       - name: Validate initial publication guards and Cargo license assets
         run: |
-          node --test scripts/initial-publish-context.test.mjs
+          node --test scripts/initial-publish-context.test.mjs scripts/cargo-publish-context.test.mjs
           node scripts/cargo-package-assets.mjs --check
 
       - name: Read supported specification revision
