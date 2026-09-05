@@ -376,9 +376,8 @@ mod tests {
 
     #[test]
     fn completion_includes_validated_provider_icons() -> Result<(), Box<dyn Error>> {
-        let fixture: serde_json::Value = serde_json::from_str(include_str!(
-            "../../../tests/fixtures/provider-pack-input.json"
-        ))?;
+        let fixture: serde_json::Value =
+            serde_json::from_str(include_str!("../tests/fixtures/provider-pack-input.json"))?;
         let input = fixture
             .as_array()
             .and_then(|items| items.first())
