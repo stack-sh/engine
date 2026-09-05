@@ -52,6 +52,114 @@ pub struct RenderResult {
     pub provider_notices: Vec<ProviderNotice>,
 }
 
+/// JavaScript-facing result of a context-aware completion operation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CompletionResult {
+    /// Portable language-intelligence schema version.
+    pub schema_version: String,
+    /// Caller-owned document version echoed by the engine.
+    pub document_version: u64,
+    /// Ordered compiler diagnostics for the same source snapshot.
+    pub diagnostics: Vec<Diagnostic>,
+    /// Whether more source context may materially change the list.
+    pub is_incomplete: bool,
+    /// Deterministically ordered completion items.
+    pub items: Vec<CompletionItem>,
+}
+
+/// JavaScript-facing result of a semantic hover operation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HoverResult {
+    /// Portable language-intelligence schema version.
+    pub schema_version: String,
+    /// Caller-owned document version echoed by the engine.
+    pub document_version: u64,
+    /// Ordered compiler diagnostics for the same source snapshot.
+    pub diagnostics: Vec<Diagnostic>,
+    /// Resolved semantic hover, if one covers the requested position.
+    pub hover: Option<Hover>,
+}
+
+/// A literal source replacement interpreted against one document snapshot.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TextEdit {
+    /// End-exclusive source range replaced by the edit.
+    pub range: SourceRange,
+    /// Literal Stack source inserted in place of the range.
+    pub new_text: String,
+}
+
+/// Semantic category of a completion item.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum CompletionKind {
+    /// A grammatical Stack keyword.
+    Keyword,
+    /// A property or layout statement.
+    Property,
+    /// A closed value from the Stack language specification.
+    EnumValue,
+    /// A document-local semantic identifier.
+    Identifier,
+    /// A core or caller-owned provider icon.
+    Icon,
+}
+
+/// One protocol-neutral source completion.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CompletionItem {
+    /// User-visible plain-text label.
+    pub label: String,
+    /// Semantic completion category.
+    pub kind: CompletionKind,
+    /// Optional plain-text secondary label.
+    pub detail: Option<String>,
+    /// Optional plain-text documentation.
+    pub documentation: Option<String>,
+    /// Plain string used by consumers for filtering.
+    pub filter_text: String,
+    /// Stable ordering key.
+    pub sort_text: String,
+    /// Literal source replacement.
+    pub edit: TextEdit,
+}
+
+/// Semantic category described by hover information.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum HoverKind {
+    /// The document's diagram declaration.
+    Diagram,
+    /// A containment group.
+    Group,
+    /// A node declaration or reference.
+    Node,
+    /// An edge declaration.
+    Edge,
+    /// A language property, theme, or layout value.
+    Property,
+}
+
+/// Plain-text semantic information for one source token.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Hover {
+    /// Exact end-exclusive source range described by the hover.
+    pub range: SourceRange,
+    /// Semantic hover category.
+    pub kind: HoverKind,
+    /// Short user-visible label.
+    pub label: String,
+    /// Optional plain-text secondary label.
+    pub detail: Option<String>,
+    /// Optional plain-text documentation.
+    pub documentation: Option<String>,
+}
+
 /// JavaScript-facing provider provenance for one rendered pack.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -231,6 +339,28 @@ pub fn render_bytes(source: &[u8]) -> OperationResult<RenderResult> {
     Engine::bundled().render(source).map(RenderResult::from)
 }
 
+/// Computes context-aware completion for one UTF-8 source snapshot.
+pub fn completion_text(
+    source: &str,
+    document_version: u64,
+    position: SourcePosition,
+) -> OperationResult<CompletionResult> {
+    Engine::bundled()
+        .completion(source, document_version, position.into())
+        .map(CompletionResult::from)
+}
+
+/// Resolves semantic hover for one UTF-8 source snapshot.
+pub fn hover_text(
+    source: &str,
+    document_version: u64,
+    position: SourcePosition,
+) -> OperationResult<HoverResult> {
+    Engine::bundled()
+        .hover(source, document_version, position.into())
+        .map(HoverResult::from)
+}
+
 /// Checks source against caller-owned provider packs encoded as local JSON data.
 pub fn check_with_provider_packs_bytes(
     source: &[u8],
@@ -251,6 +381,19 @@ pub fn render_with_provider_packs_bytes(
     Engine::with_provider_packs(&provider_packs)?
         .render(source)
         .map(RenderResult::from)
+}
+
+/// Computes completion with caller-owned provider packs encoded as local JSON data.
+pub fn completion_with_provider_packs_text(
+    source: &str,
+    document_version: u64,
+    position: SourcePosition,
+    provider_packs_json: &str,
+) -> OperationResult<CompletionResult> {
+    let provider_packs = parse_provider_packs(provider_packs_json)?;
+    Engine::with_provider_packs(&provider_packs)?
+        .completion(source, document_version, position.into())
+        .map(CompletionResult::from)
 }
 
 fn parse_provider_packs(provider_packs_json: &str) -> OperationResult<Vec<ProviderPack>> {
@@ -317,6 +460,90 @@ impl From<stack_engine::RenderOutput> for RenderResult {
                 .into_iter()
                 .map(ProviderNotice::from)
                 .collect(),
+        }
+    }
+}
+
+impl From<stack_engine::CompletionOutput> for CompletionResult {
+    fn from(output: stack_engine::CompletionOutput) -> Self {
+        Self {
+            schema_version: output.schema_version,
+            document_version: output.document_version,
+            diagnostics: output
+                .diagnostics
+                .into_iter()
+                .map(Diagnostic::from)
+                .collect(),
+            is_incomplete: output.is_incomplete,
+            items: output.items.into_iter().map(CompletionItem::from).collect(),
+        }
+    }
+}
+
+impl From<stack_engine::CompletionItem> for CompletionItem {
+    fn from(item: stack_engine::CompletionItem) -> Self {
+        Self {
+            label: item.label,
+            kind: CompletionKind::from(item.kind),
+            detail: item.detail,
+            documentation: item.documentation,
+            filter_text: item.filter_text,
+            sort_text: item.sort_text,
+            edit: TextEdit {
+                range: SourceRange::from(item.edit.range),
+                new_text: item.edit.new_text,
+            },
+        }
+    }
+}
+
+impl From<stack_engine::CompletionKind> for CompletionKind {
+    fn from(kind: stack_engine::CompletionKind) -> Self {
+        match kind {
+            stack_engine::CompletionKind::Keyword => Self::Keyword,
+            stack_engine::CompletionKind::Property => Self::Property,
+            stack_engine::CompletionKind::EnumValue => Self::EnumValue,
+            stack_engine::CompletionKind::Identifier => Self::Identifier,
+            stack_engine::CompletionKind::Icon => Self::Icon,
+        }
+    }
+}
+
+impl From<stack_engine::HoverOutput> for HoverResult {
+    fn from(output: stack_engine::HoverOutput) -> Self {
+        Self {
+            schema_version: output.schema_version,
+            document_version: output.document_version,
+            diagnostics: output
+                .diagnostics
+                .into_iter()
+                .map(Diagnostic::from)
+                .collect(),
+            hover: output.hover.map(Hover::from),
+        }
+    }
+}
+
+impl From<stack_engine::Hover> for Hover {
+    fn from(hover: stack_engine::Hover) -> Self {
+        Self {
+            range: SourceRange::from(hover.range),
+            kind: HoverKind::from(hover.kind),
+            label: hover.label,
+            detail: hover.detail,
+            documentation: hover.documentation,
+        }
+    }
+}
+
+impl From<stack_engine::HoverKind> for HoverKind {
+    fn from(kind: stack_engine::HoverKind) -> Self {
+        match kind {
+            stack_engine::HoverKind::Diagram => Self::Diagram,
+            stack_engine::HoverKind::Group => Self::Group,
+            stack_engine::HoverKind::Node => Self::Node,
+            stack_engine::HoverKind::Edge => Self::Edge,
+            stack_engine::HoverKind::Property => Self::Property,
         }
     }
 }
@@ -447,11 +674,23 @@ impl From<stack_engine::SourcePosition> for SourcePosition {
     }
 }
 
+impl From<SourcePosition> for stack_engine::SourcePosition {
+    fn from(position: SourcePosition) -> Self {
+        Self {
+            byte_offset: position.byte_offset,
+            line: position.line,
+            column: position.column,
+        }
+    }
+}
+
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(typescript_custom_section)]
 const TYPESCRIPT_TYPES: &'static str = r#"
 export type StackSource = string | Uint8Array;
 export type Severity = "error" | "warning";
+export type CompletionKind = "keyword" | "property" | "enumValue" | "identifier" | "icon";
+export type HoverKind = "diagram" | "group" | "node" | "edge" | "property";
 
 export interface SourcePosition {
   readonly byteOffset: number;
@@ -509,6 +748,44 @@ export interface RenderResult {
   readonly providerNotices: readonly ProviderNotice[];
 }
 
+export interface TextEdit {
+  readonly range: SourceRange;
+  readonly newText: string;
+}
+
+export interface CompletionItem {
+  readonly label: string;
+  readonly kind: CompletionKind;
+  readonly detail: string | null;
+  readonly documentation: string | null;
+  readonly filterText: string;
+  readonly sortText: string;
+  readonly edit: TextEdit;
+}
+
+export interface CompletionResult {
+  readonly schemaVersion: string;
+  readonly documentVersion: number;
+  readonly diagnostics: readonly Diagnostic[];
+  readonly isIncomplete: boolean;
+  readonly items: readonly CompletionItem[];
+}
+
+export interface Hover {
+  readonly range: SourceRange;
+  readonly kind: HoverKind;
+  readonly label: string;
+  readonly detail: string | null;
+  readonly documentation: string | null;
+}
+
+export interface HoverResult {
+  readonly schemaVersion: string;
+  readonly documentVersion: number;
+  readonly diagnostics: readonly Diagnostic[];
+  readonly hover: Hover | null;
+}
+
 export interface ProviderNoticeIcon {
   readonly id: string;
   readonly productName: string;
@@ -553,8 +830,11 @@ export interface ProviderPackInput {
 export function format(source: StackSource): FormatResult;
 export function check(source: StackSource): CheckResult;
 export function render(source: StackSource): RenderResult;
+export function completion(source: string, documentVersion: number, position: SourcePosition): CompletionResult;
+export function hover(source: string, documentVersion: number, position: SourcePosition): HoverResult;
 export function checkWithProviderPacks(source: StackSource, providerPacks: readonly ProviderPackInput[]): CheckResult;
 export function renderWithProviderPacks(source: StackSource, providerPacks: readonly ProviderPackInput[]): RenderResult;
+export function completionWithProviderPacks(source: string, documentVersion: number, position: SourcePosition, providerPacks: readonly ProviderPackInput[]): CompletionResult;
 "#;
 
 #[cfg(target_arch = "wasm32")]
@@ -585,6 +865,40 @@ pub fn render_js(source: JsValue) -> Result<JsValue, JsValue> {
 }
 
 #[cfg(target_arch = "wasm32")]
+/// Computes context-aware completion for a JavaScript UTF-8 string snapshot.
+#[wasm_bindgen(js_name = completion, skip_typescript)]
+pub fn completion_js(
+    source: JsValue,
+    document_version: JsValue,
+    position: JsValue,
+) -> Result<JsValue, JsValue> {
+    completion_text(
+        &text_source(source)?,
+        safe_integer(document_version, "Document version", 0)?,
+        position_from_js(position)?,
+    )
+    .map_err(operation_error)
+    .and_then(completion_to_js)
+}
+
+#[cfg(target_arch = "wasm32")]
+/// Resolves semantic hover for a JavaScript UTF-8 string snapshot.
+#[wasm_bindgen(js_name = hover, skip_typescript)]
+pub fn hover_js(
+    source: JsValue,
+    document_version: JsValue,
+    position: JsValue,
+) -> Result<JsValue, JsValue> {
+    hover_text(
+        &text_source(source)?,
+        safe_integer(document_version, "Document version", 0)?,
+        position_from_js(position)?,
+    )
+    .map_err(operation_error)
+    .and_then(hover_to_js)
+}
+
+#[cfg(target_arch = "wasm32")]
 /// Checks source using provider packs supplied as caller-owned JavaScript data.
 #[wasm_bindgen(js_name = checkWithProviderPacks, skip_typescript)]
 pub fn check_with_provider_packs_js(
@@ -611,6 +925,26 @@ pub fn render_with_provider_packs_js(
 }
 
 #[cfg(target_arch = "wasm32")]
+/// Computes completion using provider packs supplied as caller-owned JavaScript data.
+#[wasm_bindgen(js_name = completionWithProviderPacks, skip_typescript)]
+pub fn completion_with_provider_packs_js(
+    source: JsValue,
+    document_version: JsValue,
+    position: JsValue,
+    provider_packs: JsValue,
+) -> Result<JsValue, JsValue> {
+    let provider_packs = provider_packs_json(provider_packs)?;
+    completion_with_provider_packs_text(
+        &text_source(source)?,
+        safe_integer(document_version, "Document version", 0)?,
+        position_from_js(position)?,
+        &provider_packs,
+    )
+    .map_err(operation_error)
+    .and_then(completion_to_js)
+}
+
+#[cfg(target_arch = "wasm32")]
 fn provider_packs_json(provider_packs: JsValue) -> Result<String, JsValue> {
     JSON::stringify(&provider_packs)
         .map_err(|_| TypeError::new("Provider packs must be JSON-compatible local data"))?
@@ -627,6 +961,56 @@ fn source_bytes(source: JsValue) -> Result<Vec<u8>, JsValue> {
         return Ok(Uint8Array::new(&source).to_vec());
     }
     Err(TypeError::new("Stack source must be a string or Uint8Array").into())
+}
+
+#[cfg(target_arch = "wasm32")]
+fn text_source(source: JsValue) -> Result<String, JsValue> {
+    source
+        .as_string()
+        .ok_or_else(|| TypeError::new("Language intelligence source must be a string").into())
+}
+
+#[cfg(target_arch = "wasm32")]
+fn position_from_js(position: JsValue) -> Result<SourcePosition, JsValue> {
+    if !position.is_object() || position.is_null() {
+        return Err(TypeError::new("Source position must be an object").into());
+    }
+    let byte_offset = safe_integer(
+        Reflect::get(&position, &JsValue::from_str("byteOffset"))?,
+        "Source position byteOffset",
+        0,
+    )?;
+    let line = safe_integer(
+        Reflect::get(&position, &JsValue::from_str("line"))?,
+        "Source position line",
+        1,
+    )?;
+    let column = safe_integer(
+        Reflect::get(&position, &JsValue::from_str("column"))?,
+        "Source position column",
+        1,
+    )?;
+    Ok(SourcePosition {
+        byte_offset,
+        line,
+        column,
+    })
+}
+
+#[cfg(target_arch = "wasm32")]
+fn safe_integer(value: JsValue, name: &str, minimum: u64) -> Result<u64, JsValue> {
+    const MAX_SAFE_INTEGER: f64 = 9_007_199_254_740_991.0;
+    let Some(value) = value.as_f64() else {
+        return Err(TypeError::new(&format!("{name} must be a safe integer")).into());
+    };
+    if !value.is_finite()
+        || value.fract() != 0.0
+        || value < minimum as f64
+        || value > MAX_SAFE_INTEGER
+    {
+        return Err(TypeError::new(&format!("{name} must be a safe integer")).into());
+    }
+    Ok(value as u64)
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -674,6 +1058,87 @@ fn render_to_js(result: RenderResult) -> Result<JsValue, JsValue> {
         "providerNotices",
         provider_notices_to_js(result.provider_notices)?,
     )?;
+    Ok(output.into())
+}
+
+#[cfg(target_arch = "wasm32")]
+fn completion_to_js(result: CompletionResult) -> Result<JsValue, JsValue> {
+    let output = Object::new();
+    set(&output, "schemaVersion", result.schema_version.into())?;
+    set(
+        &output,
+        "documentVersion",
+        JsValue::from_f64(result.document_version as f64),
+    )?;
+    set(
+        &output,
+        "diagnostics",
+        diagnostics_to_js(result.diagnostics)?,
+    )?;
+    set(&output, "isIncomplete", result.is_incomplete.into())?;
+    let items = Array::new();
+    for item in result.items {
+        let value = Object::new();
+        set(&value, "label", item.label.into())?;
+        set(
+            &value,
+            "kind",
+            JsValue::from_str(match item.kind {
+                CompletionKind::Keyword => "keyword",
+                CompletionKind::Property => "property",
+                CompletionKind::EnumValue => "enumValue",
+                CompletionKind::Identifier => "identifier",
+                CompletionKind::Icon => "icon",
+            }),
+        )?;
+        set_optional_string(&value, "detail", item.detail)?;
+        set_optional_string(&value, "documentation", item.documentation)?;
+        set(&value, "filterText", item.filter_text.into())?;
+        set(&value, "sortText", item.sort_text.into())?;
+        let edit = Object::new();
+        set(&edit, "range", range_to_js(item.edit.range)?)?;
+        set(&edit, "newText", item.edit.new_text.into())?;
+        set(&value, "edit", edit.into())?;
+        items.push(&value);
+    }
+    set(&output, "items", items.into())?;
+    Ok(output.into())
+}
+
+#[cfg(target_arch = "wasm32")]
+fn hover_to_js(result: HoverResult) -> Result<JsValue, JsValue> {
+    let output = Object::new();
+    set(&output, "schemaVersion", result.schema_version.into())?;
+    set(
+        &output,
+        "documentVersion",
+        JsValue::from_f64(result.document_version as f64),
+    )?;
+    set(
+        &output,
+        "diagnostics",
+        diagnostics_to_js(result.diagnostics)?,
+    )?;
+    let hover = result.hover.map_or(Ok(JsValue::NULL), |hover| {
+        let value = Object::new();
+        set(&value, "range", range_to_js(hover.range)?)?;
+        set(
+            &value,
+            "kind",
+            JsValue::from_str(match hover.kind {
+                HoverKind::Diagram => "diagram",
+                HoverKind::Group => "group",
+                HoverKind::Node => "node",
+                HoverKind::Edge => "edge",
+                HoverKind::Property => "property",
+            }),
+        )?;
+        set(&value, "label", hover.label.into())?;
+        set_optional_string(&value, "detail", hover.detail)?;
+        set_optional_string(&value, "documentation", hover.documentation)?;
+        Ok::<JsValue, JsValue>(value.into())
+    })?;
+    set(&output, "hover", hover)?;
     Ok(output.into())
 }
 
@@ -832,8 +1297,9 @@ mod tests {
     use std::error::Error;
 
     use super::{
-        Diagnostic, Severity, check_bytes, check_with_provider_packs_bytes, format_bytes,
-        render_bytes, render_with_provider_packs_bytes,
+        CompletionKind, Diagnostic, HoverKind, Severity, SourcePosition, check_bytes,
+        check_with_provider_packs_bytes, completion_text, completion_with_provider_packs_text,
+        format_bytes, hover_text, render_bytes, render_with_provider_packs_bytes,
     };
 
     #[test]
@@ -910,5 +1376,86 @@ mod tests {
         );
         assert!(check_with_provider_packs_bytes(source, "not json").is_err());
         Ok(())
+    }
+
+    #[test]
+    fn language_helpers_preserve_versions_ranges_and_provider_catalogs()
+    -> Result<(), Box<dyn Error>> {
+        let source = "stack 1.0 diagram \"Provider\" { node item \"Example Storage\" { icon \"example:s\" } }";
+        let icon_start = source.find("example:s").ok_or("missing icon prefix")?;
+        let position = SourcePosition {
+            byte_offset: (icon_start + "example:s".len()) as u64,
+            line: 1,
+            column: (icon_start + "example:s".len() + 1) as u64,
+        };
+        let core = completion_text(source, 6, position)?;
+        assert_eq!(core.schema_version, "1.0");
+        assert_eq!(core.document_version, 6);
+        assert!(core.items.is_empty());
+
+        let packs = include_str!("../../../tests/fixtures/provider-pack-input.json");
+        let provider = completion_with_provider_packs_text(source, 7, position, packs)?;
+        assert_eq!(provider.document_version, 7);
+        assert_eq!(provider.items[0].kind, CompletionKind::Icon);
+        assert_eq!(provider.items[0].filter_text, "example:storage");
+        assert_eq!(
+            provider.items[0].edit.range.start.byte_offset,
+            icon_start as u64
+        );
+
+        let hover_source = "stack 1.0 diagram \"API\" { node api \"Public API\" }";
+        let label = hover_source.find("Public API").ok_or("missing label")?;
+        let hovered = hover_text(
+            hover_source,
+            8,
+            SourcePosition {
+                byte_offset: label as u64,
+                line: 1,
+                column: (label + 1) as u64,
+            },
+        )?;
+        assert_eq!(hovered.document_version, 8);
+        let hover = hovered.hover.ok_or("missing hover")?;
+        assert_eq!(hover.kind, HoverKind::Node);
+        assert_eq!(hover.label, "Public API");
+        Ok(())
+    }
+
+    #[test]
+    fn language_kind_conversions_cover_the_portable_contract() {
+        assert_eq!(
+            [
+                stack_engine::CompletionKind::Keyword,
+                stack_engine::CompletionKind::Property,
+                stack_engine::CompletionKind::EnumValue,
+                stack_engine::CompletionKind::Identifier,
+                stack_engine::CompletionKind::Icon,
+            ]
+            .map(CompletionKind::from),
+            [
+                CompletionKind::Keyword,
+                CompletionKind::Property,
+                CompletionKind::EnumValue,
+                CompletionKind::Identifier,
+                CompletionKind::Icon,
+            ]
+        );
+        assert_eq!(
+            [
+                stack_engine::HoverKind::Diagram,
+                stack_engine::HoverKind::Group,
+                stack_engine::HoverKind::Node,
+                stack_engine::HoverKind::Edge,
+                stack_engine::HoverKind::Property,
+            ]
+            .map(HoverKind::from),
+            [
+                HoverKind::Diagram,
+                HoverKind::Group,
+                HoverKind::Node,
+                HoverKind::Edge,
+                HoverKind::Property,
+            ]
+        );
     }
 }

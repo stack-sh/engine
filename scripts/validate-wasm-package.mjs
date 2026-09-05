@@ -19,8 +19,11 @@ assert.match(declaration, /export type StackSource = string \| Uint8Array;/);
 assert.match(declaration, /export function format\(source: StackSource\): FormatResult;/);
 assert.match(declaration, /export function check\(source: StackSource\): CheckResult;/);
 assert.match(declaration, /export function render\(source: StackSource\): RenderResult;/);
+assert.match(declaration, /export function completion\(source: string/);
+assert.match(declaration, /export function hover\(source: string/);
 assert.match(declaration, /export function checkWithProviderPacks/);
 assert.match(declaration, /export function renderWithProviderPacks/);
+assert.match(declaration, /export function completionWithProviderPacks/);
 
 const module = new WebAssembly.Module(binary);
 const imports = WebAssembly.Module.imports(module);
@@ -45,7 +48,16 @@ for (const requiredPrimitive of ["Array", "Error", "JSON", "Object", "Reflect", 
 }
 
 const exports = new Set(WebAssembly.Module.exports(module).map(({ name }) => name));
-for (const operation of ["format", "check", "render", "checkWithProviderPacks", "renderWithProviderPacks"]) {
+for (const operation of [
+  "format",
+  "check",
+  "render",
+  "completion",
+  "hover",
+  "checkWithProviderPacks",
+  "renderWithProviderPacks",
+  "completionWithProviderPacks",
+]) {
   assert.ok(exports.has(operation), `missing ${operation} WebAssembly export`);
 }
 
