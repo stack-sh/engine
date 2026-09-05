@@ -31,6 +31,7 @@ rustup target add wasm32-unknown-unknown wasm32-wasip1
 cargo build -p stack-engine-wasm --target wasm32-unknown-unknown
 wasm-bindgen --version
 npm ci
+npm run layout:validate
 npm run build:wasm
 npm test
 npm run typecheck
@@ -41,11 +42,21 @@ cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo doc --workspace --no-deps
 ```
 
+The versioned representative layout corpus covers small, medium, and dense diagrams plus groups, nested groups, authored rank and order constraints, cross-boundary edges, labels, and caller-owned provider icons. Run its exact geometry comparison, release-mode performance budget, and local static review gallery with:
+
+```sh
+cargo test -p stack-engine --test layout_corpus --locked
+cargo test --release -p stack-engine --test layout_corpus layout_runtime_stays_within_budget --locked -- --ignored --nocapture
+npm run layout:gallery
+```
+
+The review-first snapshot policy and corpus contract are documented in [`layout-corpus/README.md`](./layout-corpus/README.md).
+
 `stack-formatter` is pure and accepts source bytes or UTF-8 text. Lexical and syntax errors return diagnostics without formatted output. Syntactically valid source remains formattable when semantic diagnostics exist.
 
 `stack-engine` exposes byte-oriented `format`, `check`, and `render` methods through an engine bound to the embedded or a caller-provided validated catalog. `ProviderPack::new` accepts a typed user-imported manifest and caller-owned SVG strings, verifies exact asset hashes and safe SVG structure, and computes a deterministic content revision before `Engine::with_provider_packs` can resolve namespaced IDs. Every normal output carries engine, authored language, theme catalog version, and theme catalog revision metadata. User-source failures stay in ordered portable diagnostics. Invalid provided catalogs or provider packs and violated normalized pipeline invariants use a separate operational-error channel. Checks and renders resolve the requested theme and provider packs, validate deterministic integer geometry, and route ordered edges outside node interiors. Missing themes and icons produce source-mapped `STK6001` and `STK5001` warnings while a fallback SVG remains available. An unsatisfied authored order hint produces `STK4001` at its source-map range; a satisfied hint does not.
 
-The renderer emits fixed-dimension standalone SVG with embedded catalog or provider icons, local marker references, escaped authored text, accessible title and description metadata, and no script, event handler, external URL, host font measurement, or runtime I/O. Provider artwork preserves the authored node `kind`; each render returns the exact used-asset notices and writes provider ID, icon IDs, and pack revision into SVG metadata. The bundled catalog provides 30 first-party explicit icon identifiers in every core theme: `api`, `web`, `mobile`, `desktop`, `server`, `container`, `cluster`, `cloud`, `scheduler`, `webhook`, `identity`, `observability`, `gateway`, `load-balancer`, `dns`, `cdn`, `firewall`, `network`, `event`, `stream`, `search`, `analytics`, `repository`, `pipeline`, `secret`, `document`, `task`, `chat`, `email`, and `ai`. Canonical SVG snapshots are byte-stable and parsed by `scripts/validate-svg.py`; set `UPDATE_STACK_SNAPSHOTS=1` only when intentionally regenerating them. CI also executes one exact numeric geometry fixture in both the native suite and a WASI build.
+The renderer emits fixed-dimension standalone SVG with embedded catalog or provider icons, local marker references, escaped authored text, accessible title and description metadata, and no script, event handler, external URL, host font measurement, or runtime I/O. Provider artwork preserves the authored node `kind`; each render returns the exact used-asset notices and writes provider ID, icon IDs, and pack revision into SVG metadata. The bundled catalog provides 30 first-party explicit icon identifiers in every core theme: `api`, `web`, `mobile`, `desktop`, `server`, `container`, `cluster`, `cloud`, `scheduler`, `webhook`, `identity`, `observability`, `gateway`, `load-balancer`, `dns`, `cdn`, `firewall`, `network`, `event`, `stream`, `search`, `analytics`, `repository`, `pipeline`, `secret`, `document`, `task`, `chat`, `email`, and `ai`. Canonical renderer and representative-layout SVG snapshots are byte-stable and parsed by `scripts/validate-svg.py`; set `UPDATE_STACK_SNAPSHOTS=1` or `UPDATE_STACK_LAYOUT_SNAPSHOTS=1` only when intentionally regenerating the corresponding reviewed references. CI also executes one exact numeric geometry fixture in both the native suite and a WASI build.
 
 The npm package exports synchronous `format`, `check`, `render`, `checkWithProviderPacks`, and `renderWithProviderPacks` functions after asynchronous module initialization. Provider-pack operations accept JSON-compatible local manifest and SVG data; they never discover a path or initiate a request. Each operation accepts `string | Uint8Array` source and returns a specific typed result with camel-case metadata and portable diagnostics. Diagnostics preserve the compiler's primary range, ordered `expected` values, corrective help, and related source locations. Invalid UTF-8 remains a normal `STK1001` result. Unsupported JavaScript input types and internal operational failures throw at the adapter boundary. Shared fixtures exercise native and WebAssembly provider resolution. Artifact validation audits WebAssembly imports and package contents; browser consumers retain responsibility for loading the module and performing any DOM, filesystem, network, or clock work.
 

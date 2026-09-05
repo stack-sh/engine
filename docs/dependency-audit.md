@@ -1,14 +1,14 @@
 # Dependency and host-I/O audit
 
-Audit date: 2026-09-04
+Audit date: 2026-09-05
 
 ## Runtime graph
 
 `stack-engine` has six direct dependencies:
 
-- `stack-compiler` at `4a18fac42afc2256a1bb3a6ff13d12d732a391e7` for byte decoding, parsing, validation, normalized IR, source maps, and compiler diagnostics;
+- `stack-compiler` at `84ab5663a7f7c5b7dc0b5e9e2f04c8894ed02820` for byte decoding, parsing, validation, normalized IR, source maps, and compiler diagnostics;
 - the workspace-local `stack-formatter` for canonical source output;
-- `stack-theme` at `2347315e6e86ab9d2708e05fd3f9b5f3d87e1241` for the `0.4.0` embedded core catalog, 30 provider-neutral explicit icons, the local-only provider-pack contract, SVG bytes, deterministic font metrics, catalog version, and catalog revision;
+- `stack-theme` at `7e208d6a3c90d255799f390a4e8b86248c73caee` for the `0.5.0` embedded core catalog, 30 provider-neutral explicit icons, the local-only provider-pack contract, SVG bytes, deterministic font metrics, catalog version, and catalog revision;
 - `roxmltree`, `serde_json`, and `sha2` for pure in-memory provider manifest serialization, processed-asset hash verification, pack revision computation, and defensive SVG validation. Vendor asset bytes are not included.
 
 `stack-engine-wasm` adds `serde`, `serde_json`, and the asset-free `stack-theme` types for its serializable native parity model and local provider-pack input, plus, only on `wasm32`, version-matched `wasm-bindgen` and `js-sys` for the JavaScript ABI, typed-array input, JSON-compatible local data, and plain object construction. It does not use `web-sys` or a WASI target.
@@ -23,7 +23,7 @@ Exact versions and licenses are recorded in [`THIRD_PARTY_LICENSES.md`](../THIRD
 - No runtime dependency discovers a path, opens a socket, reads process state, observes time, samples randomness, queries a DOM, or measures a system font.
 - The generated WebAssembly imports only the audited `wasm-bindgen` object, string, array, typed-array, exception, and extern-reference glue from its sibling JavaScript module. The import validator rejects WASI and names associated with filesystem, network, DOM, clock, random, process, environment, or storage capabilities.
 
-Tests and CI may read the pinned specification checkout and invoke toolchains. Those development actions are outside the runtime library boundary.
+Tests and CI may read the pinned specification checkout and invoke toolchains. The exact `ajv` development dependency validates the layout corpus JSON Schema; it and its four transitive dependencies are not shipped in the npm package. Those development actions are outside the runtime library boundary.
 
 ## Reproduction
 
@@ -32,9 +32,13 @@ cargo tree -p stack-engine --edges normal --locked
 cargo metadata --format-version 1 --locked
 cargo test --workspace --locked
 STACK_SPECIFICATION_DIR=../specification cargo test -p stack-engine --features conformance --locked
+cargo test -p stack-engine --test layout_corpus --locked
+cargo test --release -p stack-engine --test layout_corpus layout_runtime_stays_within_budget --locked -- --ignored --nocapture
 python3 scripts/validate-svg.py
 cargo build -p stack-engine-wasm --target wasm32-unknown-unknown --release --locked
 npm ci
+npm run layout:validate
+npm run layout:gallery
 npm run build:wasm
 npm test
 npm run typecheck

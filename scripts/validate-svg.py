@@ -6,7 +6,10 @@ import xml.etree.ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SNAPSHOTS = ROOT / "crates" / "stack-engine" / "tests" / "snapshots" / "render"
+RENDER_SNAPSHOTS = (
+    ROOT / "crates" / "stack-engine" / "tests" / "snapshots" / "render"
+)
+LAYOUT_SNAPSHOTS = ROOT / "layout-corpus" / "snapshots"
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 FORBIDDEN_ELEMENTS = {"script", "foreignObject", "iframe", "object", "embed"}
 URL_PATTERN = re.compile(r"url\(([^)]+)\)", re.IGNORECASE)
@@ -58,9 +61,13 @@ def values(root: ET.Element, attribute: str) -> set[str]:
 
 
 def main() -> None:
-    snapshots = sorted(SNAPSHOTS.glob("*.svg"))
-    assert snapshots, "no render snapshots found"
+    render_snapshots = sorted(RENDER_SNAPSHOTS.glob("*.svg"))
+    layout_snapshots = sorted(LAYOUT_SNAPSHOTS.glob("*.svg"))
+    assert render_snapshots, "no render snapshots found"
+    assert layout_snapshots, "no layout corpus snapshots found"
+    snapshots = render_snapshots + layout_snapshots
     documents = {path.stem: validate(path) for path in snapshots}
+    assert len(documents) == len(snapshots), "snapshot file stems must be unique"
     complete = documents["complete-semantics"]
     explicit_icon = documents["explicit-core-icon"]
     assert values(complete, "data-node-kind") == {
