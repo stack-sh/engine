@@ -33,9 +33,8 @@ fn language_intelligence_runtime_stays_within_budget() -> Result<(), Box<dyn Err
         line: 1,
         column: (cursor + 1) as u64,
     };
-    let inputs: Vec<ProviderPackInput> = serde_json::from_str(include_str!(
-        "../../../tests/fixtures/provider-pack-input.json"
-    ))?;
+    let inputs: Vec<ProviderPackInput> =
+        serde_json::from_str(include_str!("fixtures/provider-pack-input.json"))?;
     let packs = inputs
         .into_iter()
         .map(|input| {

@@ -191,7 +191,8 @@ dependencies = [
 [[package]]
 name = "stack-compiler"
 version = "0.1.0"
-source = "git+https://github.com/stack-sh/compiler.git?rev=84ab5663a7f7c5b7dc0b5e9e2f04c8894ed02820#84ab5663a7f7c5b7dc0b5e9e2f04c8894ed02820"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bdba45c0f7a85ef0ec0bfb766b387dbd90fc6141237ac74b559d08a424750bc6"
 
 [[package]]
 name = "stack-engine"
@@ -229,7 +230,8 @@ dependencies = [
 [[package]]
 name = "stack-theme"
 version = "0.5.0"
-source = "git+https://github.com/stack-sh/theme.git?rev=7e208d6a3c90d255799f390a4e8b86248c73caee#7e208d6a3c90d255799f390a4e8b86248c73caee"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f98e0418c819d61897beded19d5333b4f6c7a8dcf1be46d0a8c62409ff2e6db7"
 dependencies = [
  "serde",
  "serde_json",

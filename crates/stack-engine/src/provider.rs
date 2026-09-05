@@ -533,9 +533,8 @@ mod tests {
     }
 
     fn fixture_input() -> Result<FixtureInput, Box<dyn Error>> {
-        let mut inputs: Vec<FixtureInput> = serde_json::from_str(include_str!(
-            "../../../tests/fixtures/provider-pack-input.json"
-        ))?;
+        let mut inputs: Vec<FixtureInput> =
+            serde_json::from_str(include_str!("../tests/fixtures/provider-pack-input.json"))?;
         inputs
             .pop()
             .ok_or_else(|| "missing provider fixture".into())

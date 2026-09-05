@@ -23,7 +23,7 @@ const languageFixturePath = join(
   repositoryRoot,
   "tests/fixtures/language-intelligence-cases.json",
 );
-const providerFixturePath = join(repositoryRoot, "tests/fixtures/provider-pack-input.json");
+const providerFixturePath = join(repositoryRoot, "crates/stack-engine/tests/fixtures/provider-pack-input.json");
 const wasmPath = join(repositoryRoot, "packages/engine/dist/stack_engine_bg.wasm");
 const cases = JSON.parse(readFileSync(fixturePath, "utf8"));
 const languageCases = JSON.parse(readFileSync(languageFixturePath, "utf8"));

@@ -7,6 +7,12 @@ license.workspace = true
 repository.workspace = true
 description = "Canonical formatter for the Stack diagram language"
 
+publish = ["crates-io"]
+homepage = "https://stack-diagram.com/"
+documentation = "https://docs.rs/stack-formatter"
+readme = "README.md"
+include = ["src/**", "tests/fixtures/**", "tests/snapshots/**", "README.md", "LICENSE", "THIRD_PARTY_LICENSES.md"]
+
 [features]
 conformance = []
 

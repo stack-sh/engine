@@ -1361,7 +1361,7 @@ mod tests {
     #[test]
     fn provider_pack_helpers_match_the_native_engine_contract() -> Result<(), Box<dyn Error>> {
         let source = b"stack 1.0 diagram \"Provider\" { node item \"Example Storage\" { kind queue icon \"example:storage\" } }";
-        let packs = include_str!("../../../tests/fixtures/provider-pack-input.json");
+        let packs = include_str!("../../stack-engine/tests/fixtures/provider-pack-input.json");
         let checked = check_with_provider_packs_bytes(source, packs)?;
         let rendered = render_with_provider_packs_bytes(source, packs)?;
         assert!(checked.diagnostics.is_empty());
@@ -1393,7 +1393,7 @@ mod tests {
         assert_eq!(core.document_version, 6);
         assert!(core.items.is_empty());
 
-        let packs = include_str!("../../../tests/fixtures/provider-pack-input.json");
+        let packs = include_str!("../../stack-engine/tests/fixtures/provider-pack-input.json");
         let provider = completion_with_provider_packs_text(source, 7, position, packs)?;
         assert_eq!(provider.document_version, 7);
         assert_eq!(provider.items[0].kind, CompletionKind::Icon);
