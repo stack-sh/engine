@@ -12,3 +12,11 @@ The native `stack-formatter` 0.1.0 and `stack-engine` 0.7.0 crates use exact reg
 6. Remove the bootstrap GitHub secret and revoke the token after initial publications. Configure crate-specific trusted publishers before later releases. The bootstrap workflow cannot publish a second version and never persists a Cargo credential file.
 
 If Cargo times out after upload, inspect registry state before retrying. Never overwrite a version or tag: investigate failures and publish an explicitly versioned correction. No layout snapshot or language behavior is changed for registry packaging.
+
+## Ongoing trusted publishing
+
+After initial publication, configure each crate's Settings → Trusted Publishing on crates.io with repository owner `stack-sh`, repository name `engine`, workflow filename `cargo-publish.yaml`, and no environment. Add a separate configuration for both `stack-formatter` and `stack-engine`. The crate owner must save these settings; committing this workflow does not configure or prove registry trust. Follow the [crates.io instructions](https://crates.io/docs/trusted-publishing).
+
+Dispatch `cargo-publish.yaml` from `main` with the full successful main CI commit and the exact package version. The default `publish: false` validates identity, registry state, and packaging, then checks the OIDC exchange **without uploading a crate**. This proves workflow authentication, not a new version's publication or every crate's owner configuration. The pinned authentication action revokes its short-lived token when the job ends; no long-lived repository secret or credentials file is used.
+
+For an actual new release, merge the version change and all checks first, publish dependencies before consumers, then dispatch with `publish: true`. Existing versions, missing crates, non-main refs, version/SHA drift, and unsuccessful CI fail closed. Verify the downloaded archive checksum and source SHA after publication; a failed post-upload check does not undo an upload. Never rerun an upload without checking registry state.
