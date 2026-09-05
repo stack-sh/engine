@@ -29,7 +29,12 @@ mod routing;
 mod scene;
 mod svg;
 
+mod language;
 mod provider;
+pub use language::{
+    CompletionItem, CompletionKind, CompletionOutput, Hover, HoverKind, HoverOutput,
+    LANGUAGE_INTELLIGENCE_SCHEMA_VERSION, TextEdit,
+};
 pub use provider::{ProviderAsset, ProviderPack};
 
 /// Version of the Rust engine facade.
@@ -353,6 +358,11 @@ pub enum OperationalError {
         /// Stable explanation of the violated provider-pack invariant.
         reason: &'static str,
     },
+    /// A language-intelligence request violates its stateless input contract.
+    InvalidLanguageIntelligenceInput {
+        /// Stable explanation of the invalid source position or completion catalog.
+        reason: &'static str,
+    },
     /// Compiler or layout data violates an invariant required by pure execution.
     InvalidIntermediateRepresentation {
         /// Stable explanation of the violated invariant.
@@ -366,6 +376,9 @@ impl fmt::Display for OperationalError {
             Self::InvalidCatalog { reason } => write!(formatter, "invalid theme catalog: {reason}"),
             Self::InvalidProviderPack { reason } => {
                 write!(formatter, "invalid provider pack: {reason}")
+            }
+            Self::InvalidLanguageIntelligenceInput { reason } => {
+                write!(formatter, "invalid language-intelligence input: {reason}")
             }
             Self::InvalidIntermediateRepresentation { reason } => {
                 write!(formatter, "invalid intermediate representation: {reason}")
@@ -1021,6 +1034,10 @@ mod tests {
         assert_eq!(
             OperationalError::InvalidProviderPack { reason: "reason" }.to_string(),
             "invalid provider pack: reason"
+        );
+        assert_eq!(
+            OperationalError::InvalidLanguageIntelligenceInput { reason: "reason" }.to_string(),
+            "invalid language-intelligence input: reason"
         );
     }
 }

@@ -74,6 +74,9 @@ jobs:
       - name: Enforce layout runtime budget
         run: cargo +stable test --release -p stack-engine --test layout_corpus layout_runtime_stays_within_budget --locked -- --ignored --nocapture
 
+      - name: Enforce editor language-intelligence latency budget
+        run: cargo +stable test --release -p stack-engine --test language_intelligence language_intelligence_runtime_stays_within_budget --locked -- --ignored --nocapture
+
       - name: Build layout regression gallery
         run: npm run layout:gallery
 

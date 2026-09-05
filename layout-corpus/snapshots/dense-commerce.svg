@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="2960.9" height="262.2" viewBox="0 0 2960900 262200" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.6.0" data-theme-id="default" data-theme-version="0.5.0" data-theme-revision="sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53">
+<svg xmlns="http://www.w3.org/2000/svg" width="2960.9" height="262.2" viewBox="0 0 2960900 262200" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.7.0" data-theme-id="default" data-theme-version="0.5.0" data-theme-revision="sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53">
   <title id="stack-title">Dense commerce platform</title>
   <desc id="stack-description">Architecture diagram with 13 nodes, 5 groups, and 12 relationships.</desc>
-  <metadata>stack-engine 0.6.0; language 1.0; theme 0.5.0 at sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53</metadata>
+  <metadata>stack-engine 0.7.0; language 1.0; theme 0.5.0 at sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53</metadata>
   <rect x="0" y="0" width="2960900" height="262200" fill="#F3F6FA"/>
   <defs>
     <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7000" markerHeight="7000" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">

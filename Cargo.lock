@@ -195,7 +195,7 @@ source = "git+https://github.com/stack-sh/compiler.git?rev=84ab5663a7f7c5b7dc0b5
 
 [[package]]
 name = "stack-engine"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "roxmltree",
  "serde",
@@ -208,7 +208,7 @@ dependencies = [
 
 [[package]]
 name = "stack-engine-wasm"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "js-sys",
  "serde",

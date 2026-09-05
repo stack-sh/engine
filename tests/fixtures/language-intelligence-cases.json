@@ -1,0 +1,26 @@
+[
+  {
+    "name": "diagram-keyword",
+    "documentVersion": 3,
+    "sourceWithCursor": "stack 1.0\ndiagram \"Draft\" {\n  no<|>\n}\n",
+    "providerPacks": false
+  },
+  {
+    "name": "core-icon",
+    "documentVersion": 5,
+    "sourceWithCursor": "stack 1.0 diagram \"Icons\" { node api \"API\" { icon \"ga<|>\" } }",
+    "providerPacks": false
+  },
+  {
+    "name": "provider-icon",
+    "documentVersion": 8,
+    "sourceWithCursor": "stack 1.0 diagram \"Provider\" { node store \"Store\" { icon \"example:s<|>\" } }",
+    "providerPacks": true
+  },
+  {
+    "name": "multilingual-hover",
+    "documentVersion": 13,
+    "sourceWithCursor": "stack 1.0\ndiagram \"顧客 API\" {\n  node user \"顧<|>客\"\n}\n",
+    "providerPacks": false
+  }
+]

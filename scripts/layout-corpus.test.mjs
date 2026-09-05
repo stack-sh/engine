@@ -44,7 +44,7 @@ test("provider fixtures and declared provider coverage cannot drift", () => {
 
 test("the static gallery escapes source and exposes accessible comparisons", () => {
   const fixtureCatalog = {
-    engineVersion: "0.6.0",
+    engineVersion: "0.7.0",
     schemaVersion: "1.0",
     cases: [{ id: "fixture" }],
   };
