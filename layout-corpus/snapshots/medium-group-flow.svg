@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="931.5" height="444.4" viewBox="0 0 931500 444400" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.6.0" data-theme-id="default" data-theme-version="0.5.0" data-theme-revision="sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53">
+  <title id="stack-title">Medium group flow</title>
+  <desc id="stack-description">Architecture diagram with 6 nodes, 2 groups, and 5 relationships.</desc>
+  <metadata>stack-engine 0.6.0; language 1.0; theme 0.5.0 at sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53</metadata>
+  <rect x="0" y="0" width="931500" height="444400" fill="#F3F6FA"/>
+  <defs>
+    <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7000" markerHeight="7000" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
+      <path d="M 0 0 L 10000 5000 L 0 10000 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <text x="32000" y="50200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Medium group flow</text>
+  <g data-stack-layer="groups">
+    <g role="group" aria-label="Clients" data-stack-id="clients">
+      <title>Clients</title>
+      <rect x="32000" y="70200" width="392000" height="150200" rx="12000" fill="#E5EBF3" fill-opacity="0.55" stroke="#64748B" stroke-width="1000"/>
+      <text x="56000" y="107200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Clients</text>
+    </g>
+    <g role="group" aria-label="Platform" data-stack-id="platform">
+      <title>Platform</title>
+      <rect x="643200" y="70200" width="256300" height="342200" rx="12000" fill="#E5EBF3" fill-opacity="0.55" stroke="#64748B" stroke-width="1000"/>
+      <text x="667200" y="107200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Platform</text>
+    </g>
+  </g>
+  <g data-stack-layer="edges">
+    <g role="group" aria-label="Browser flows to Edge gateway: Browser HTTPS" data-edge-kind="request" data-edge-direction="forward">
+      <title>Browser flows to Edge gateway: Browser HTTPS</title>
+      <polyline points="216000,160400 216000,106200 448000,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Mobile app flows to Edge gateway: Mobile HTTPS" data-edge-kind="request" data-edge-direction="forward">
+      <title>Mobile app flows to Edge gateway: Mobile HTTPS</title>
+      <polyline points="400000,160400 400000,106200 448000,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Edge gateway flows to Application API: Route" data-edge-kind="request" data-edge-direction="forward">
+      <title>Edge gateway flows to Application API: Route</title>
+      <polyline points="619200,106200 619200,160400 667200,160400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Application API flows to Background worker: Dispatch" data-edge-kind="event" data-edge-direction="forward">
+      <title>Application API flows to Background worker: Dispatch</title>
+      <polyline points="754550,196400 754550,220400 771350,220400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Background worker flows to Primary database: Persist" data-edge-kind="data" data-edge-direction="forward">
+      <title>Background worker flows to Primary database: Persist</title>
+      <polyline points="771350,292400 771350,316400 765050,316400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+  </g>
+  <g data-stack-layer="nodes">
+    <g role="group" aria-label="Browser" data-stack-id="browser" data-node-kind="client">
+      <title>Browser</title>
+      <rect x="56000" y="124400" width="160000" height="72000" rx="8000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="76000" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="web"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M3 8h18M7 6h.01M10 6h.01" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/> </svg>
+      <text x="112000" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Browser</text>
+    </g>
+    <g role="group" aria-label="Mobile app" data-stack-id="mobile" data-node-kind="client">
+      <title>Mobile app</title>
+      <rect x="240000" y="124400" width="160000" height="72000" rx="8000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="260000" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="mobile"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M10 5h4M11 19h2" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/> </svg>
+      <text x="296000" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Mobile app</text>
+    </g>
+    <g role="group" aria-label="Edge gateway" data-stack-id="gateway" data-node-kind="service">
+      <title>Edge gateway</title>
+      <rect x="448000" y="70200" width="171200" height="72000" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="468000" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="gateway"><rect x="8" y="4" width="8" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M3 8h5M5.5 5.5 8 8l-2.5 2.5M21 16h-5M18.5 13.5 16 16l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="504000" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Edge gateway</text>
+    </g>
+    <g role="group" aria-label="Application API" data-stack-id="api" data-node-kind="service">
+      <title>Application API</title>
+      <rect x="667200" y="124400" width="174700" height="72000" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="687200" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <rect x="4" y="15" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M8 9v6M16 9v6" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="723200" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Application API</text>
+    </g>
+    <g role="group" aria-label="Background worker" data-stack-id="worker" data-node-kind="worker">
+      <title>Background worker</title>
+      <rect x="667200" y="220400" width="208300" height="72000" rx="16000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="687200" y="244400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-worker"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/> </svg>
+      <text x="723200" y="256400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Background worker</text>
+    </g>
+    <g role="group" aria-label="Primary database" data-stack-id="database" data-node-kind="database">
+      <title>Primary database</title>
+      <path d="M 667200 326400 V 378400 C 667200 388400 862900 388400 862900 378400 V 326400 C 862900 316400 667200 316400 667200 326400 Z" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <ellipse cx="765050" cy="326400" rx="97850" ry="10000" fill="none" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="687200" y="340400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-database"><ellipse cx="12" cy="5" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="723200" y="352400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Primary database</text>
+    </g>
+  </g>
+  <g data-stack-layer="edge-labels" aria-hidden="true">
+    <g data-edge-label="Browser HTTPS">
+      <rect x="259025" y="94500" width="91750" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="304900" y="106200" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Browser HTTPS</text>
+    </g>
+    <g data-edge-label="Mobile HTTPS">
+      <rect x="358800" y="97600" width="82400" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="400000" y="109300" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Mobile HTTPS</text>
+    </g>
+    <g data-edge-label="Route">
+      <rect x="598075" y="145600" width="42250" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="619200" y="157300" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Route</text>
+    </g>
+    <g data-edge-label="Dispatch">
+      <rect x="725450" y="93000" width="58200" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="754550" y="104700" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Dispatch</text>
+    </g>
+    <g data-edge-label="Persist">
+      <rect x="746650" y="396400" width="49400" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="771350" y="408100" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Persist</text>
+    </g>
+  </g>
+</svg>

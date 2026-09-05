@@ -1,0 +1,41 @@
+stack 1.0
+
+diagram "Multilingual long labels" {
+  theme light
+
+  layout {
+    direction down
+  }
+
+  node intake "注文受付サービス" {
+    kind service
+    detail "Customer order intake"
+  }
+
+  node enrichment "상품 정보 보강 워커" {
+    kind worker
+    detail "Catalog and inventory enrichment"
+  }
+
+  node analytics "Real-time analytical event warehouse" {
+    kind database
+    detail "Cross-region reporting dataset"
+  }
+
+  node archive "長期監査ログアーカイブ" {
+    kind storage
+    detail "Seven-year retention"
+  }
+
+  edge intake -> enrichment "注文内容を非同期で検証" {
+    kind event
+  }
+
+  edge enrichment -> analytics "정규화된 분석 이벤트 적재" {
+    kind data
+  }
+
+  edge analytics -> archive "Immutable compliance snapshot export" {
+    kind data
+  }
+}

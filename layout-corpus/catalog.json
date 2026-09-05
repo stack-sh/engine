@@ -1,0 +1,136 @@
+{
+  "$schema": "./schema.json",
+  "schemaVersion": "1.0",
+  "engineVersion": "0.6.0",
+  "performance": {
+    "warmupIterations": 3,
+    "measuredIterations": 20,
+    "maxP95Milliseconds": 50,
+    "maxSuiteMilliseconds": 2500
+  },
+  "cases": [
+    {
+      "id": "small-request-path",
+      "title": "Small request path",
+      "summary": "A compact request and data path catches rank spacing drift in the smallest useful diagram.",
+      "density": "small",
+      "source": "sources/small-request-path.stack",
+      "snapshot": "snapshots/small-request-path.svg",
+      "features": ["layout-direction", "edge-labels", "mixed-edge-kinds"],
+      "providerFixture": null,
+      "expected": { "nodes": 3, "groups": 0, "edges": 2, "providerNotices": 0 },
+      "alt": "A browser connects to an API, which connects to a primary database."
+    },
+    {
+      "id": "medium-group-flow",
+      "title": "Medium group flow",
+      "summary": "Two client nodes converge across group boundaries before service and data processing.",
+      "density": "medium",
+      "source": "sources/medium-group-flow.stack",
+      "snapshot": "snapshots/medium-group-flow.svg",
+      "features": [
+        "groups",
+        "layout-direction",
+        "rank-constraints",
+        "order-constraints",
+        "cross-edges",
+        "edge-labels",
+        "mixed-edge-kinds"
+      ],
+      "providerFixture": null,
+      "expected": { "nodes": 6, "groups": 2, "edges": 5, "providerNotices": 0 },
+      "alt": "Browser and mobile clients cross into a platform group through a gateway."
+    },
+    {
+      "id": "dense-commerce",
+      "title": "Dense commerce platform",
+      "summary": "A production-sized graph stresses group sizing, fan-out, asynchronous paths, and labeled routes.",
+      "density": "dense",
+      "source": "sources/dense-commerce.stack",
+      "snapshot": "snapshots/dense-commerce.svg",
+      "features": [
+        "groups",
+        "layout-direction",
+        "rank-constraints",
+        "order-constraints",
+        "cross-edges",
+        "edge-labels",
+        "dense-graph",
+        "mixed-edge-kinds"
+      ],
+      "providerFixture": null,
+      "expected": { "nodes": 13, "groups": 5, "edges": 12, "providerNotices": 0 },
+      "alt": "A dense commerce architecture spans storefront, services, processing, data, and partner groups."
+    },
+    {
+      "id": "nested-platform",
+      "title": "Nested platform boundaries",
+      "summary": "Nested groups and cross-boundary edges expose containment, padding, and route ordering failures.",
+      "density": "medium",
+      "source": "sources/nested-platform.stack",
+      "snapshot": "snapshots/nested-platform.svg",
+      "features": [
+        "groups",
+        "nested-groups",
+        "layout-direction",
+        "rank-constraints",
+        "order-constraints",
+        "cross-edges",
+        "edge-labels",
+        "mixed-edge-kinds"
+      ],
+      "providerFixture": null,
+      "expected": { "nodes": 7, "groups": 4, "edges": 6, "providerNotices": 0 },
+      "alt": "A customer crosses nested experience, processing, and operations groups in one platform boundary."
+    },
+    {
+      "id": "multilingual-long-labels",
+      "title": "Multilingual long labels",
+      "summary": "Wide Unicode node and edge labels catch text measurement and label-background regressions.",
+      "density": "medium",
+      "source": "sources/multilingual-long-labels.stack",
+      "snapshot": "snapshots/multilingual-long-labels.svg",
+      "features": [
+        "layout-direction",
+        "edge-labels",
+        "long-labels",
+        "multilingual-text",
+        "mixed-edge-kinds"
+      ],
+      "providerFixture": null,
+      "expected": { "nodes": 4, "groups": 0, "edges": 3, "providerNotices": 0 },
+      "alt": "Four services with Japanese, Korean, and English labels form a vertical data pipeline."
+    },
+    {
+      "id": "fanout-cross-edges",
+      "title": "Fan-out and cross edges",
+      "summary": "Repeated fan-out and fan-in around aligned ranks exercise obstacle avoidance and route stability.",
+      "density": "medium",
+      "source": "sources/fanout-cross-edges.stack",
+      "snapshot": "snapshots/fanout-cross-edges.svg",
+      "features": [
+        "layout-direction",
+        "rank-constraints",
+        "order-constraints",
+        "cross-edges",
+        "edge-labels",
+        "mixed-edge-kinds"
+      ],
+      "providerFixture": null,
+      "expected": { "nodes": 8, "groups": 0, "edges": 10, "providerNotices": 0 },
+      "alt": "An ingress fans out to three services whose labeled routes converge on storage and audit nodes."
+    },
+    {
+      "id": "provider-icon-boundary",
+      "title": "Provider icon boundary",
+      "summary": "A caller-owned provider icon verifies that branded artwork does not change semantic geometry.",
+      "density": "medium",
+      "source": "sources/provider-icon-boundary.stack",
+      "snapshot": "snapshots/provider-icon-boundary.svg",
+      "features": ["groups", "layout-direction", "cross-edges", "edge-labels", "provider-icons"],
+      "providerFixture": "../tests/fixtures/provider-pack-input.json",
+      "expected": { "nodes": 3, "groups": 1, "edges": 2, "providerNotices": 1 },
+      "alt": "An upload client sends an object to provider storage before a worker processes it."
+    }
+  ]
+}

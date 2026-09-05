@@ -4,8 +4,8 @@
 
 | Component | Revision | License | Source | Notes |
 | --- | --- | --- | --- | --- |
-| `stack-compiler` | `4a18fac42afc2256a1bb3a6ff13d12d732a391e7` | Apache-2.0 | <https://github.com/stack-sh/compiler> | Unmodified Rust dependency; its license and notice obligations apply to distributions that include it. |
-| `stack-theme` | `2347315e6e86ab9d2708e05fd3f9b5f3d87e1241` | Apache-2.0 | <https://github.com/stack-sh/theme> | Unmodified Rust dependency with repository-authored core assets and the asset-free provider-pack contract. |
+| `stack-compiler` | `84ab5663a7f7c5b7dc0b5e9e2f04c8894ed02820` | Apache-2.0 | <https://github.com/stack-sh/compiler> | Unmodified Rust dependency; its license and notice obligations apply to distributions that include it. |
+| `stack-theme` | `7e208d6a3c90d255799f390a4e8b86248c73caee` | Apache-2.0 | <https://github.com/stack-sh/theme> | Unmodified Rust dependency with repository-authored core assets and the asset-free provider-pack contract. |
 | `roxmltree` | `0.21.1` | MIT OR Apache-2.0 | <https://github.com/RazrFalcon/roxmltree> | Parses caller-owned processed provider SVG before allowlisted in-memory embedding. |
 | `sha2`, `digest`, `block-buffer`, `crypto-common`, `hybrid-array`, `const-oid`, `typenum` | `0.11.0`, `0.11.3`, `0.12.1`, `0.2.2`, `0.4.14`, `0.10.2`, `1.20.1` | MIT OR Apache-2.0 | <https://github.com/RustCrypto> | Verifies provider asset hashes and computes deterministic provider-pack revisions. |
 | `libc` / `cpufeatures` | `0.2.189`, `0.3.1` | MIT OR Apache-2.0 | <https://github.com/rust-lang/libc>, <https://github.com/RustCrypto/utils> | Target-specific SHA-256 acceleration support. |
@@ -34,6 +34,11 @@
 | `syn` | `2.0.119` | MIT OR Apache-2.0 | <https://github.com/dtolnay/syn> | Transitive procedural-macro build dependency of `wasm-bindgen`. |
 | `wasm-bindgen-cli` | `0.2.127` | MIT OR Apache-2.0 | <https://github.com/wasm-bindgen/wasm-bindgen> | Version-matched build tool; not shipped in the npm package. |
 | `typescript` | `7.0.2` | Apache-2.0 | <https://github.com/microsoft/TypeScript> | Type-check tool; not shipped in the npm package. |
+| `ajv` | `8.20.0` | MIT | <https://github.com/ajv-validator/ajv> | Validates the checked-in layout corpus schema during development and CI; not shipped in the npm package. |
+| `fast-deep-equal` | `3.1.3` | MIT | <https://github.com/epoberezkin/fast-deep-equal> | Transitive build-only dependency of `ajv`. |
+| `fast-uri` | `3.1.7` | BSD-3-Clause | <https://github.com/fastify/fast-uri> | Transitive build-only dependency of `ajv`. |
+| `json-schema-traverse` | `1.0.0` | MIT | <https://github.com/epoberezkin/json-schema-traverse> | Transitive build-only dependency of `ajv`. |
+| `require-from-string` | `2.0.2` | MIT | <https://github.com/floatdrop/require-from-string> | Transitive build-only dependency of `ajv`. |
 
 No third-party visual asset is bundled in a Stack Engine distribution. The bundled fallback and 30 explicit icons are Stack-authored Apache-2.0 assets from `stack-theme`. The npm package includes this inventory and the Apache-2.0, MIT, and Unicode-3.0 license texts required by its compiled dependency choices.
 

@@ -7,11 +7,14 @@
   ],
   "scripts": {
     "build:wasm": "bash scripts/build-wasm.sh",
+    "layout:gallery": "node scripts/build-layout-gallery.mjs",
+    "layout:validate": "node scripts/validate-layout-corpus.mjs",
     "pack:check": "node scripts/validate-npm-pack.mjs",
-    "test": "node --test tests/wasm.test.mjs && node scripts/validate-wasm-package.mjs",
+    "test": "node --test scripts/layout-corpus.test.mjs tests/wasm.test.mjs && node scripts/validate-wasm-package.mjs",
     "typecheck": "tsc --project tsconfig.json"
   },
   "devDependencies": {
+    "ajv": "8.20.0",
     "typescript": "7.0.2"
   }
 }

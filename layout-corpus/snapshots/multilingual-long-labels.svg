@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="394.1" height="463.8" viewBox="0 0 394100 463800" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.6.0" data-theme-id="light" data-theme-version="0.5.0" data-theme-revision="sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53">
+  <title id="stack-title">Multilingual long labels</title>
+  <desc id="stack-description">Architecture diagram with 4 nodes, 0 groups, and 3 relationships.</desc>
+  <metadata>stack-engine 0.6.0; language 1.0; theme 0.5.0 at sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53</metadata>
+  <rect x="0" y="0" width="394100" height="463800" fill="#FAF9F6"/>
+  <defs>
+    <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="6500" markerHeight="6500" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
+      <path d="M 0 0 L 10000 5000 L 0 10000 z" fill="#57534E"/>
+    </marker>
+  </defs>
+  <text x="32000" y="50200" fill="#1C1917" font-family="system-ui" font-size="13000" font-weight="600">Multilingual long labels</text>
+  <g data-stack-layer="groups">
+  </g>
+  <g data-stack-layer="edges">
+    <g role="group" aria-label="注文受付サービス flows to 상품 정보 보강 워커: 注文内容を非同期で検証" data-edge-kind="event" data-edge-direction="forward">
+      <title>注文受付サービス flows to 상품 정보 보강 워커: 注文内容を非同期で検証</title>
+      <polyline points="134500,142600 134500,166600 167500,166600" fill="none" stroke="#57534E" stroke-width="1250" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="상품 정보 보강 워커 flows to Real-time analytical event warehouse: 정규화된 분석 이벤트 적재" data-edge-kind="data" data-edge-direction="forward">
+      <title>상품 정보 보강 워커 flows to Real-time analytical event warehouse: 정규화된 분석 이벤트 적재</title>
+      <polyline points="167500,239000 167500,263000 197050,263000" fill="none" stroke="#57534E" stroke-width="1250" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Real-time analytical event warehouse flows to 長期監査ログアーカイブ: Immutable compliance snapshot export" data-edge-kind="data" data-edge-direction="forward">
+      <title>Real-time analytical event warehouse flows to 長期監査ログアーカイブ: Immutable compliance snapshot export</title>
+      <polyline points="32000,299200 32000,395600" fill="none" stroke="#57534E" stroke-width="1250" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+  </g>
+  <g data-stack-layer="nodes">
+    <g role="group" aria-label="注文受付サービス: Customer order intake" data-stack-id="intake" data-node-kind="service">
+      <title>注文受付サービス: Customer order intake</title>
+      <rect x="32000" y="70200" width="205000" height="72400" rx="8000" fill="#FFFFFF" stroke="#005DBB" stroke-width="1500"/>
+      <svg x="52000" y="94400" width="24000" height="24000" viewBox="0 0 24 24" color="#005DBB" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <rect x="4" y="15" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M8 9v6M16 9v6" fill="none" stroke="currentColor" stroke-width="1.5"/> </svg>
+      <text x="88000" y="97400" dominant-baseline="middle" fill="#1C1917" font-family="system-ui" font-size="14000" font-weight="600">注文受付サービス</text>
+      <text x="88000" y="116400" dominant-baseline="middle" fill="#57534E" font-family="system-ui" font-size="12000" font-weight="400">Customer order intake</text>
+    </g>
+    <g role="group" aria-label="상품 정보 보강 워커: Catalog and inventory enrichment" data-stack-id="enrichment" data-node-kind="worker">
+      <title>상품 정보 보강 워커: Catalog and inventory enrichment</title>
+      <rect x="32000" y="166600" width="271000" height="72400" rx="16000" fill="#FFFFFF" stroke="#78716C" stroke-width="1500"/>
+      <svg x="52000" y="190800" width="24000" height="24000" viewBox="0 0 24 24" color="#005DBB" aria-hidden="true" focusable="false" data-icon-id="kind-worker"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/> </svg>
+      <text x="88000" y="193800" dominant-baseline="middle" fill="#1C1917" font-family="system-ui" font-size="14000" font-weight="600">상품 정보 보강 워커</text>
+      <text x="88000" y="212800" dominant-baseline="middle" fill="#57534E" font-family="system-ui" font-size="12000" font-weight="400">Catalog and inventory enrichment</text>
+    </g>
+    <g role="group" aria-label="Real-time analytical event warehouse: Cross-region reporting dataset" data-stack-id="analytics" data-node-kind="database">
+      <title>Real-time analytical event warehouse: Cross-region reporting dataset</title>
+      <path d="M 32000 273000 V 325400 C 32000 335400 362100 335400 362100 325400 V 273000 C 362100 263000 32000 263000 32000 273000 Z" fill="#FFFFFF" stroke="#005DBB" stroke-width="1500"/>
+      <ellipse cx="197050" cy="273000" rx="165050" ry="10000" fill="none" stroke="#005DBB" stroke-width="1500"/>
+      <svg x="52000" y="287200" width="24000" height="24000" viewBox="0 0 24 24" color="#005DBB" aria-hidden="true" focusable="false" data-icon-id="kind-database"><ellipse cx="12" cy="5" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" fill="none" stroke="currentColor" stroke-width="1.5"/> </svg>
+      <text x="88000" y="290200" dominant-baseline="middle" fill="#1C1917" font-family="system-ui" font-size="14000" font-weight="600">Real-time analytical event warehouse</text>
+      <text x="88000" y="309200" dominant-baseline="middle" fill="#57534E" font-family="system-ui" font-size="12000" font-weight="400">Cross-region reporting dataset</text>
+    </g>
+    <g role="group" aria-label="長期監査ログアーカイブ: Seven-year retention" data-stack-id="archive" data-node-kind="storage">
+      <title>長期監査ログアーカイブ: Seven-year retention</title>
+      <rect x="32000" y="359400" width="230000" height="72400" rx="4000" fill="#FFFFFF" stroke="#78716C" stroke-width="1500"/>
+      <svg x="52000" y="383600" width="24000" height="24000" viewBox="0 0 24 24" color="#005DBB" aria-hidden="true" focusable="false" data-icon-id="kind-storage"><path d="M3 6h7l2 3h9v10H3V6Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M3 9h18" fill="none" stroke="currentColor" stroke-width="1.5"/> </svg>
+      <text x="88000" y="386600" dominant-baseline="middle" fill="#1C1917" font-family="system-ui" font-size="14000" font-weight="600">長期監査ログアーカイブ</text>
+      <text x="88000" y="405600" dominant-baseline="middle" fill="#57534E" font-family="system-ui" font-size="12000" font-weight="400">Seven-year retention</text>
+    </g>
+  </g>
+  <g data-stack-layer="edge-labels" aria-hidden="true">
+    <g data-edge-label="注文内容を非同期で検証">
+      <rect x="72500" y="38800" width="133000" height="23400" rx="4000" fill="#FAF9F6"/>
+      <text x="139000" y="50500" text-anchor="middle" dominant-baseline="middle" fill="#57534E" font-family="system-ui" font-size="11000">注文内容を非同期で検証</text>
+    </g>
+    <g data-edge-label="정규화된 분석 이벤트 적재">
+      <rect x="99650" y="439800" width="141250" height="23400" rx="4000" fill="#FAF9F6"/>
+      <text x="170275" y="451500" text-anchor="middle" dominant-baseline="middle" fill="#57534E" font-family="system-ui" font-size="11000">정규화된 분석 이벤트 적재</text>
+    </g>
+    <g data-edge-label="Immutable compliance snapshot export">
+      <rect x="-79325" y="335700" width="222650" height="23400" rx="4000" fill="#FAF9F6"/>
+      <text x="32000" y="347400" text-anchor="middle" dominant-baseline="middle" fill="#57534E" font-family="system-ui" font-size="11000">Immutable compliance snapshot export</text>
+    </g>
+  </g>
+</svg>

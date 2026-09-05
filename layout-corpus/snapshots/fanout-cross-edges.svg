@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1036.3" height="366.2" viewBox="0 0 1036300 366200" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.6.0" data-theme-id="default" data-theme-version="0.5.0" data-theme-revision="sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53">
+  <title id="stack-title">Fan-out and cross edges</title>
+  <desc id="stack-description">Architecture diagram with 8 nodes, 0 groups, and 10 relationships.</desc>
+  <metadata>stack-engine 0.6.0; language 1.0; theme 0.5.0 at sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53</metadata>
+  <rect x="0" y="0" width="1036300" height="366200" fill="#F3F6FA"/>
+  <defs>
+    <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7000" markerHeight="7000" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
+      <path d="M 0 0 L 10000 5000 L 0 10000 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <text x="32000" y="50200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Fan-out and cross edges</text>
+  <g data-stack-layer="groups">
+  </g>
+  <g data-stack-layer="edges">
+    <g role="group" aria-label="Ingress flows to Identity service: Authenticate" data-edge-kind="request" data-edge-direction="forward">
+      <title>Ingress flows to Identity service: Authenticate</title>
+      <polyline points="192000,106200 216000,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Ingress flows to Catalog service: Browse" data-edge-kind="request" data-edge-direction="forward">
+      <title>Ingress flows to Catalog service: Browse</title>
+      <polyline points="192000,106200 192000,202200 216000,202200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Ingress flows to Checkout service: Purchase" data-edge-kind="request" data-edge-direction="forward">
+      <title>Ingress flows to Checkout service: Purchase</title>
+      <polyline points="192000,106200 192000,298200 216000,298200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Identity service flows to Primary database: Session" data-edge-kind="data" data-edge-direction="forward">
+      <title>Identity service flows to Primary database: Session</title>
+      <polyline points="397700,106200 397700,70200 808600,70200 808600,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Catalog service flows to Primary database: Products" data-edge-kind="data" data-edge-direction="forward">
+      <title>Catalog service flows to Primary database: Products</title>
+      <polyline points="397000,202200 808600,202200 808600,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Checkout service flows to Order events: OrderPlaced" data-edge-kind="event" data-edge-direction="forward">
+      <title>Checkout service flows to Order events: OrderPlaced</title>
+      <polyline points="410300,298200 410300,106200 434300,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Order events flows to Order worker: Dispatch" data-edge-kind="event" data-edge-direction="forward">
+      <title>Order events flows to Order worker: Dispatch</title>
+      <polyline points="597100,106200 621100,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Order worker flows to Primary database: Persist" data-edge-kind="data" data-edge-direction="forward">
+      <title>Order worker flows to Primary database: Persist</title>
+      <polyline points="784600,106200 808600,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Identity service flows to Audit archive: Access log" data-edge-kind="data" data-edge-direction="forward">
+      <title>Identity service flows to Audit archive: Access log</title>
+      <polyline points="397700,106200 397700,202200 808600,202200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Checkout service flows to Audit archive: Checkout log" data-edge-kind="data" data-edge-direction="forward">
+      <title>Checkout service flows to Audit archive: Checkout log</title>
+      <polyline points="410300,298200 410300,202200 808600,202200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+  </g>
+  <g data-stack-layer="nodes">
+    <g role="group" aria-label="Ingress" data-stack-id="ingress" data-node-kind="service">
+      <title>Ingress</title>
+      <rect x="32000" y="70200" width="160000" height="72000" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="52000" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="gateway"><rect x="8" y="4" width="8" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M3 8h5M5.5 5.5 8 8l-2.5 2.5M21 16h-5M18.5 13.5 16 16l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="88000" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Ingress</text>
+    </g>
+    <g role="group" aria-label="Identity service" data-stack-id="auth" data-node-kind="service">
+      <title>Identity service</title>
+      <rect x="216000" y="70200" width="181700" height="72000" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="236000" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="identity"><path d="M12 3 5 6v5c0 4.5 2.8 8.2 7 10 4.2-1.8 7-5.5 7-10V6l-7-3Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+  <circle cx="12" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M8.5 16c.5-2 1.7-3 3.5-3s3 1 3.5 3" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/> </svg>
+      <text x="272000" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Identity service</text>
+    </g>
+    <g role="group" aria-label="Catalog service" data-stack-id="catalog" data-node-kind="service">
+      <title>Catalog service</title>
+      <rect x="216000" y="166200" width="181000" height="72000" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="236000" y="190200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <rect x="4" y="15" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M8 9v6M16 9v6" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="272000" y="202200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Catalog service</text>
+    </g>
+    <g role="group" aria-label="Checkout service" data-stack-id="checkout" data-node-kind="service">
+      <title>Checkout service</title>
+      <rect x="216000" y="262200" width="194300" height="72000" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="236000" y="286200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <rect x="4" y="15" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M8 9v6M16 9v6" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="272000" y="298200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Checkout service</text>
+    </g>
+    <g role="group" aria-label="Order events" data-stack-id="events" data-node-kind="queue">
+      <title>Order events</title>
+      <rect x="434300" y="70200" width="162800" height="72000" rx="16000" fill="#E5EBF3" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="454300" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-queue"><circle cx="5" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <circle cx="5" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M7 7h10l3 3-3 3H7M7 17h12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="490300" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Order events</text>
+    </g>
+    <g role="group" aria-label="Order worker" data-stack-id="worker" data-node-kind="worker">
+      <title>Order worker</title>
+      <rect x="621100" y="70200" width="163500" height="72000" rx="16000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="641100" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-worker"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/> </svg>
+      <text x="677100" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Order worker</text>
+    </g>
+    <g role="group" aria-label="Primary database" data-stack-id="database" data-node-kind="database">
+      <title>Primary database</title>
+      <path d="M 808600 80200 V 132200 C 808600 142200 1004300 142200 1004300 132200 V 80200 C 1004300 70200 808600 70200 808600 80200 Z" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <ellipse cx="906450" cy="80200" rx="97850" ry="10000" fill="none" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="828600" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-database"><ellipse cx="12" cy="5" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="864600" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Primary database</text>
+    </g>
+    <g role="group" aria-label="Audit archive" data-stack-id="audit" data-node-kind="storage">
+      <title>Audit archive</title>
+      <rect x="808600" y="166200" width="164200" height="72000" rx="4000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="828600" y="190200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-storage"><path d="M3 6h7l2 3h9v10H3V6Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+  <path d="M3 9h18" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="864600" y="202200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Audit archive</text>
+    </g>
+  </g>
+  <g data-stack-layer="edge-labels" aria-hidden="true">
+    <g data-edge-label="Authenticate">
+      <rect x="164450" y="38800" width="79100" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="204000" y="50500" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Authenticate</text>
+    </g>
+    <g data-edge-label="Browse">
+      <rect x="156400" y="154500" width="51600" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="182200" y="166200" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Browse</text>
+    </g>
+    <g data-edge-label="Purchase">
+      <rect x="145400" y="202500" width="62600" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="176700" y="214200" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Purchase</text>
+    </g>
+    <g data-edge-label="Session">
+      <rect x="575975" y="38800" width="54350" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="603150" y="50500" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Session</text>
+    </g>
+    <g data-edge-label="Products">
+      <rect x="620875" y="190500" width="59850" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="650800" y="202200" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Products</text>
+    </g>
+    <g data-edge-label="OrderPlaced">
+      <rect x="405000" y="178500" width="76350" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="443175" y="190200" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">OrderPlaced</text>
+    </g>
+    <g data-edge-label="Dispatch">
+      <rect x="580000" y="147100" width="58200" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="609100" y="158800" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Dispatch</text>
+    </g>
+    <g data-edge-label="Persist">
+      <rect x="771900" y="38800" width="49400" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="796600" y="50500" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Persist</text>
+    </g>
+    <g data-edge-label="Access log">
+      <rect x="520000" y="190500" width="70300" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="555150" y="202200" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Access log</text>
+    </g>
+    <g data-edge-label="Checkout log">
+      <rect x="521075" y="221900" width="80750" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="561450" y="233600" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Checkout log</text>
+    </g>
+  </g>
+</svg>
