@@ -1,0 +1,65 @@
+stack 1.0
+
+diagram "Medium group flow" {
+  layout {
+    direction right
+  }
+
+  group clients "Clients" {
+    layout {
+      direction down
+      rank same [browser, mobile]
+      order [browser, mobile]
+    }
+
+    node browser "Browser" {
+      kind client
+      icon "web"
+    }
+
+    node mobile "Mobile app" {
+      kind client
+      icon "mobile"
+    }
+  }
+
+  node gateway "Edge gateway" {
+    icon "gateway"
+  }
+
+  group platform "Platform" {
+    layout {
+      direction down
+    }
+
+    node api "Application API"
+
+    node worker "Background worker" {
+      kind worker
+    }
+
+    node database "Primary database" {
+      kind database
+    }
+  }
+
+  edge browser -> gateway "Browser HTTPS" {
+    kind request
+  }
+
+  edge mobile -> gateway "Mobile HTTPS" {
+    kind request
+  }
+
+  edge gateway -> api "Route" {
+    kind request
+  }
+
+  edge api -> worker "Dispatch" {
+    kind event
+  }
+
+  edge worker -> database "Persist" {
+    kind data
+  }
+}

@@ -1,0 +1,31 @@
+stack 1.0
+
+diagram "Provider icon boundary" {
+  layout {
+    direction right
+  }
+
+  node upload "Upload client" {
+    kind client
+    icon "web"
+  }
+
+  group provider "Provider services" {
+    node storage "Example Storage" {
+      kind storage
+      icon "example:storage"
+    }
+
+    node worker "Object processor" {
+      kind worker
+    }
+  }
+
+  edge upload -> storage "Upload" {
+    kind request
+  }
+
+  edge storage -> worker "Object created" {
+    kind event
+  }
+}

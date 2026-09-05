@@ -1,0 +1,29 @@
+stack 1.0
+
+diagram "Small request path" {
+  layout {
+    direction right
+  }
+
+  node browser "Browser" {
+    kind client
+    icon "web"
+  }
+
+  node api "Public API" {
+    kind service
+    icon "api"
+  }
+
+  node database "Primary database" {
+    kind database
+  }
+
+  edge browser -> api "HTTPS" {
+    kind request
+  }
+
+  edge api -> database "SQL" {
+    kind data
+  }
+}

@@ -1,0 +1,79 @@
+stack 1.0
+
+diagram "Fan-out and cross edges" {
+  layout {
+    direction right
+    rank same [auth, catalog, checkout]
+    rank same [database, audit]
+    order [auth, catalog, checkout]
+  }
+
+  node ingress "Ingress" {
+    icon "gateway"
+  }
+
+  node auth "Identity service" {
+    kind service
+    icon "identity"
+  }
+
+  node catalog "Catalog service"
+
+  node checkout "Checkout service"
+
+  node events "Order events" {
+    kind queue
+  }
+
+  node worker "Order worker" {
+    kind worker
+  }
+
+  node database "Primary database" {
+    kind database
+  }
+
+  node audit "Audit archive" {
+    kind storage
+  }
+
+  edge ingress -> auth "Authenticate" {
+    kind request
+  }
+
+  edge ingress -> catalog "Browse" {
+    kind request
+  }
+
+  edge ingress -> checkout "Purchase" {
+    kind request
+  }
+
+  edge auth -> database "Session" {
+    kind data
+  }
+
+  edge catalog -> database "Products" {
+    kind data
+  }
+
+  edge checkout -> events "OrderPlaced" {
+    kind event
+  }
+
+  edge events -> worker "Dispatch" {
+    kind event
+  }
+
+  edge worker -> database "Persist" {
+    kind data
+  }
+
+  edge auth -> audit "Access log" {
+    kind data
+  }
+
+  edge checkout -> audit "Checkout log" {
+    kind data
+  }
+}

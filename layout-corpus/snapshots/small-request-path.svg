@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="627.7" height="174.2" viewBox="0 0 627700 174200" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.6.0" data-theme-id="default" data-theme-version="0.5.0" data-theme-revision="sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53">
+  <title id="stack-title">Small request path</title>
+  <desc id="stack-description">Architecture diagram with 3 nodes, 0 groups, and 2 relationships.</desc>
+  <metadata>stack-engine 0.6.0; language 1.0; theme 0.5.0 at sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53</metadata>
+  <rect x="0" y="0" width="627700" height="174200" fill="#F3F6FA"/>
+  <defs>
+    <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7000" markerHeight="7000" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
+      <path d="M 0 0 L 10000 5000 L 0 10000 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <text x="32000" y="50200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Small request path</text>
+  <g data-stack-layer="groups">
+  </g>
+  <g data-stack-layer="edges">
+    <g role="group" aria-label="Browser flows to Public API: HTTPS" data-edge-kind="request" data-edge-direction="forward">
+      <title>Browser flows to Public API: HTTPS</title>
+      <polyline points="192000,106200 216000,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Public API flows to Primary database: SQL" data-edge-kind="data" data-edge-direction="forward">
+      <title>Public API flows to Primary database: SQL</title>
+      <polyline points="376000,106200 400000,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+  </g>
+  <g data-stack-layer="nodes">
+    <g role="group" aria-label="Browser" data-stack-id="browser" data-node-kind="client">
+      <title>Browser</title>
+      <rect x="32000" y="70200" width="160000" height="72000" rx="8000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="52000" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="web"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M3 8h18M7 6h.01M10 6h.01" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/> </svg>
+      <text x="88000" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Browser</text>
+    </g>
+    <g role="group" aria-label="Public API" data-stack-id="api" data-node-kind="service">
+      <title>Public API</title>
+      <rect x="216000" y="70200" width="160000" height="72000" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="236000" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="api"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="272000" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Public API</text>
+    </g>
+    <g role="group" aria-label="Primary database" data-stack-id="database" data-node-kind="database">
+      <title>Primary database</title>
+      <path d="M 400000 80200 V 132200 C 400000 142200 595700 142200 595700 132200 V 80200 C 595700 70200 400000 70200 400000 80200 Z" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <ellipse cx="497850" cy="80200" rx="97850" ry="10000" fill="none" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="420000" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-database"><ellipse cx="12" cy="5" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="456000" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Primary database</text>
+    </g>
+  </g>
+  <g data-stack-layer="edge-labels" aria-hidden="true">
+    <g data-edge-label="HTTPS">
+      <rect x="181500" y="38800" width="45000" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="204000" y="50500" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">HTTPS</text>
+    </g>
+    <g data-edge-label="SQL">
+      <rect x="372100" y="38800" width="31800" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="388000" y="50500" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">SQL</text>
+    </g>
+  </g>
+</svg>

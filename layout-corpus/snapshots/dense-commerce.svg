@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2960.9" height="262.2" viewBox="0 0 2960900 262200" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.6.0" data-theme-id="default" data-theme-version="0.5.0" data-theme-revision="sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53">
+  <title id="stack-title">Dense commerce platform</title>
+  <desc id="stack-description">Architecture diagram with 13 nodes, 5 groups, and 12 relationships.</desc>
+  <metadata>stack-engine 0.6.0; language 1.0; theme 0.5.0 at sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53</metadata>
+  <rect x="0" y="0" width="2960900" height="262200" fill="#F3F6FA"/>
+  <defs>
+    <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7000" markerHeight="7000" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
+      <path d="M 0 0 L 10000 5000 L 0 10000 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <text x="32000" y="50200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Dense commerce platform</text>
+  <g data-stack-layer="groups">
+    <g role="group" aria-label="Storefront" data-stack-id="storefront">
+      <title>Storefront</title>
+      <rect x="216000" y="70200" width="420000" height="150600" rx="12000" fill="#E5EBF3" fill-opacity="0.55" stroke="#64748B" stroke-width="1000"/>
+      <text x="240000" y="107200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Storefront</text>
+    </g>
+    <g role="group" aria-label="Commerce services" data-stack-id="commerce">
+      <title>Commerce services</title>
+      <rect x="660000" y="70200" width="456200" height="150600" rx="12000" fill="#E5EBF3" fill-opacity="0.55" stroke="#64748B" stroke-width="1000"/>
+      <text x="684000" y="107200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Commerce services</text>
+    </g>
+    <g role="group" aria-label="Asynchronous processing" data-stack-id="asynchronous">
+      <title>Asynchronous processing</title>
+      <rect x="1140200" y="70200" width="655800" height="150200" rx="12000" fill="#E5EBF3" fill-opacity="0.55" stroke="#64748B" stroke-width="1000"/>
+      <text x="1164200" y="107200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Asynchronous processing</text>
+    </g>
+    <g role="group" aria-label="Data" data-stack-id="data">
+      <title>Data</title>
+      <rect x="1820000" y="70200" width="644600" height="150200" rx="12000" fill="#E5EBF3" fill-opacity="0.55" stroke="#64748B" stroke-width="1000"/>
+      <text x="1844000" y="107200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Data</text>
+    </g>
+    <g role="group" aria-label="External systems" data-stack-id="partners">
+      <title>External systems</title>
+      <rect x="2488600" y="70200" width="440300" height="150200" rx="12000" fill="#E5EBF3" fill-opacity="0.55" stroke="#64748B" stroke-width="1000"/>
+      <text x="2512600" y="107200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">External systems</text>
+    </g>
+  </g>
+  <g data-stack-layer="edges">
+    <g role="group" aria-label="Customer flows to Web storefront: Browse and buy" data-edge-kind="request" data-edge-direction="forward">
+      <title>Customer flows to Web storefront: Browse and buy</title>
+      <polyline points="192000,150200 192000,160600 240000,160600" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Web storefront flows to Edge gateway: HTTPS" data-edge-kind="request" data-edge-direction="forward">
+      <title>Web storefront flows to Edge gateway: HTTPS</title>
+      <polyline points="416800,160600 416800,160400 440800,160400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Edge gateway flows to Catalog API: Catalog requests" data-edge-kind="request" data-edge-direction="forward">
+      <title>Edge gateway flows to Catalog API: Catalog requests</title>
+      <polyline points="612000,160400 612000,160600 684000,160600" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Edge gateway flows to Checkout API: Checkout requests" data-edge-kind="request" data-edge-direction="forward">
+      <title>Edge gateway flows to Checkout API: Checkout requests</title>
+      <polyline points="612000,160400 612000,124400 903400,124400 903400,160600" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Catalog API flows to Product database: SQL" data-edge-kind="data" data-edge-direction="forward">
+      <title>Catalog API flows to Product database: SQL</title>
+      <polyline points="879400,160600 879400,124400 1844000,124400 1844000,160400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Catalog API flows to Product media: Media URLs" data-edge-kind="data" data-edge-direction="forward">
+      <title>Catalog API flows to Product media: Media URLs</title>
+      <polyline points="879400,160600 879400,124400 2267300,124400 2267300,160400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Checkout API flows to Order database: Transactions" data-edge-kind="data" data-edge-direction="forward">
+      <title>Checkout API flows to Order database: Transactions</title>
+      <polyline points="1092200,160600 1092200,196400 2063700,196400 2063700,160400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Checkout API flows to Payment provider: Payment API" data-edge-kind="request" data-edge-direction="forward">
+      <title>Checkout API flows to Payment provider: Payment API</title>
+      <polyline points="1092200,160600 1092200,196400 2512600,196400 2512600,160400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Checkout API flows to Event bus: OrderPlaced" data-edge-kind="event" data-edge-direction="forward">
+      <title>Checkout API flows to Event bus: OrderPlaced</title>
+      <polyline points="1092200,160600 1092200,160400 1164200,160400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Event bus flows to Fulfillment worker: OrderPlaced" data-edge-kind="event" data-edge-direction="forward">
+      <title>Event bus flows to Fulfillment worker: OrderPlaced</title>
+      <polyline points="1324200,160400 1348200,160400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Event bus flows to Notification worker: OrderPlaced" data-edge-kind="event" data-edge-direction="forward">
+      <title>Event bus flows to Notification worker: OrderPlaced</title>
+      <polyline points="1324200,160400 1324200,124400 1569300,124400 1569300,160400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+    <g role="group" aria-label="Notification worker flows to Email provider: Send receipt" data-edge-kind="request" data-edge-direction="forward">
+      <title>Notification worker flows to Email provider: Send receipt</title>
+      <polyline points="1772000,160400 1772000,124400 2732300,124400 2732300,160400" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+    </g>
+  </g>
+  <g data-stack-layer="nodes">
+    <g role="group" aria-label="Customer" data-stack-id="customer" data-node-kind="actor">
+      <title>Customer</title>
+      <circle cx="112000" cy="150200" r="80000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="52000" y="138200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-actor"><circle cx="12" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M5 20c.8-4 3-6 7-6s6.2 2 7 6" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/> </svg>
+      <text x="88000" y="150200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Customer</text>
+    </g>
+    <g role="group" aria-label="Web storefront: Next.js" data-stack-id="web" data-node-kind="client">
+      <title>Web storefront: Next.js</title>
+      <rect x="240000" y="124400" width="176800" height="72400" rx="8000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="260000" y="148600" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="web"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M3 8h18M7 6h.01M10 6h.01" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/> </svg>
+      <text x="296000" y="151600" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Web storefront</text>
+      <text x="296000" y="170600" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="12000" font-weight="400">Next.js</text>
+    </g>
+    <g role="group" aria-label="Edge gateway" data-stack-id="gateway" data-node-kind="service">
+      <title>Edge gateway</title>
+      <rect x="440800" y="124400" width="171200" height="72000" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="460800" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="gateway"><rect x="8" y="4" width="8" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M3 8h5M5.5 5.5 8 8l-2.5 2.5M21 16h-5M18.5 13.5 16 16l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="496800" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Edge gateway</text>
+    </g>
+    <g role="group" aria-label="Catalog API: Products and pricing" data-stack-id="catalog" data-node-kind="service">
+      <title>Catalog API: Products and pricing</title>
+      <rect x="684000" y="124400" width="195400" height="72400" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="704000" y="148600" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <rect x="4" y="15" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M8 9v6M16 9v6" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="740000" y="151600" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Catalog API</text>
+      <text x="740000" y="170600" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="12000" font-weight="400">Products and pricing</text>
+    </g>
+    <g role="group" aria-label="Checkout API: Order orchestration" data-stack-id="checkout" data-node-kind="service">
+      <title>Checkout API: Order orchestration</title>
+      <rect x="903400" y="124400" width="188800" height="72400" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="923400" y="148600" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <rect x="4" y="15" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M8 9v6M16 9v6" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="959400" y="151600" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Checkout API</text>
+      <text x="959400" y="170600" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="12000" font-weight="400">Order orchestration</text>
+    </g>
+    <g role="group" aria-label="Event bus" data-stack-id="events" data-node-kind="queue">
+      <title>Event bus</title>
+      <rect x="1164200" y="124400" width="160000" height="72000" rx="16000" fill="#E5EBF3" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="1184200" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-queue"><circle cx="5" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <circle cx="5" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M7 7h10l3 3-3 3H7M7 17h12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="1220200" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Event bus</text>
+    </g>
+    <g role="group" aria-label="Fulfillment worker" data-stack-id="fulfillment" data-node-kind="worker">
+      <title>Fulfillment worker</title>
+      <rect x="1348200" y="124400" width="197100" height="72000" rx="16000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="1368200" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-worker"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/> </svg>
+      <text x="1404200" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Fulfillment worker</text>
+    </g>
+    <g role="group" aria-label="Notification worker" data-stack-id="notifications" data-node-kind="worker">
+      <title>Notification worker</title>
+      <rect x="1569300" y="124400" width="202700" height="72000" rx="16000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="1589300" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-worker"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/> </svg>
+      <text x="1625300" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Notification worker</text>
+    </g>
+    <g role="group" aria-label="Product database" data-stack-id="products" data-node-kind="database">
+      <title>Product database</title>
+      <path d="M 1844000 134400 V 186400 C 1844000 196400 2039700 196400 2039700 186400 V 134400 C 2039700 124400 1844000 124400 1844000 134400 Z" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <ellipse cx="1941850" cy="134400" rx="97850" ry="10000" fill="none" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="1864000" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-database"><ellipse cx="12" cy="5" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="1900000" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Product database</text>
+    </g>
+    <g role="group" aria-label="Order database" data-stack-id="orders" data-node-kind="database">
+      <title>Order database</title>
+      <path d="M 2063700 134400 V 186400 C 2063700 196400 2243300 196400 2243300 186400 V 134400 C 2243300 124400 2063700 124400 2063700 134400 Z" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
+      <ellipse cx="2153500" cy="134400" rx="89800" ry="10000" fill="none" stroke="#1D63D8" stroke-width="1500"/>
+      <svg x="2083700" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-database"><ellipse cx="12" cy="5" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.75"/>
+  <path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="2119700" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Order database</text>
+    </g>
+    <g role="group" aria-label="Product media" data-stack-id="assets" data-node-kind="storage">
+      <title>Product media</title>
+      <rect x="2267300" y="124400" width="173300" height="72000" rx="4000" fill="#FFFFFF" stroke="#64748B" stroke-width="1500"/>
+      <svg x="2287300" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-storage"><path d="M3 6h7l2 3h9v10H3V6Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+  <path d="M3 9h18" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
+      <text x="2323300" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Product media</text>
+    </g>
+    <g role="group" aria-label="Payment provider" data-stack-id="payment" data-node-kind="external">
+      <title>Payment provider</title>
+      <polygon points="2528600,124400 2692300,124400 2708300,160400 2692300,196400 2528600,196400 2512600,160400" fill="#E5EBF3" stroke="#64748B" stroke-width="1500"/>
+      <svg x="2532600" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-external"><path d="M11 5H5v14h14v-6M13 5h6v6M19 5l-9 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="2568600" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Payment provider</text>
+    </g>
+    <g role="group" aria-label="Email provider" data-stack-id="email" data-node-kind="external">
+      <title>Email provider</title>
+      <polygon points="2748300,124400 2888900,124400 2904900,160400 2888900,196400 2748300,196400 2732300,160400" fill="#E5EBF3" stroke="#64748B" stroke-width="1500"/>
+      <svg x="2752300" y="148400" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-external"><path d="M11 5H5v14h14v-6M13 5h6v6M19 5l-9 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/> </svg>
+      <text x="2788300" y="160400" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Email provider</text>
+    </g>
+  </g>
+  <g data-stack-layer="edge-labels" aria-hidden="true">
+    <g data-edge-label="Browse and buy">
+      <rect x="162450" y="238200" width="96700" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="210800" y="249900" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Browse and buy</text>
+    </g>
+    <g data-edge-label="HTTPS">
+      <rect x="406200" y="93000" width="45000" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="428700" y="104700" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">HTTPS</text>
+    </g>
+    <g data-edge-label="Catalog requests">
+      <rect x="596800" y="204400" width="102200" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="647900" y="216100" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Catalog requests</text>
+    </g>
+    <g data-edge-label="Checkout requests">
+      <rect x="701475" y="93000" width="112650" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="757800" y="104700" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Checkout requests</text>
+    </g>
+    <g data-edge-label="SQL">
+      <rect x="1345700" y="93000" width="31800" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="1361600" y="104700" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">SQL</text>
+    </g>
+    <g data-edge-label="Media URLs">
+      <rect x="1536725" y="93000" width="73050" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="1573250" y="104700" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Media URLs</text>
+    </g>
+    <g data-edge-label="Transactions">
+      <rect x="1536850" y="204400" width="82400" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="1578050" y="216100" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Transactions</text>
+    </g>
+    <g data-edge-label="Payment API">
+      <rect x="1763500" y="204400" width="78000" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="1802500" y="216100" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Payment API</text>
+    </g>
+    <g data-edge-label="OrderPlaced">
+      <rect x="1089925" y="93000" width="76350" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="1128100" y="104700" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">OrderPlaced</text>
+    </g>
+    <g data-edge-label="OrderPlaced">
+      <rect x="1298025" y="204400" width="76350" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="1336200" y="216100" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">OrderPlaced</text>
+    </g>
+    <g data-edge-label="OrderPlaced">
+      <rect x="1408575" y="93000" width="76350" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="1446750" y="104700" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">OrderPlaced</text>
+    </g>
+    <g data-edge-label="Send receipt">
+      <rect x="2212875" y="93000" width="78550" height="23400" rx="4000" fill="#F3F6FA"/>
+      <text x="2252150" y="104700" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11000">Send receipt</text>
+    </g>
+  </g>
+</svg>
