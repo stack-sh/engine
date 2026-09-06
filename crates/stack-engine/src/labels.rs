@@ -498,6 +498,7 @@ mod tests {
                 width: 100_000,
                 height: 62_000,
             },
+            offset_port_sides: [true; 4],
         }];
         let titles = [Rect {
             x: 0,
@@ -709,6 +710,7 @@ mod tests {
                 width: 150_000,
                 height: 37_000,
             },
+            offset_port_sides: [true; 4],
         }];
         let titles = [Rect {
             x: 0,

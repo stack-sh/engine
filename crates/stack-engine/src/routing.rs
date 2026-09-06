@@ -1,7 +1,7 @@
 //! Deterministic orthogonal edge routing for the internal scene.
 
 use std::cmp::Reverse;
-use std::collections::BinaryHeap;
+use std::collections::{BTreeMap, BinaryHeap};
 
 use stack_compiler::ir::{Edge, EdgeDirection, EdgeKind};
 
@@ -11,6 +11,9 @@ const ROUTE_MARGIN: i64 = 8_000;
 const BEND_PENALTY: i64 = 32_000;
 const CROSSING_PENALTY: i64 = 48_000;
 const SHARED_LENGTH_PENALTY: i64 = 3;
+const PORT_REUSE_PENALTY: i64 = 96_000;
+const OFF_CENTER_PORT_PENALTY: i64 = 2_000;
+const ALTERNATIVE_PORT_PAIR_LIMIT: usize = 32;
 const FRAME_CLEARANCE: i64 = 16_000;
 // Reserve two extra pixels for the core connector and frame stroke radii.
 // The independent SVG gate uses the actual painted stroke widths.
@@ -52,29 +55,41 @@ pub(crate) fn route(
     fixed_obstacles: &[Rect],
     frames: &[Rect],
 ) -> Result<Vec<SceneEdge>, RoutingError> {
-    let mut router = GridRouter::new(nodes, bounds, fixed_obstacles, frames);
+    let mut router = GridRouter::new_for_edges(nodes, bounds, fixed_obstacles, frames, edges);
     edges
         .iter()
         .map(|edge| {
             let source = node_rect(nodes, &edge.from).ok_or(RoutingError)?;
             let target = node_rect(nodes, &edge.to).ok_or(RoutingError)?;
             let path = router.route(source, target).ok_or(RoutingError)?;
-            let (start_marker, end_marker) = markers(edge.direction);
-            let label_anchor = edge.label.as_ref().map(|_| path_midpoint(&path));
-            Ok(SceneEdge {
-                from: edge.from.clone(),
-                to: edge.to.clone(),
-                direction: edge.direction,
-                kind: edge.kind,
-                label: edge.label.clone(),
-                path,
-                start_marker,
-                end_marker,
-                label_anchor,
-                label_rect: None,
-            })
+            Ok(scene_edge(edge, path))
         })
         .collect()
+}
+
+pub(crate) fn route_next(
+    edge: &Edge,
+    context_edges: &[Edge],
+    reserved_edges: &[SceneEdge],
+    nodes: &[SceneNode],
+    bounds: Rect,
+    fixed_obstacles: &[Rect],
+    frames: &[Rect],
+) -> Result<SceneEdge, RoutingError> {
+    let source = node_rect(nodes, &edge.from).ok_or(RoutingError)?;
+    let target = node_rect(nodes, &edge.to).ok_or(RoutingError)?;
+    let mut router = GridRouter::new_for_edge(
+        nodes,
+        bounds,
+        fixed_obstacles,
+        frames,
+        context_edges,
+        edge,
+        reserved_edges,
+    );
+    router.reserve_edges(reserved_edges);
+    let path = router.route(source, target).ok_or(RoutingError)?;
+    Ok(scene_edge(edge, path))
 }
 
 pub(crate) fn geometry_is_valid(
@@ -141,6 +156,7 @@ pub(crate) fn geometry_is_valid(
     })
 }
 
+#[cfg(test)]
 pub(crate) fn alternative_routes(
     edge: &Edge,
     nodes: &[SceneNode],
@@ -148,46 +164,110 @@ pub(crate) fn alternative_routes(
     fixed_obstacles: &[Rect],
     frames: &[Rect],
 ) -> Result<Vec<SceneEdge>, RoutingError> {
+    alternative_routes_with_context(
+        edge,
+        std::slice::from_ref(edge),
+        &[],
+        nodes,
+        bounds,
+        fixed_obstacles,
+        frames,
+    )
+}
+
+pub(crate) fn alternative_routes_with_context(
+    edge: &Edge,
+    context_edges: &[Edge],
+    reserved_edges: &[SceneEdge],
+    nodes: &[SceneNode],
+    bounds: Rect,
+    fixed_obstacles: &[Rect],
+    frames: &[Rect],
+) -> Result<Vec<SceneEdge>, RoutingError> {
     let source = node_rect(nodes, &edge.from).ok_or(RoutingError)?;
     let target = node_rect(nodes, &edge.to).ok_or(RoutingError)?;
-    let mut router = GridRouter::new(nodes, bounds, fixed_obstacles, frames);
-    let mut paths = Vec::new();
-    for source_port in 0..4 {
-        for target_port in 0..4 {
-            if let Some(path) =
-                router.route_between(source, target, Some((source_port, target_port)))
-            {
-                paths.push(path);
+    let mut router = GridRouter::new_for_edge(
+        nodes,
+        bounds,
+        fixed_obstacles,
+        frames,
+        context_edges,
+        edge,
+        reserved_edges,
+    );
+    router.reserve_edges(reserved_edges);
+    let source_stubs = terminal_stubs(source);
+    let target_stubs = terminal_stubs(target);
+    let mut port_pairs = Vec::new();
+    for (source_index, (source_port, _, _, source_preference)) in source_stubs.iter().enumerate() {
+        if !router.port_is_enabled(source, source_index) {
+            continue;
+        }
+        for (target_index, (target_port, _, _, target_preference)) in
+            target_stubs.iter().enumerate()
+        {
+            if !router.port_is_enabled(target, target_index) {
+                continue;
             }
+            let reuse = i64::from(
+                router.used_ports.get(source_port).copied().unwrap_or(0)
+                    + router.used_ports.get(target_port).copied().unwrap_or(0),
+            ) * PORT_REUSE_PENALTY;
+            port_pairs.push((
+                *source_preference
+                    + *target_preference
+                    + reuse
+                    + manhattan(*source_port, *target_port),
+                source_index,
+                target_index,
+            ));
         }
     }
-    paths.sort_by_cached_key(|path| {
-        let length = path
-            .windows(2)
-            .map(|segment| manhattan(segment[0], segment[1]))
-            .sum::<i64>();
-        (
-            length + path.len().saturating_sub(2) as i64 * BEND_PENALTY,
-            path.clone(),
-        )
-    });
-    paths.dedup();
-    let (start_marker, end_marker) = markers(edge.direction);
+    port_pairs.sort();
+    let (midpoint_pairs, offset_pairs): (Vec<_>, Vec<_>) = port_pairs
+        .into_iter()
+        .partition(|(_, source_port, target_port)| source_port % 3 == 0 && target_port % 3 == 0);
+    let mut paths = Vec::new();
+    for (_, source_port, target_port) in midpoint_pairs {
+        if let Some((cost, path)) =
+            router.route_between_with_cost(source, target, Some((source_port, target_port)))
+        {
+            paths.push((cost, path));
+        }
+    }
+    for (_, source_port, target_port) in offset_pairs {
+        if paths.len() >= ALTERNATIVE_PORT_PAIR_LIMIT {
+            break;
+        }
+        if let Some((cost, path)) =
+            router.route_between_with_cost(source, target, Some((source_port, target_port)))
+        {
+            paths.push((cost, path));
+        }
+    }
+    paths.sort();
+    paths.dedup_by(|left, right| left.1 == right.1);
     Ok(paths
         .into_iter()
-        .map(|path| SceneEdge {
-            from: edge.from.clone(),
-            to: edge.to.clone(),
-            direction: edge.direction,
-            kind: edge.kind,
-            label: edge.label.clone(),
-            label_anchor: edge.label.as_ref().map(|_| path_midpoint(&path)),
-            label_rect: None,
-            path,
-            start_marker,
-            end_marker,
-        })
+        .map(|(_, path)| scene_edge(edge, path))
         .collect())
+}
+
+fn scene_edge(edge: &Edge, path: Vec<Point>) -> SceneEdge {
+    let (start_marker, end_marker) = markers(edge.direction);
+    let label_anchor = edge.label.as_ref().map(|_| path_midpoint(&path));
+    SceneEdge {
+        from: edge.from.clone(),
+        to: edge.to.clone(),
+        direction: edge.direction,
+        kind: edge.kind,
+        label: edge.label.clone(),
+        path,
+        start_marker,
+        end_marker,
+        label_anchor,
+        label_rect: None,
+    }
 }
 
 fn node_rect(nodes: &[SceneNode], identifier: &str) -> Option<Rect> {
@@ -205,28 +285,70 @@ fn markers(direction: EdgeDirection) -> (Marker, Marker) {
     }
 }
 
-fn ports(rect: Rect) -> [Point; 4] {
+fn ports(rect: Rect) -> [Point; 12] {
+    let horizontal = [
+        rect.x + rect.width / 2,
+        rect.x + rect.width / 4,
+        rect.x + 3 * rect.width / 4,
+    ];
+    let vertical = [
+        rect.y + rect.height / 2,
+        rect.y + rect.height / 4,
+        rect.y + 3 * rect.height / 4,
+    ];
     [
         Point {
             x: rect.x + rect.width,
-            y: rect.y + rect.height / 2,
+            y: vertical[0],
         },
         Point {
-            x: rect.x + rect.width / 2,
+            x: rect.x + rect.width,
+            y: vertical[1],
+        },
+        Point {
+            x: rect.x + rect.width,
+            y: vertical[2],
+        },
+        Point {
+            x: horizontal[0],
+            y: rect.y + rect.height,
+        },
+        Point {
+            x: horizontal[1],
+            y: rect.y + rect.height,
+        },
+        Point {
+            x: horizontal[2],
             y: rect.y + rect.height,
         },
         Point {
             x: rect.x,
-            y: rect.y + rect.height / 2,
+            y: vertical[0],
         },
         Point {
-            x: rect.x + rect.width / 2,
+            x: rect.x,
+            y: vertical[1],
+        },
+        Point {
+            x: rect.x,
+            y: vertical[2],
+        },
+        Point {
+            x: horizontal[0],
+            y: rect.y,
+        },
+        Point {
+            x: horizontal[1],
+            y: rect.y,
+        },
+        Point {
+            x: horizontal[2],
             y: rect.y,
         },
     ]
 }
 
-fn terminal_stubs(rect: Rect) -> [(Point, Point, usize); 4] {
+fn terminal_stubs(rect: Rect) -> [(Point, Point, usize, i64); 12] {
     let ports = ports(rect);
     [
         (
@@ -236,30 +358,106 @@ fn terminal_stubs(rect: Rect) -> [(Point, Point, usize); 4] {
                 y: ports[0].y,
             },
             1,
+            0,
         ),
         (
             ports[1],
             Point {
-                x: ports[1].x,
-                y: ports[1].y + ROUTE_MARGIN,
+                x: ports[1].x + ROUTE_MARGIN,
+                y: ports[1].y,
             },
-            2,
+            1,
+            OFF_CENTER_PORT_PENALTY,
         ),
         (
             ports[2],
             Point {
-                x: ports[2].x - ROUTE_MARGIN,
+                x: ports[2].x + ROUTE_MARGIN,
                 y: ports[2].y,
             },
             1,
+            OFF_CENTER_PORT_PENALTY,
         ),
         (
             ports[3],
             Point {
                 x: ports[3].x,
-                y: ports[3].y - ROUTE_MARGIN,
+                y: ports[3].y + ROUTE_MARGIN,
             },
             2,
+            0,
+        ),
+        (
+            ports[4],
+            Point {
+                x: ports[4].x,
+                y: ports[4].y + ROUTE_MARGIN,
+            },
+            2,
+            OFF_CENTER_PORT_PENALTY,
+        ),
+        (
+            ports[5],
+            Point {
+                x: ports[5].x,
+                y: ports[5].y + ROUTE_MARGIN,
+            },
+            2,
+            OFF_CENTER_PORT_PENALTY,
+        ),
+        (
+            ports[6],
+            Point {
+                x: ports[6].x - ROUTE_MARGIN,
+                y: ports[6].y,
+            },
+            1,
+            0,
+        ),
+        (
+            ports[7],
+            Point {
+                x: ports[7].x - ROUTE_MARGIN,
+                y: ports[7].y,
+            },
+            1,
+            OFF_CENTER_PORT_PENALTY,
+        ),
+        (
+            ports[8],
+            Point {
+                x: ports[8].x - ROUTE_MARGIN,
+                y: ports[8].y,
+            },
+            1,
+            OFF_CENTER_PORT_PENALTY,
+        ),
+        (
+            ports[9],
+            Point {
+                x: ports[9].x,
+                y: ports[9].y - ROUTE_MARGIN,
+            },
+            2,
+            0,
+        ),
+        (
+            ports[10],
+            Point {
+                x: ports[10].x,
+                y: ports[10].y - ROUTE_MARGIN,
+            },
+            2,
+            OFF_CENTER_PORT_PENALTY,
+        ),
+        (
+            ports[11],
+            Point {
+                x: ports[11].x,
+                y: ports[11].y - ROUTE_MARGIN,
+            },
+            2,
+            OFF_CENTER_PORT_PENALTY,
         ),
     ]
 }
@@ -427,6 +625,26 @@ impl Rect {
     }
 }
 
+fn preferred_sides(source: Rect, target: Rect) -> (usize, usize) {
+    let source_center = Point {
+        x: 2 * source.x + source.width,
+        y: 2 * source.y + source.height,
+    };
+    let target_center = Point {
+        x: 2 * target.x + target.width,
+        y: 2 * target.y + target.height,
+    };
+    let horizontal = target_center.x - source_center.x;
+    let vertical = target_center.y - source_center.y;
+    if horizontal.abs() > vertical.abs() {
+        if horizontal >= 0 { (0, 2) } else { (2, 0) }
+    } else if vertical >= 0 {
+        (1, 3)
+    } else {
+        (3, 1)
+    }
+}
+
 #[derive(Debug)]
 struct GridRouter<'a> {
     nodes: &'a [SceneNode],
@@ -440,15 +658,85 @@ struct GridRouter<'a> {
     links: Vec<[Option<usize>; 4]>,
     shared: Vec<[u32; 2]>,
     occupied: Vec<[u32; 2]>,
+    used_ports: BTreeMap<Point, u32>,
+    multi_port_sides: Vec<[bool; 4]>,
 }
 
 impl<'a> GridRouter<'a> {
+    #[cfg(test)]
     fn new(
         nodes: &'a [SceneNode],
         bounds: Rect,
         fixed_obstacles: &'a [Rect],
         frames: &'a [Rect],
     ) -> Self {
+        Self::new_for_edges(nodes, bounds, fixed_obstacles, frames, &[])
+    }
+
+    fn new_for_edges(
+        nodes: &'a [SceneNode],
+        bounds: Rect,
+        fixed_obstacles: &'a [Rect],
+        frames: &'a [Rect],
+        edges: &[Edge],
+    ) -> Self {
+        Self::new_with_context(nodes, bounds, fixed_obstacles, frames, edges, None, &[])
+    }
+
+    fn new_for_edge(
+        nodes: &'a [SceneNode],
+        bounds: Rect,
+        fixed_obstacles: &'a [Rect],
+        frames: &'a [Rect],
+        edges: &[Edge],
+        active_edge: &Edge,
+        reserved_edges: &[SceneEdge],
+    ) -> Self {
+        Self::new_with_context(
+            nodes,
+            bounds,
+            fixed_obstacles,
+            frames,
+            edges,
+            Some(active_edge),
+            reserved_edges,
+        )
+    }
+
+    fn new_with_context(
+        nodes: &'a [SceneNode],
+        bounds: Rect,
+        fixed_obstacles: &'a [Rect],
+        frames: &'a [Rect],
+        edges: &[Edge],
+        active_edge: Option<&Edge>,
+        reserved_edges: &[SceneEdge],
+    ) -> Self {
+        let mut side_demand = vec![[0_u32; 4]; nodes.len()];
+        for edge in edges {
+            let Some(source_index) = nodes.iter().position(|node| node.id == edge.from) else {
+                continue;
+            };
+            let Some(target_index) = nodes.iter().position(|node| node.id == edge.to) else {
+                continue;
+            };
+            let (source_side, target_side) =
+                preferred_sides(nodes[source_index].rect, nodes[target_index].rect);
+            side_demand[source_index][source_side] += 1;
+            side_demand[target_index][target_side] += 1;
+        }
+        let multi_port_sides = side_demand
+            .into_iter()
+            .zip(nodes)
+            .map(|(demand, node)| {
+                let requested = if demand.iter().sum::<u32>() >= 3 {
+                    [true; 4]
+                } else {
+                    demand.map(|count| count > 1)
+                };
+                std::array::from_fn(|side| requested[side] && node.offset_port_sides[side])
+            })
+            .collect::<Vec<_>>();
         let mut xs = vec![
             bounds.x + ROUTE_MARGIN,
             bounds.x + bounds.width - ROUTE_MARGIN,
@@ -457,7 +745,7 @@ impl<'a> GridRouter<'a> {
             bounds.y + ROUTE_MARGIN,
             bounds.y + bounds.height - ROUTE_MARGIN,
         ];
-        for node in nodes {
+        for (node_index, node) in nodes.iter().enumerate() {
             let rect = node.rect;
             xs.extend([
                 rect.x - ROUTE_MARGIN,
@@ -469,6 +757,13 @@ impl<'a> GridRouter<'a> {
                 rect.y + rect.height / 2,
                 rect.y + rect.height + ROUTE_MARGIN,
             ]);
+            let active = active_edge.is_none_or(|edge| edge.from == node.id || edge.to == node.id);
+            if active && (multi_port_sides[node_index][1] || multi_port_sides[node_index][3]) {
+                xs.extend([rect.x + rect.width / 4, rect.x + 3 * rect.width / 4]);
+            }
+            if active && (multi_port_sides[node_index][0] || multi_port_sides[node_index][2]) {
+                ys.extend([rect.y + rect.height / 4, rect.y + 3 * rect.height / 4]);
+            }
         }
         for rect in fixed_obstacles {
             xs.extend([rect.x - ROUTE_MARGIN, rect.x + rect.width + ROUTE_MARGIN]);
@@ -480,6 +775,12 @@ impl<'a> GridRouter<'a> {
             }
             for side in [frame.y, frame.y + frame.height] {
                 ys.extend([side - FRAME_MARGIN, side + FRAME_MARGIN]);
+            }
+        }
+        for edge in reserved_edges {
+            for point in &edge.path {
+                xs.push(point.x);
+                ys.push(point.y);
             }
         }
         xs.retain(|x| *x >= bounds.x && *x <= bounds.x + bounds.width);
@@ -526,6 +827,8 @@ impl<'a> GridRouter<'a> {
             links: vec![[None; 4]; valid.len()],
             shared: vec![[0; 2]; valid.len()],
             occupied: vec![[0; 2]; valid.len()],
+            used_ports: BTreeMap::new(),
+            multi_port_sides,
             valid,
             bend_allowed,
         };
@@ -575,13 +878,28 @@ impl<'a> GridRouter<'a> {
         target: Rect,
         port_pair: Option<(usize, usize)>,
     ) -> Option<Vec<Point>> {
+        self.route_between_with_cost(source, target, port_pair)
+            .map(|(_, path)| path)
+    }
+
+    fn route_between_with_cost(
+        &mut self,
+        source: Rect,
+        target: Rect,
+        port_pair: Option<(usize, usize)>,
+    ) -> Option<(i64, Vec<Point>)> {
         let state_count = self.valid.len() * 3;
         let mut distances = vec![i64::MAX; state_count];
         let mut parents = vec![None; state_count];
         let mut pending = BinaryHeap::new();
         let mut starts = Vec::new();
-        for (index, (port, stub, axis)) in terminal_stubs(source).into_iter().enumerate() {
+        for (index, (port, stub, axis, preference)) in
+            terminal_stubs(source).into_iter().enumerate()
+        {
             if port_pair.is_some_and(|(source_port, _)| source_port != index) {
+                continue;
+            }
+            if !self.port_is_enabled(source, index) {
                 continue;
             }
             let Some(vertex) = self.vertex(stub) else {
@@ -591,8 +909,11 @@ impl<'a> GridRouter<'a> {
                 continue;
             }
             let state = vertex * 3 + axis;
-            distances[state] = ROUTE_MARGIN;
-            pending.push(Reverse((ROUTE_MARGIN, state)));
+            let cost = ROUTE_MARGIN
+                + preference
+                + i64::from(self.used_ports.get(&port).copied().unwrap_or(0)) * PORT_REUSE_PENALTY;
+            distances[state] = cost;
+            pending.push(Reverse((cost, state)));
             starts.push((state, port));
             if source == target {
                 break;
@@ -601,14 +922,17 @@ impl<'a> GridRouter<'a> {
         let targets = terminal_stubs(target)
             .into_iter()
             .enumerate()
-            .filter_map(|(index, (port, stub, axis))| {
+            .filter_map(|(index, (port, stub, axis, preference))| {
                 if port_pair.is_some_and(|(_, target_port)| target_port != index) {
+                    return None;
+                }
+                if !self.port_is_enabled(target, index) {
                     return None;
                 }
                 let vertex = self.vertex(stub)?;
                 (self.stub_is_clear(port, stub, target)
                     && !(source == target && starts.iter().any(|(_, start)| *start == port)))
-                .then_some((vertex, port, axis))
+                .then_some((vertex, port, axis, preference))
             })
             .collect::<Vec<_>>();
         if starts.is_empty() || targets.is_empty() {
@@ -625,10 +949,13 @@ impl<'a> GridRouter<'a> {
             }
             let vertex = state / 3;
             let incoming_axis = state % 3;
-            for &(target_vertex, port, axis) in &targets {
+            for &(target_vertex, port, axis, preference) in &targets {
                 if target_vertex == vertex && (incoming_axis == axis || self.bend_allowed[vertex]) {
                     let candidate = (
                         cost + ROUTE_MARGIN
+                            + preference
+                            + i64::from(self.used_ports.get(&port).copied().unwrap_or(0))
+                                * PORT_REUSE_PENALTY
                             + if incoming_axis == axis {
                                 0
                             } else {
@@ -671,7 +998,7 @@ impl<'a> GridRouter<'a> {
                 }
             }
         }
-        let (_, state, target_port) = best?;
+        let (cost, state, target_port) = best?;
         let (middle, root) = self.reconstruct(state, &parents);
         let source_port = starts.iter().find(|(state, _)| *state == root)?.1;
         let mut path = Vec::with_capacity(middle.len() + 2);
@@ -683,8 +1010,11 @@ impl<'a> GridRouter<'a> {
         }
         if port_pair.is_none() {
             self.reserve_path(&path);
+            for port in [source_port, target_port] {
+                *self.used_ports.entry(port).or_default() += 1;
+            }
         }
-        Some(path)
+        Some((cost, path))
     }
 
     fn stub_is_clear(&self, port: Point, stub: Point, terminal: Rect) -> bool {
@@ -702,6 +1032,15 @@ impl<'a> GridRouter<'a> {
                 .frames
                 .iter()
                 .all(|frame| frame_segment_is_clear(port, stub, *frame))
+    }
+
+    fn port_is_enabled(&self, rect: Rect, port_index: usize) -> bool {
+        port_index % 3 == 0
+            || self
+                .nodes
+                .iter()
+                .position(|node| node.rect == rect)
+                .is_some_and(|node_index| self.multi_port_sides[node_index][port_index / 3])
     }
 
     fn reserve_path(&mut self, path: &[Point]) {
@@ -739,6 +1078,18 @@ impl<'a> GridRouter<'a> {
                         self.shared[vertex][axis] += 1;
                     }
                 }
+            }
+        }
+    }
+
+    fn reserve_edges(&mut self, edges: &[SceneEdge]) {
+        for edge in edges {
+            self.reserve_path(&edge.path);
+            if let Some(port) = edge.path.first() {
+                *self.used_ports.entry(*port).or_default() += 1;
+            }
+            if let Some(port) = edge.path.last() {
+                *self.used_ports.entry(*port).or_default() += 1;
             }
         }
     }
@@ -810,6 +1161,7 @@ mod tests {
                 width: 100_000,
                 height: 100_000,
             },
+            offset_port_sides: [true; 4],
         }
     }
 
@@ -825,6 +1177,16 @@ mod tests {
             end_marker: Marker::Arrow,
             label_anchor: None,
             label_rect: None,
+        }
+    }
+
+    fn ir_edge(from: &str, to: &str) -> stack_compiler::ir::Edge {
+        stack_compiler::ir::Edge {
+            from: from.to_owned(),
+            to: to.to_owned(),
+            direction: EdgeDirection::Forward,
+            kind: EdgeKind::Flow,
+            label: None,
         }
     }
 
@@ -1160,6 +1522,106 @@ mod tests {
                 &[]
             ));
         }
+        Ok(())
+    }
+
+    #[test]
+    fn contextual_routing_preserves_reserved_ports_for_label_fallbacks()
+    -> Result<(), Box<dyn Error>> {
+        let nodes = [
+            test_node("source", 20_000, 150_000),
+            test_node("upper", 320_000, 50_000),
+            test_node("lower", 320_000, 250_000),
+        ];
+        let edges = [ir_edge("source", "upper"), ir_edge("source", "lower")];
+        let first = super::route_next(&edges[0], &edges, &[], &nodes, test_bounds(), &[], &[])
+            .map_err(|_| "first route is missing")?;
+        let second = super::route_next(
+            &edges[1],
+            &edges,
+            std::slice::from_ref(&first),
+            &nodes,
+            test_bounds(),
+            &[],
+            &[],
+        )
+        .map_err(|_| "second route is missing")?;
+        assert_ne!(first.path.first(), second.path.first());
+
+        let alternatives = super::alternative_routes_with_context(
+            &edges[1],
+            &edges,
+            std::slice::from_ref(&first),
+            &nodes,
+            test_bounds(),
+            &[],
+            &[],
+        )
+        .map_err(|_| "alternative routes are missing")?;
+        let preferred = alternatives.first().ok_or("missing alternative route")?;
+        assert_ne!(first.path.first(), preferred.path.first());
+        assert!(super::geometry_is_valid(
+            &[first, second, preferred.clone()],
+            &nodes,
+            test_bounds(),
+            &[]
+        ));
+        Ok(())
+    }
+
+    #[test]
+    fn bounded_alternatives_keep_midpoint_escape_routes_when_preferred_stubs_are_blocked()
+    -> Result<(), Box<dyn Error>> {
+        let source = test_node("source", 170_000, 150_000);
+        let target = test_node("target", 320_000, 150_000);
+        let mut duplicate_target_one = target.clone();
+        duplicate_target_one.id = "duplicate-one".to_owned();
+        let mut duplicate_target_two = target.clone();
+        duplicate_target_two.id = "duplicate-two".to_owned();
+        let nodes = [source, target, duplicate_target_one, duplicate_target_two];
+        let current = ir_edge("source", "target");
+        let context = [
+            current.clone(),
+            ir_edge("source", "duplicate-one"),
+            ir_edge("source", "duplicate-two"),
+        ];
+        let blocked_stubs = [
+            Rect {
+                x: 270_000,
+                y: 130_000,
+                width: 20_000,
+                height: 140_000,
+            },
+            Rect {
+                x: 150_000,
+                y: 120_000,
+                width: 140_000,
+                height: 30_000,
+            },
+            Rect {
+                x: 150_000,
+                y: 250_000,
+                width: 140_000,
+                height: 30_000,
+            },
+        ];
+
+        let alternatives = super::alternative_routes_with_context(
+            &current,
+            &context,
+            &[],
+            &nodes,
+            test_bounds(),
+            &blocked_stubs,
+            &[],
+        )
+        .map_err(|_| "alternative route search failed")?;
+        assert!(!alternatives.is_empty());
+        assert!(alternatives.iter().all(|edge| {
+            edge.path
+                .first()
+                .is_some_and(|point| point.x == nodes[0].rect.x)
+        }));
         Ok(())
     }
 

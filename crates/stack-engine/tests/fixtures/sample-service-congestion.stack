@@ -1,0 +1,47 @@
+stack 1.0
+
+diagram "Sample Service" {
+  layout { direction down }
+
+  node customer "Customer" { kind actor }
+  node operator "Operator" { kind actor }
+  node cdn "Cloudflare" { kind cache }
+
+  group gcp "Google Cloud" {
+    node alb-for-customer "ALB(for User)" { kind service icon "load-balancer" }
+    node alb-for-operator "ALB(for Admin)" { kind service icon "load-balancer" }
+
+    group vpc "VPC" {
+      node iap "Identity Aware Proxy" { kind service icon "identity" }
+      node web "Web" { kind service icon "server" }
+      node admin "Admin" { kind service icon "server" }
+      node api "API" { kind service icon "server" }
+      node db "Spanner" { kind database }
+      node scheduler "Cloud Scheduler" {
+        kind service
+        icon "scheduler"
+        detail "every 1min"
+      }
+      node pubsub "Cloud Pub/Sub" { kind worker icon "event" }
+      node worker1 "Worker" {
+        kind worker
+        icon "server"
+        detail "Cloud Run Jobs Worker"
+      }
+    }
+  }
+
+  edge customer <-> cdn "If cached Return Cache"
+  edge cdn -> alb-for-customer
+  edge alb-for-customer -> web
+  edge web -> api
+  edge api -> pubsub
+  edge operator -> alb-for-operator
+  edge alb-for-operator -> iap
+  edge iap -> admin
+  edge admin -> api
+  edge api -> db
+  edge scheduler -> worker1
+  edge pubsub -> worker1
+  edge worker1 -> db "Batch"
+}

@@ -67,6 +67,13 @@ fn assert_progresses(before: Rect, after: Rect, direction: SceneDirection) {
     );
 }
 
+fn cross_axis_center(rect: Rect, direction: SceneDirection) -> i64 {
+    match direction {
+        SceneDirection::Right => 2 * rect.y + rect.height,
+        SceneDirection::Down => 2 * rect.x + rect.width,
+    }
+}
+
 fn assert_reordered_dag_progresses(direction: SceneDirection) -> Result<(), Box<dyn Error>> {
     let authored_direction = match direction {
         SceneDirection::Right => "right",
@@ -109,6 +116,110 @@ fn right_directed_dag_progresses_by_connections_instead_of_declaration_order()
 fn down_directed_dag_progresses_by_connections_instead_of_declaration_order()
 -> Result<(), Box<dyn Error>> {
     assert_reordered_dag_progresses(SceneDirection::Down)
+}
+
+fn assert_external_neighbor_alignment(direction: SceneDirection) -> Result<(), Box<dyn Error>> {
+    let authored_direction = match direction {
+        SceneDirection::Right => "right",
+        SceneDirection::Down => "down",
+    };
+    let source = format!(
+        r#"stack 1.0
+diagram "External neighbor alignment" {{
+  layout {{ direction {authored_direction} }}
+  group outer "Outer" {{
+    layout {{ direction {authored_direction} }}
+    node first-source "First source"
+    node second-source "Second source"
+    group boundary "Boundary" {{
+      layout {{
+        direction {authored_direction}
+        rank same [second-target, unanchored, first-target]
+      }}
+      node second-target "Second target"
+      node unanchored "Unanchored"
+      node first-target "First target"
+    }}
+  }}
+  edge first-source -> first-target
+  edge second-source -> second-target
+}}"#
+    );
+    let scene = scene_from(&source)?;
+    let first_source = cross_axis_center(node_rect(&scene, "first-source")?, direction);
+    let second_source = cross_axis_center(node_rect(&scene, "second-source")?, direction);
+    let first_target = cross_axis_center(node_rect(&scene, "first-target")?, direction);
+    let unanchored = cross_axis_center(node_rect(&scene, "unanchored")?, direction);
+    let second_target = cross_axis_center(node_rect(&scene, "second-target")?, direction);
+
+    assert!(
+        first_source < second_source,
+        "sources: {first_source}, {second_source}"
+    );
+    assert!(
+        first_target < unanchored,
+        "targets: first={first_target}, unanchored={unanchored}, second={second_target}"
+    );
+    assert!(
+        unanchored < second_target,
+        "targets: first={first_target}, unanchored={unanchored}, second={second_target}"
+    );
+    assert!(scene.geometry_is_valid());
+    Ok(())
+}
+
+#[test]
+fn down_layout_aligns_rank_members_with_external_neighbors_without_moving_unanchored_slots()
+-> Result<(), Box<dyn Error>> {
+    assert_external_neighbor_alignment(SceneDirection::Down)
+}
+
+#[test]
+fn right_layout_aligns_rank_members_with_external_neighbors_without_moving_unanchored_slots()
+-> Result<(), Box<dyn Error>> {
+    assert_external_neighbor_alignment(SceneDirection::Right)
+}
+
+#[test]
+fn explicit_cross_axis_order_overrides_external_neighbor_alignment() -> Result<(), Box<dyn Error>> {
+    let scene = scene_from(
+        r#"stack 1.0
+diagram "Authored order" {
+  layout { direction down }
+  group outer "Outer" {
+    layout { direction down }
+    node first-source "First source"
+    node second-source "Second source"
+    group boundary "Boundary" {
+    layout {
+      direction down
+      rank same [second-target, unanchored, first-target]
+      order [second-target, unanchored, first-target]
+    }
+    node second-target "Second target"
+    node unanchored "Unanchored"
+    node first-target "First target"
+    }
+  }
+  edge first-source -> first-target
+  edge second-source -> second-target
+}"#,
+    )?;
+    let second = cross_axis_center(node_rect(&scene, "second-target")?, SceneDirection::Down);
+    let unanchored = cross_axis_center(node_rect(&scene, "unanchored")?, SceneDirection::Down);
+    let first = cross_axis_center(node_rect(&scene, "first-target")?, SceneDirection::Down);
+
+    assert!(
+        second < unanchored,
+        "second={second}, unanchored={unanchored}, first={first}"
+    );
+    assert!(
+        unanchored < first,
+        "second={second}, unanchored={unanchored}, first={first}"
+    );
+    assert!(scene.unsatisfied_orders.is_empty());
+    assert!(scene.geometry_is_valid());
+    Ok(())
 }
 
 #[test]

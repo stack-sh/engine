@@ -34,6 +34,9 @@ mod svg;
 mod layout_quality;
 
 #[cfg(test)]
+mod layout_congestion;
+
+#[cfg(test)]
 mod placement_quality;
 
 mod language;

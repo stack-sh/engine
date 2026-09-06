@@ -58,6 +58,9 @@ pub(crate) struct SceneNode {
     pub(crate) id: String,
     pub(crate) parent_group_id: Option<String>,
     pub(crate) rect: Rect,
+    // Off-center ports are enabled on straight painted sides only. Side order
+    // matches routing terminals: right, bottom, left, top.
+    pub(crate) offset_port_sides: [bool; 4],
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -344,10 +347,18 @@ fn layout_attempt(context: &LayoutContext<'_>) -> Result<Scene, SceneError> {
                 .node_rects
                 .get(&node.id)
                 .copied()
-                .map(|rect| SceneNode {
-                    id: node.id.clone(),
-                    parent_group_id: node.parent_group_id.clone(),
-                    rect,
+                .map(|rect| {
+                    let visual = node_visual(theme, node.kind);
+                    SceneNode {
+                        id: node.id.clone(),
+                        parent_group_id: node.parent_group_id.clone(),
+                        rect,
+                        offset_port_sides: offset_port_sides(
+                            visual.shape,
+                            visual.corner_radius_milli_px,
+                            rect,
+                        ),
+                    }
                 })
                 .ok_or(SceneError::InvalidIntermediateRepresentation)
         })
@@ -476,16 +487,16 @@ fn route_with_reserved_labels(
     for &index in &order {
         let mut obstacles = fixed_text.to_vec();
         obstacles.extend(previous.iter().filter_map(|edge| edge.label_rect));
-        let mut edge = routing::route(
-            &context.diagram.edges[index..=index],
+        let mut edge = routing::route_next(
+            &context.diagram.edges[index],
+            &context.diagram.edges,
+            &previous,
             nodes,
             bounds,
             &obstacles,
             frames,
         )
-        .map_err(|_| SceneError::EdgeRoutingFailed)?
-        .pop()
-        .ok_or(SceneError::EdgeRoutingFailed)?;
+        .map_err(|_| SceneError::EdgeRoutingFailed)?;
         if crate::labels::place_next(
             &mut edge,
             &previous,
@@ -497,8 +508,10 @@ fn route_with_reserved_labels(
         )
         .is_err()
         {
-            edge = routing::alternative_routes(
+            edge = routing::alternative_routes_with_context(
                 &context.diagram.edges[index],
+                &context.diagram.edges,
+                &previous,
                 nodes,
                 bounds,
                 &obstacles,
@@ -649,6 +662,25 @@ fn node_size(node: &Node, theme: &Theme, metrics: &FontMetrics) -> Size {
     }
 }
 
+fn offset_port_sides(shape: NodeShape, corner_radius_milli_px: u32, rect: Rect) -> [bool; 4] {
+    match shape {
+        NodeShape::RoundedRectangle | NodeShape::Capsule => {
+            let radius = i64::from(corner_radius_milli_px);
+            let vertical_sides_are_straight = radius <= rect.height / 4;
+            let horizontal_sides_are_straight = radius <= rect.width / 4;
+            [
+                vertical_sides_are_straight,
+                horizontal_sides_are_straight,
+                vertical_sides_are_straight,
+                horizontal_sides_are_straight,
+            ]
+        }
+        NodeShape::Circle => [false; 4],
+        NodeShape::Cylinder => [true, false, true, false],
+        NodeShape::Hexagon => [false, true, false, true],
+    }
+}
+
 fn group_size(
     group: &Group,
     content: Size,
@@ -690,7 +722,8 @@ impl<'a> Placer<'a> {
         layout: Option<&Layout>,
         origin: Point,
     ) -> Result<(), SceneError> {
-        let arrangement = arrange(children, layout, self.sizes, self.context)?;
+        let mut arrangement = arrange(children, layout, self.sizes, self.context)?;
+        self.align_rank_members_to_external_neighbors(children, layout, &mut arrangement);
         for placed in arrangement.items {
             let child = children
                 .get(placed.index)
@@ -753,6 +786,170 @@ impl<'a> Placer<'a> {
             }
         }
         Ok(())
+    }
+
+    fn align_rank_members_to_external_neighbors(
+        &self,
+        children: &[ElementId],
+        layout: Option<&Layout>,
+        arrangement: &mut Arrangement,
+    ) {
+        if layout.is_some_and(|layout| layout.order.is_some()) {
+            return;
+        }
+
+        let mut ranks = BTreeMap::<i64, Vec<usize>>::new();
+        for (item_index, item) in arrangement.items.iter().enumerate() {
+            let primary = match arrangement.direction {
+                SceneDirection::Right => item.rect.x,
+                SceneDirection::Down => item.rect.y,
+            };
+            ranks.entry(primary).or_default().push(item_index);
+        }
+
+        for rank in ranks.values_mut() {
+            if rank.len() < 2 {
+                continue;
+            }
+            let anchors = rank
+                .iter()
+                .map(|item_index| {
+                    let child_index = arrangement.items[*item_index].index;
+                    (
+                        *item_index,
+                        self.external_neighbor_anchor(children, child_index, arrangement.direction),
+                        child_index,
+                    )
+                })
+                .collect::<Vec<_>>();
+            if anchors
+                .iter()
+                .filter(|(_, anchor, _)| anchor.is_some())
+                .count()
+                < 2
+            {
+                continue;
+            }
+
+            let mut anchored = anchors
+                .iter()
+                .filter(|(_, anchor, _)| anchor.is_some())
+                .copied()
+                .collect::<Vec<_>>();
+            anchored.sort_by(|left, right| match (left.1, right.1) {
+                (Some((left_sum, left_count)), Some((right_sum, right_count))) => (left_sum
+                    * right_count)
+                    .cmp(&(right_sum * left_count))
+                    .then_with(|| left.2.cmp(&right.2)),
+                _ => std::cmp::Ordering::Equal,
+            });
+
+            rank.sort_by_key(|item_index| {
+                let rect = arrangement.items[*item_index].rect;
+                match arrangement.direction {
+                    SceneDirection::Right => rect.y,
+                    SceneDirection::Down => rect.x,
+                }
+            });
+            let mut anchored_index = 0;
+            let ordered = rank
+                .iter()
+                .map(|item_index| {
+                    let fallback = (*item_index, None, arrangement.items[*item_index].index);
+                    let current = anchors
+                        .iter()
+                        .find(|(candidate, _, _)| candidate == item_index)
+                        .copied()
+                        .unwrap_or(fallback);
+                    if current.1.is_some() {
+                        let replacement = anchored.get(anchored_index).copied().unwrap_or(current);
+                        anchored_index += 1;
+                        replacement
+                    } else {
+                        current
+                    }
+                })
+                .collect::<Vec<_>>();
+            let rank_start = rank
+                .iter()
+                .map(|item_index| {
+                    let rect = arrangement.items[*item_index].rect;
+                    match arrangement.direction {
+                        SceneDirection::Right => rect.y,
+                        SceneDirection::Down => rect.x,
+                    }
+                })
+                .min()
+                .unwrap_or(0);
+            let rank_end = rank
+                .iter()
+                .map(|item_index| {
+                    let rect = arrangement.items[*item_index].rect;
+                    match arrangement.direction {
+                        SceneDirection::Right => rect.y + rect.height,
+                        SceneDirection::Down => rect.x + rect.width,
+                    }
+                })
+                .max()
+                .unwrap_or(rank_start);
+            let occupied = ordered
+                .iter()
+                .map(|(item_index, _, _)| {
+                    let rect = arrangement.items[*item_index].rect;
+                    match arrangement.direction {
+                        SceneDirection::Right => rect.height,
+                        SceneDirection::Down => rect.width,
+                    }
+                })
+                .sum::<i64>();
+            let gap = (rank_end - rank_start - occupied)
+                / i64::try_from(rank.len().saturating_sub(1)).unwrap_or(1);
+            let mut cursor = rank_start;
+            for (item_index, _, _) in ordered {
+                let rect = &mut arrangement.items[item_index].rect;
+                match arrangement.direction {
+                    SceneDirection::Right => {
+                        rect.y = cursor;
+                        cursor += rect.height + gap;
+                    }
+                    SceneDirection::Down => {
+                        rect.x = cursor;
+                        cursor += rect.width + gap;
+                    }
+                }
+            }
+        }
+    }
+
+    fn external_neighbor_anchor(
+        &self,
+        children: &[ElementId],
+        child_index: usize,
+        direction: SceneDirection,
+    ) -> Option<(i128, i128)> {
+        let mut sum = 0_i128;
+        let mut count = 0_i128;
+        for edge in &self.context.diagram.edges {
+            let from = scope_owner(children, &edge.from, self.context.diagram);
+            let to = scope_owner(children, &edge.to, self.context.diagram);
+            let external = if from == Some(child_index) && to.is_none() {
+                Some(edge.to.as_str())
+            } else if to == Some(child_index) && from.is_none() {
+                Some(edge.from.as_str())
+            } else {
+                None
+            };
+            let Some(rect) = external.and_then(|identifier| self.node_rects.get(identifier)) else {
+                continue;
+            };
+            let center = match direction {
+                SceneDirection::Right => 2 * rect.y + rect.height,
+                SceneDirection::Down => 2 * rect.x + rect.width,
+            };
+            sum += i128::from(center);
+            count += 1;
+        }
+        (count > 0).then_some((sum, count))
     }
 }
 
@@ -1156,7 +1353,11 @@ mod tests {
 
     use stack_compiler::ir::ElementId;
 
-    use super::{Scene, SceneDirection, SceneError, glyph_advance, layout, selected_theme};
+    use stack_theme::NodeShape;
+
+    use super::{
+        Scene, SceneDirection, SceneError, glyph_advance, layout, offset_port_sides, selected_theme,
+    };
 
     fn scene_from(source: &[u8]) -> Result<Scene, Box<dyn Error>> {
         let compiled = stack_compiler::compile_bytes(source);
@@ -1169,6 +1370,41 @@ mod tests {
 
     fn node<'a>(scene: &'a Scene, identifier: &str) -> Option<&'a super::SceneNode> {
         scene.nodes.iter().find(|node| node.id == identifier)
+    }
+
+    #[test]
+    fn offset_ports_are_limited_to_straight_painted_sides() {
+        let rect = super::Rect {
+            x: 0,
+            y: 0,
+            width: 160_000,
+            height: 72_000,
+        };
+        assert_eq!(
+            offset_port_sides(NodeShape::RoundedRectangle, 8_000, rect),
+            [true; 4]
+        );
+        assert_eq!(
+            offset_port_sides(NodeShape::Capsule, 16_000, rect),
+            [true; 4]
+        );
+        assert_eq!(
+            offset_port_sides(NodeShape::RoundedRectangle, 36_000, rect),
+            [false, true, false, true]
+        );
+        assert_eq!(
+            offset_port_sides(NodeShape::Capsule, 80_000, rect),
+            [false; 4]
+        );
+        assert_eq!(offset_port_sides(NodeShape::Circle, 0, rect), [false; 4]);
+        assert_eq!(
+            offset_port_sides(NodeShape::Cylinder, 0, rect),
+            [true, false, true, false]
+        );
+        assert_eq!(
+            offset_port_sides(NodeShape::Hexagon, 0, rect),
+            [false, true, false, true]
+        );
     }
 
     #[test]
