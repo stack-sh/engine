@@ -54,7 +54,7 @@
     </g>
     <g role="group" aria-label="API flows to Cache: Read" data-edge-kind="data" data-edge-direction="forward">
       <title>API flows to Cache: Read</title>
-      <polyline points="416.05,411.8 416.05,459.2 391.95,459.2 391.95,863 420.075,863 420.075,1003 412.075,1003" fill="none" stroke="#CBD5E1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="416.05,411.8 416.05,459.2 391.95,459.2 391.95,863 428.075,863 428.075,1003 412.075,1003" fill="none" stroke="#CBD5E1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="API flows to External provider: API" data-edge-kind="request" data-edge-direction="forward">
       <title>API flows to External provider: API</title>

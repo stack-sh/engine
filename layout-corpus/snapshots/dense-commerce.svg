@@ -44,7 +44,7 @@
     </g>
     <g role="group" aria-label="Web storefront flows to Edge gateway: HTTPS" data-edge-kind="request" data-edge-direction="forward">
       <title>Web storefront flows to Edge gateway: HTTPS</title>
-      <polyline points="465.05,411.4 465.05,433.15 368.65,433.15 368.65,484.8 379.45,484.8" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="465.05,411.4 465.05,433.15 363.45,433.15 363.45,484.8 379.45,484.8" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Edge gateway flows to Catalog API: Catalog requests" data-edge-kind="request" data-edge-direction="forward">
       <title>Edge gateway flows to Catalog API: Catalog requests</title>

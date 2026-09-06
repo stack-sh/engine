@@ -18,5 +18,5 @@ edge|api|function|direction=Forward|kind=Dependency|label=Invoke|markers=None,Ar
 edge|function|database|direction=Forward|kind=Data|label=SQL|markers=None,Arrow|anchor=332075,748200|path=232000,609400;232000,625400;332075,625400;332075,871000
 edge|function|queue|direction=Forward|kind=Event|label=Job|markers=None,Arrow|anchor=104000,836200|path=112000,573400;104000,573400;104000,1099000;252075,1099000
 edge|worker|storage|direction=Association|kind=Data|label=Archive|markers=None,None|anchor=192000,950200|path=192000,705400;192000,1195000;252075,1195000
-edge|api|cache|direction=Forward|kind=Data|label=Read|markers=None,Arrow|anchor=391950,661100|path=416050,411800;416050,459200;391950,459200;391950,863000;420075,863000;420075,1003000;412075,1003000
+edge|api|cache|direction=Forward|kind=Data|label=Read|markers=None,Arrow|anchor=391950,661100|path=416050,411800;416050,459200;391950,459200;391950,863000;428075,863000;428075,1003000;412075,1003000
 edge|api|vendor|direction=Forward|kind=Request|label=API|markers=None,Arrow|anchor=496050,439500|path=496050,411800;496050,467200

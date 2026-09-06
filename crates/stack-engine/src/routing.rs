@@ -204,9 +204,8 @@ pub(crate) fn alternative_routes_with_context(
         reserved_edges,
     );
     router.reserve_edges(reserved_edges);
-    let (start_marker, end_marker) = markers(edge.direction);
-    let source_stubs = terminal_stubs(source, marker_stub_length(start_marker));
-    let target_stubs = terminal_stubs(target, marker_stub_length(end_marker));
+    let source_stubs = terminal_stubs(source);
+    let target_stubs = terminal_stubs(target);
     let mut port_pairs = Vec::new();
     for (source_index, (source_port, _, _, source_preference)) in source_stubs.iter().enumerate() {
         if !router.port_is_enabled(source, source_index) {
@@ -300,13 +299,6 @@ fn markers(direction: EdgeDirection) -> (Marker, Marker) {
     }
 }
 
-fn marker_stub_length(marker: Marker) -> i64 {
-    match marker {
-        Marker::None => ROUTE_MARGIN,
-        Marker::Arrow => ARROW_TERMINAL_STUB_LENGTH,
-    }
-}
-
 fn ports(rect: Rect) -> [Point; 12] {
     let horizontal = [
         rect.x + rect.width / 2,
@@ -370,13 +362,13 @@ fn ports(rect: Rect) -> [Point; 12] {
     ]
 }
 
-fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 12] {
+fn terminal_stubs(rect: Rect) -> [(Point, Point, usize, i64); 12] {
     let ports = ports(rect);
     [
         (
             ports[0],
             Point {
-                x: ports[0].x + stub_length,
+                x: ports[0].x + ROUTE_MARGIN,
                 y: ports[0].y,
             },
             1,
@@ -385,7 +377,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
         (
             ports[1],
             Point {
-                x: ports[1].x + stub_length,
+                x: ports[1].x + ROUTE_MARGIN,
                 y: ports[1].y,
             },
             1,
@@ -394,7 +386,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
         (
             ports[2],
             Point {
-                x: ports[2].x + stub_length,
+                x: ports[2].x + ROUTE_MARGIN,
                 y: ports[2].y,
             },
             1,
@@ -404,7 +396,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
             ports[3],
             Point {
                 x: ports[3].x,
-                y: ports[3].y + stub_length,
+                y: ports[3].y + ROUTE_MARGIN,
             },
             2,
             0,
@@ -413,7 +405,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
             ports[4],
             Point {
                 x: ports[4].x,
-                y: ports[4].y + stub_length,
+                y: ports[4].y + ROUTE_MARGIN,
             },
             2,
             OFF_CENTER_PORT_PENALTY,
@@ -422,7 +414,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
             ports[5],
             Point {
                 x: ports[5].x,
-                y: ports[5].y + stub_length,
+                y: ports[5].y + ROUTE_MARGIN,
             },
             2,
             OFF_CENTER_PORT_PENALTY,
@@ -430,7 +422,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
         (
             ports[6],
             Point {
-                x: ports[6].x - stub_length,
+                x: ports[6].x - ROUTE_MARGIN,
                 y: ports[6].y,
             },
             1,
@@ -439,7 +431,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
         (
             ports[7],
             Point {
-                x: ports[7].x - stub_length,
+                x: ports[7].x - ROUTE_MARGIN,
                 y: ports[7].y,
             },
             1,
@@ -448,7 +440,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
         (
             ports[8],
             Point {
-                x: ports[8].x - stub_length,
+                x: ports[8].x - ROUTE_MARGIN,
                 y: ports[8].y,
             },
             1,
@@ -458,7 +450,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
             ports[9],
             Point {
                 x: ports[9].x,
-                y: ports[9].y - stub_length,
+                y: ports[9].y - ROUTE_MARGIN,
             },
             2,
             0,
@@ -467,7 +459,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
             ports[10],
             Point {
                 x: ports[10].x,
-                y: ports[10].y - stub_length,
+                y: ports[10].y - ROUTE_MARGIN,
             },
             2,
             OFF_CENTER_PORT_PENALTY,
@@ -476,7 +468,7 @@ fn terminal_stubs(rect: Rect, stub_length: i64) -> [(Point, Point, usize, i64); 
             ports[11],
             Point {
                 x: ports[11].x,
-                y: ports[11].y - stub_length,
+                y: ports[11].y - ROUTE_MARGIN,
             },
             2,
             OFF_CENTER_PORT_PENALTY,
@@ -770,18 +762,14 @@ impl<'a> GridRouter<'a> {
         for (node_index, node) in nodes.iter().enumerate() {
             let rect = node.rect;
             xs.extend([
-                rect.x - ARROW_TERMINAL_STUB_LENGTH,
                 rect.x - ROUTE_MARGIN,
                 rect.x + rect.width / 2,
                 rect.x + rect.width + ROUTE_MARGIN,
-                rect.x + rect.width + ARROW_TERMINAL_STUB_LENGTH,
             ]);
             ys.extend([
-                rect.y - ARROW_TERMINAL_STUB_LENGTH,
                 rect.y - ROUTE_MARGIN,
                 rect.y + rect.height / 2,
                 rect.y + rect.height + ROUTE_MARGIN,
-                rect.y + rect.height + ARROW_TERMINAL_STUB_LENGTH,
             ]);
             let active = active_edge.is_none_or(|edge| edge.from == node.id || edge.to == node.id);
             if active && (multi_port_sides[node_index][1] || multi_port_sides[node_index][3]) {
@@ -912,16 +900,13 @@ impl<'a> GridRouter<'a> {
         direction: EdgeDirection,
     ) -> Option<(i64, Vec<Point>)> {
         let (start_marker, end_marker) = markers(direction);
-        let source_stub_length = marker_stub_length(start_marker);
-        let target_stub_length = marker_stub_length(end_marker);
         let state_count = self.valid.len() * 3;
         let mut distances = vec![i64::MAX; state_count];
         let mut parents = vec![None; state_count];
         let mut pending = BinaryHeap::new();
         let mut starts = Vec::new();
-        for (index, (port, stub, axis, preference)) in terminal_stubs(source, source_stub_length)
-            .into_iter()
-            .enumerate()
+        for (index, (port, stub, axis, preference)) in
+            terminal_stubs(source).into_iter().enumerate()
         {
             if port_pair.is_some_and(|(source_port, _)| source_port != index) {
                 continue;
@@ -936,10 +921,9 @@ impl<'a> GridRouter<'a> {
                 continue;
             }
             let state = vertex * 3 + axis;
-            let cost = source_stub_length
+            let cost = ROUTE_MARGIN
                 + preference
                 + i64::from(self.used_ports.get(&port).copied().unwrap_or(0)) * PORT_REUSE_PENALTY;
-            let cost = cost + self.terminal_congestion_cost(port, stub, axis);
             distances[state] = cost;
             pending.push(Reverse((cost, state)));
             starts.push((state, port));
@@ -947,7 +931,7 @@ impl<'a> GridRouter<'a> {
                 break;
             }
         }
-        let targets = terminal_stubs(target, target_stub_length)
+        let targets = terminal_stubs(target)
             .into_iter()
             .enumerate()
             .filter_map(|(index, (port, stub, axis, preference))| {
@@ -980,11 +964,10 @@ impl<'a> GridRouter<'a> {
             for &(target_vertex, port, axis, preference) in &targets {
                 if target_vertex == vertex && (incoming_axis == axis || self.bend_allowed[vertex]) {
                     let candidate = (
-                        cost + target_stub_length
+                        cost + ROUTE_MARGIN
                             + preference
                             + i64::from(self.used_ports.get(&port).copied().unwrap_or(0))
                                 * PORT_REUSE_PENALTY
-                            + self.terminal_congestion_cost(port, self.point(vertex), axis)
                             + if incoming_axis == axis {
                                 0
                             } else {
@@ -1037,6 +1020,7 @@ impl<'a> GridRouter<'a> {
         {
             push_point(&mut path, point);
         }
+        self.apply_marker_clearance(&mut path, source, target, start_marker, end_marker);
         if port_pair.is_none() {
             self.reserve_path(&path);
             for port in [source_port, target_port] {
@@ -1046,32 +1030,50 @@ impl<'a> GridRouter<'a> {
         Some((cost, path))
     }
 
-    fn terminal_congestion_cost(&self, port: Point, stub: Point, axis: usize) -> i64 {
-        let horizontal = axis == 1;
-        let (coordinates, fixed, start, end) = if horizontal {
-            (&self.xs, self.ys.binary_search(&port.y), port.x, stub.x)
-        } else {
-            (&self.ys, self.xs.binary_search(&port.x), port.y, stub.y)
-        };
-        let Ok(fixed) = fixed else {
-            return 0;
-        };
-        let first = coordinates.partition_point(|coordinate| *coordinate < start.min(end));
-        let last = coordinates.partition_point(|coordinate| *coordinate <= start.max(end));
-        let mut cost = 0;
-        for index in first..last {
-            let vertex = if horizontal {
-                fixed * self.xs.len() + index
-            } else {
-                index * self.xs.len() + fixed
-            };
-            cost += i64::from(self.occupied[vertex][2 - axis]) * CROSSING_PENALTY;
-            if index + 1 < last {
-                let length = coordinates[index + 1] - coordinates[index];
-                cost += i64::from(self.shared[vertex][axis - 1]) * length * SHARED_LENGTH_PENALTY;
-            }
+    fn apply_marker_clearance(
+        &self,
+        path: &mut Vec<Point>,
+        source: Rect,
+        target: Rect,
+        start_marker: Marker,
+        end_marker: Marker,
+    ) {
+        let original = path.clone();
+        if !ensure_marker_clearance(path, start_marker, end_marker)
+            || !self.path_is_clear(path, source, target)
+        {
+            *path = original;
         }
-        cost
+    }
+
+    fn path_is_clear(&self, path: &[Point], source: Rect, target: Rect) -> bool {
+        path.len() >= 2
+            && path.iter().all(|point| self.bounds.contains_point(*point))
+            && path.windows(2).enumerate().all(|(index, segment)| {
+                segment[0] != segment[1]
+                    && segment_is_axis_aligned(segment[0], segment[1])
+                    && self
+                        .frames
+                        .iter()
+                        .all(|frame| frame_segment_is_clear(segment[0], segment[1], *frame))
+                    && self.nodes.iter().all(|node| {
+                        !segment_hits_rect(segment[0], segment[1], node.rect)
+                            || (index == 0
+                                && node.rect == source
+                                && departs_normally(segment[0], segment[1], source))
+                            || (index + 2 == path.len()
+                                && node.rect == target
+                                && departs_normally(segment[1], segment[0], target))
+                    })
+                    && self.fixed_obstacles.iter().all(|rect| {
+                        !segment_crosses_rect_interior(segment[0], segment[1], expanded(*rect))
+                    })
+            })
+            && path.windows(3).all(|points| {
+                self.frames
+                    .iter()
+                    .all(|frame| frame_bend_is_clear(points[1], *frame))
+            })
     }
 
     fn stub_is_clear(&self, port: Point, stub: Point, terminal: Rect) -> bool {
@@ -1197,6 +1199,90 @@ fn push_point(path: &mut Vec<Point>, point: Point) {
         }
     }
     path.push(point);
+}
+
+fn ensure_marker_clearance(path: &mut [Point], start: Marker, end: Marker) -> bool {
+    if start == Marker::Arrow {
+        path.reverse();
+        let extended = extend_terminal_segment(path);
+        path.reverse();
+        if !extended {
+            return false;
+        }
+    }
+    end != Marker::Arrow || extend_terminal_segment(path)
+}
+
+fn extend_terminal_segment(path: &mut [Point]) -> bool {
+    let Some((&terminal, prefix)) = path.split_last() else {
+        return false;
+    };
+    let Some(&bend) = prefix.last() else {
+        return false;
+    };
+    let length = manhattan(bend, terminal);
+    if length >= ARROW_TERMINAL_STUB_LENGTH {
+        return true;
+    }
+    if path.len() < 4 {
+        return false;
+    }
+
+    let bend_index = path.len() - 2;
+    let previous_index = path.len() - 3;
+    let anchor = path[path.len() - 4];
+    let previous = path[previous_index];
+    let delta = ARROW_TERMINAL_STUB_LENGTH - length;
+    let (old_span, new_span, shifted_previous, shifted_bend) = if bend.x == terminal.x {
+        let direction = (terminal.y - bend.y).signum();
+        if direction == 0 {
+            return false;
+        }
+        let offset = direction * delta;
+        let shifted_previous = Point {
+            x: previous.x,
+            y: previous.y - offset,
+        };
+        let shifted_bend = Point {
+            x: bend.x,
+            y: bend.y - offset,
+        };
+        (
+            previous.y - anchor.y,
+            shifted_previous.y - anchor.y,
+            shifted_previous,
+            shifted_bend,
+        )
+    } else if bend.y == terminal.y {
+        let direction = (terminal.x - bend.x).signum();
+        if direction == 0 {
+            return false;
+        }
+        let offset = direction * delta;
+        let shifted_previous = Point {
+            x: previous.x - offset,
+            y: previous.y,
+        };
+        let shifted_bend = Point {
+            x: bend.x - offset,
+            y: bend.y,
+        };
+        (
+            previous.x - anchor.x,
+            shifted_previous.x - anchor.x,
+            shifted_previous,
+            shifted_bend,
+        )
+    } else {
+        return false;
+    };
+    if old_span == 0 || old_span.signum() != new_span.signum() {
+        return false;
+    }
+
+    path[previous_index] = shifted_previous;
+    path[bend_index] = shifted_bend;
+    true
 }
 
 #[cfg(test)]
@@ -1437,21 +1523,85 @@ mod tests {
     }
 
     #[test]
-    fn terminal_stub_lengths_follow_edge_markers() {
-        for (direction, expected) in [
-            (EdgeDirection::Forward, (8_000, 16_000)),
-            (EdgeDirection::Bidirectional, (16_000, 16_000)),
-            (EdgeDirection::Association, (8_000, 8_000)),
-        ] {
-            let (start, end) = super::markers(direction);
-            assert_eq!(
-                (
-                    super::marker_stub_length(start),
-                    super::marker_stub_length(end)
-                ),
-                expected
-            );
-        }
+    fn bidirectional_markers_receive_clearance_at_both_ends() {
+        let mut path = vec![
+            Point { x: 0, y: 0 },
+            Point { x: 8_000, y: 0 },
+            Point {
+                x: 8_000,
+                y: 40_000,
+            },
+            Point {
+                x: 92_000,
+                y: 40_000,
+            },
+            Point { x: 92_000, y: 0 },
+            Point { x: 100_000, y: 0 },
+        ];
+
+        assert!(super::ensure_marker_clearance(
+            &mut path,
+            Marker::Arrow,
+            Marker::Arrow
+        ));
+        assert_eq!(super::manhattan(path[0], path[1]), 16_000);
+        assert_eq!(
+            super::manhattan(path[path.len() - 2], path[path.len() - 1]),
+            16_000
+        );
+    }
+
+    #[test]
+    fn marker_clearance_keeps_the_original_path_when_the_shift_is_blocked() {
+        let nodes = [
+            test_node("source", 20_000, 100_000),
+            test_node("target", 320_000, 100_000),
+        ];
+        let obstacle = Rect {
+            x: 296_000,
+            y: 100_000,
+            width: 4_000,
+            height: 40_000,
+        };
+        let router =
+            super::GridRouter::new(&nodes, test_bounds(), std::slice::from_ref(&obstacle), &[]);
+        let mut path = vec![
+            Point {
+                x: 120_000,
+                y: 150_000,
+            },
+            Point {
+                x: 200_000,
+                y: 150_000,
+            },
+            Point {
+                x: 200_000,
+                y: 92_000,
+            },
+            Point {
+                x: 312_000,
+                y: 92_000,
+            },
+            Point {
+                x: 312_000,
+                y: 150_000,
+            },
+            Point {
+                x: 320_000,
+                y: 150_000,
+            },
+        ];
+        let original = path.clone();
+
+        router.apply_marker_clearance(
+            &mut path,
+            nodes[0].rect,
+            nodes[1].rect,
+            Marker::None,
+            Marker::Arrow,
+        );
+
+        assert_eq!(path, original);
     }
 
     #[test]

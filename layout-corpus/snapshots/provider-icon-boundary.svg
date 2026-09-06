@@ -20,7 +20,7 @@
   <g data-stack-layer="edges">
     <g role="group" aria-label="Upload client flows to Example Storage: Upload" data-edge-kind="request" data-edge-direction="forward">
       <title>Upload client flows to Example Storage: Upload</title>
-      <polyline points="194.1,225 297.85,225 297.85,176.4 314.9,176.4" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="194.1,225 298.9,225 298.9,176.4 314.9,176.4" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Example Storage flows to Object processor: Object created" data-edge-kind="event" data-edge-direction="forward">
       <title>Example Storage flows to Object processor: Object created</title>
@@ -51,8 +51,8 @@
   </g>
   <g data-stack-layer="edge-labels" aria-hidden="true">
     <g data-edge-label="Upload">
-      <rect x="204.808" y="193.6" width="47.75" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="228.683" y="205.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Upload</text>
+      <rect x="205.158" y="193.6" width="47.75" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="229.033" y="205.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Upload</text>
     </g>
     <g data-edge-label="Object created">
       <rect x="417.95" y="228.4" width="89.55" height="23.4" rx="4" fill="#F3F6FA"/>
