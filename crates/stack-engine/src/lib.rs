@@ -29,6 +29,9 @@ mod routing;
 mod scene;
 mod svg;
 
+#[cfg(test)]
+mod layout_quality;
+
 mod language;
 mod provider;
 pub use language::{
