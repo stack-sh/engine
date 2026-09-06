@@ -27,7 +27,7 @@
     </g>
     <g role="group" aria-label="Identity service flows to Primary database: Session" data-edge-kind="data" data-edge-direction="forward">
       <title>Identity service flows to Primary database: Session</title>
-      <polyline points="486.45,124.2 1058.85,124.2 1058.85,143.9 1163.6,143.9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="486.45,124.2 1066.85,124.2 1066.85,143.9 1163.6,143.9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Catalog service flows to Primary database: Products" data-edge-kind="data" data-edge-direction="forward">
       <title>Catalog service flows to Primary database: Products</title>
@@ -47,11 +47,11 @@
     </g>
     <g role="group" aria-label="Identity service flows to Audit archive: Access log" data-edge-kind="data" data-edge-direction="forward">
       <title>Identity service flows to Audit archive: Access log</title>
-      <polyline points="441.025,142.2 441.025,173.6 1058.85,173.6 1058.85,255.3 1163.6,255.3" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="441.025,142.2 441.025,173.6 1066.85,173.6 1066.85,255.3 1163.6,255.3" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Checkout service flows to Audit archive: Checkout log" data-edge-kind="data" data-edge-direction="forward">
       <title>Checkout service flows to Audit archive: Checkout log</title>
-      <polyline points="499.05,329 1058.85,329 1058.85,291.3 1163.6,291.3" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="499.05,329 1066.85,329 1066.85,291.3 1163.6,291.3" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
   </g>
   <g data-stack-layer="nodes">
@@ -130,8 +130,8 @@
       <text x="228.375" y="291.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Purchase</text>
     </g>
     <g data-edge-label="Session">
-      <rect x="745.475" y="92.8" width="54.35" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="772.65" y="104.5" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Session</text>
+      <rect x="749.475" y="92.8" width="54.35" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="776.65" y="104.5" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Session</text>
     </g>
     <g data-edge-label="Products">
       <rect x="853.775" y="130.5" width="59.85" height="23.4" rx="4" fill="#F3F6FA"/>
@@ -150,12 +150,12 @@
       <text x="1131.687" y="197.9" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Persist</text>
     </g>
     <g data-edge-label="Access log">
-      <rect x="1076.075" y="223.9" width="70.3" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="1111.225" y="235.6" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Access log</text>
+      <rect x="1080.075" y="223.9" width="70.3" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="1115.225" y="235.6" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Access log</text>
     </g>
     <g data-edge-label="Checkout log">
-      <rect x="738.575" y="297.6" width="80.75" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="778.95" y="309.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Checkout log</text>
+      <rect x="742.575" y="297.6" width="80.75" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="782.95" y="309.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Checkout log</text>
     </g>
   </g>
 </svg>
