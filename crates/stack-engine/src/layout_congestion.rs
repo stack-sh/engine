@@ -6,7 +6,7 @@ use std::fs;
 use std::path::Path;
 
 use crate::Engine;
-use crate::routing::Point;
+use crate::routing::{Marker, Point, SceneEdge};
 use crate::scene::{self, Scene};
 
 const SOURCE: &str = include_str!("../tests/fixtures/sample-service-congestion.stack");
@@ -82,9 +82,9 @@ fn orthogonal_intersection(left: [Point; 2], right: [Point; 2]) -> Option<Point>
     .then_some(point)
 }
 
-fn congestion_metrics(scene: &Scene) -> CongestionMetrics {
+fn congestion_metrics(edges: &[SceneEdge]) -> CongestionMetrics {
     let mut terminals = BTreeMap::<Point, usize>::new();
-    for edge in &scene.edges {
+    for edge in edges {
         if let Some(point) = edge.path.first() {
             *terminals.entry(*point).or_default() += 1;
         }
@@ -99,20 +99,20 @@ fn congestion_metrics(scene: &Scene) -> CongestionMetrics {
     let mut junctions = BTreeSet::new();
     let mut shared_length_milli_px = 0;
     let mut close_parallel_length_milli_px = 0;
-    for left_index in 0..scene.edges.len() {
-        for right_index in left_index + 1..scene.edges.len() {
-            for left in scene.edges[left_index].path.windows(2) {
-                for right in scene.edges[right_index].path.windows(2) {
+    for left_index in 0..edges.len() {
+        for right_index in left_index + 1..edges.len() {
+            for left in edges[left_index].path.windows(2) {
+                for right in edges[right_index].path.windows(2) {
                     let left = [left[0], left[1]];
                     let right = [right[0], right[1]];
                     if proper_crossing(left, right) {
                         proper_crossings += 1;
                         crossing_pairs.push(format!(
                             "{} -> {} crosses {} -> {}",
-                            scene.edges[left_index].from,
-                            scene.edges[left_index].to,
-                            scene.edges[right_index].from,
-                            scene.edges[right_index].to
+                            edges[left_index].from,
+                            edges[left_index].to,
+                            edges[right_index].from,
+                            edges[right_index].to
                         ));
                     } else if let Some(point) = orthogonal_intersection(left, right) {
                         junctions.insert((left_index, right_index, point));
@@ -143,10 +143,10 @@ fn congestion_metrics(scene: &Scene) -> CongestionMetrics {
         .map(|(left_index, right_index, point)| {
             format!(
                 "{} -> {} joins {} -> {} at ({}, {})",
-                scene.edges[*left_index].from,
-                scene.edges[*left_index].to,
-                scene.edges[*right_index].from,
-                scene.edges[*right_index].to,
+                edges[*left_index].from,
+                edges[*left_index].to,
+                edges[*right_index].from,
+                edges[*right_index].to,
                 point.x,
                 point.y
             )
@@ -183,7 +183,7 @@ fn write_candidate_svg() -> Result<(), Box<dyn Error>> {
 #[test]
 fn sample_service_avoids_terminal_and_lane_congestion() -> Result<(), Box<dyn Error>> {
     let scene = sample_scene()?;
-    let metrics = congestion_metrics(&scene);
+    let metrics = congestion_metrics(&scene.edges);
     write_candidate_svg()?;
 
     assert!(scene.geometry_is_valid());
@@ -219,6 +219,7 @@ fn intersection_metric_distinguishes_crossings_junctions_and_disjoint_segments()
     let disjoint = [Point { x: 30, y: 0 }, Point { x: 30, y: 20 }];
 
     assert!(proper_crossing(horizontal, crossing));
+    assert!(proper_crossing(crossing, horizontal));
     assert_eq!(
         orthogonal_intersection(horizontal, crossing),
         Some(Point { x: 10, y: 10 })
@@ -244,4 +245,100 @@ fn shared_segment_metric_is_orientation_independent() {
 
     assert_eq!(segment_projection_overlap(forward, reverse), 10);
     assert_eq!(segment_projection_overlap(forward, separated), 10);
+}
+
+fn metric_edge(from: &str, to: &str, path: Vec<Point>) -> SceneEdge {
+    SceneEdge {
+        from: from.to_owned(),
+        to: to.to_owned(),
+        direction: stack_compiler::ir::EdgeDirection::Forward,
+        kind: stack_compiler::ir::EdgeKind::Flow,
+        label: None,
+        path,
+        start_marker: Marker::None,
+        end_marker: Marker::Arrow,
+        label_anchor: None,
+        label_rect: None,
+    }
+}
+
+#[test]
+fn congestion_metrics_report_each_independent_failure_signal() {
+    let edges = [
+        metric_edge(
+            "a",
+            "b",
+            vec![Point { x: 0, y: 0 }, Point { x: 20_000, y: 0 }],
+        ),
+        metric_edge(
+            "c",
+            "d",
+            vec![
+                Point {
+                    x: 10_000,
+                    y: -10_000,
+                },
+                Point {
+                    x: 10_000,
+                    y: 10_000,
+                },
+            ],
+        ),
+        metric_edge(
+            "e",
+            "f",
+            vec![
+                Point {
+                    x: 20_000,
+                    y: -10_000,
+                },
+                Point { x: 20_000, y: 0 },
+            ],
+        ),
+        metric_edge(
+            "g",
+            "h",
+            vec![Point { x: 5_000, y: 0 }, Point { x: 15_000, y: 0 }],
+        ),
+        metric_edge(
+            "i",
+            "j",
+            vec![
+                Point {
+                    x: 5_000,
+                    y: 10_000,
+                },
+                Point {
+                    x: 15_000,
+                    y: 10_000,
+                },
+            ],
+        ),
+    ];
+    let metrics = congestion_metrics(&edges);
+
+    assert!(metrics.reused_terminal_points > 0, "{metrics:#?}");
+    assert!(metrics.proper_crossings > 0, "{metrics:#?}");
+    assert!(!metrics.crossing_pairs.is_empty(), "{metrics:#?}");
+    assert!(metrics.ambiguous_junctions > 0, "{metrics:#?}");
+    assert!(!metrics.junction_pairs.is_empty(), "{metrics:#?}");
+    assert!(metrics.shared_length_milli_px > 0, "{metrics:#?}");
+    assert!(metrics.close_parallel_length_milli_px > 0, "{metrics:#?}");
+}
+
+#[test]
+fn congestion_metrics_accept_an_edge_without_routed_points() {
+    let metrics = congestion_metrics(&[metric_edge("missing", "route", Vec::new())]);
+    assert_eq!(
+        metrics,
+        CongestionMetrics {
+            reused_terminal_points: 0,
+            proper_crossings: 0,
+            crossing_pairs: Vec::new(),
+            ambiguous_junctions: 0,
+            junction_pairs: Vec::new(),
+            shared_length_milli_px: 0,
+            close_parallel_length_milli_px: 0,
+        }
+    );
 }
