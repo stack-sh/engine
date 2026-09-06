@@ -16,7 +16,7 @@ Both packages provide format, check, render, completion, and hover operations ov
 ## Rust quick start
 
 ```sh
-cargo add stack-engine@0.8.0
+cargo add stack-engine@0.9.0
 ```
 
 ```rust
@@ -43,7 +43,7 @@ The crate supports Rust 1.85 or newer.
 ## Browser quick start
 
 ```sh
-npm install @stack-sh/engine@0.8.0
+npm install @stack-sh/engine@0.9.0
 ```
 
 ```js
@@ -86,7 +86,7 @@ Filesystem behavior, process exit codes, user authentication, billing, entitleme
 
 ## Architecture
 
-The design records cover the [pure engine facade](./docs/decisions/0002-use-a-pure-versioned-engine-facade.md), [deterministic layout](./docs/decisions/0003-use-integer-ranked-scene-layout.md), [orthogonal routing](./docs/decisions/0004-route-orthogonal-edges-on-a-visibility-grid.md), [safe SVG](./docs/decisions/0005-serialize-safe-standalone-svg.md), [browser adapter](./docs/decisions/0006-expose-one-typed-browser-wasm-adapter.md), [language intelligence](./docs/decisions/0007-adapt-language-intelligence-with-engine-catalogs.md), and [label-aware graph composition](./docs/decisions/0008-compose-graphs-with-reserved-label-geometry.md).
+The design records cover the [pure engine facade](./docs/decisions/0002-use-a-pure-versioned-engine-facade.md), [deterministic layout](./docs/decisions/0003-use-integer-ranked-scene-layout.md), [orthogonal routing](./docs/decisions/0004-route-orthogonal-edges-on-a-visibility-grid.md), [safe SVG](./docs/decisions/0005-serialize-safe-standalone-svg.md), [browser adapter](./docs/decisions/0006-expose-one-typed-browser-wasm-adapter.md), [language intelligence](./docs/decisions/0007-adapt-language-intelligence-with-engine-catalogs.md), [label-aware graph composition](./docs/decisions/0008-compose-graphs-with-reserved-label-geometry.md), and [distributed terminals and lanes](./docs/decisions/0009-distribute-terminals-and-routing-lanes.md).
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for repository setup, quality gates, the reviewed layout corpus, and release verification.
 

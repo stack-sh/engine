@@ -34,6 +34,9 @@ mod svg;
 mod layout_quality;
 
 #[cfg(test)]
+mod layout_congestion;
+
+#[cfg(test)]
 mod placement_quality;
 
 mod language;
@@ -686,7 +689,7 @@ mod tests {
                 output.metadata.language_version,
                 Some(LanguageVersion { major: 1, minor: 0 })
             );
-            assert_eq!(output.metadata.theme_catalog_version, "0.6.0");
+            assert_eq!(output.metadata.theme_catalog_version, "0.7.0");
             assert_eq!(
                 output.metadata.theme_catalog_revision,
                 stack_theme::CATALOG_REVISION
@@ -730,10 +733,10 @@ mod tests {
             ("ai", "Artificial intelligence system"),
         ];
         let catalog = stack_theme::catalog();
-        assert_eq!(catalog.catalog_version, "0.6.0");
+        assert_eq!(catalog.catalog_version, "0.7.0");
         assert_eq!(
             stack_theme::CATALOG_REVISION,
-            "sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1"
+            "sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a"
         );
         for theme in &catalog.themes {
             for (identifier, subject) in expected_icons {
@@ -752,7 +755,7 @@ mod tests {
         let rendered = Engine::bundled().render(source)?;
         assert!(checked.diagnostics.is_empty());
         assert!(rendered.diagnostics.is_empty());
-        assert_eq!(rendered.metadata.theme_catalog_version, "0.6.0");
+        assert_eq!(rendered.metadata.theme_catalog_version, "0.7.0");
         assert_eq!(
             rendered.metadata.theme_catalog_revision,
             stack_theme::CATALOG_REVISION

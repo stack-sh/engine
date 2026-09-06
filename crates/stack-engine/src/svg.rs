@@ -727,7 +727,7 @@ mod tests {
             ("actor", "<circle cx=\"102.9\" cy=\"303.8\" r=\"36\""),
             (
                 "cache",
-                "<path d=\"M -1.25 277.8 V 329.8 C -1.25 339.8 207.05 339.8 207.05 329.8 V 277.8 C 207.05 267.8 -1.25 267.8 -1.25 277.8 Z\"",
+                "<rect x=\"-1.25\" y=\"267.8\" width=\"208.3\" height=\"72\" rx=\"8\"",
             ),
             (
                 "function",
@@ -751,11 +751,45 @@ mod tests {
             assert!(output.contains(expected), "{kind}: {output}");
             assert!(output.contains("stroke-width=\"1.5\""));
             if kind == "cache" {
-                assert!(
-                    output.contains("<ellipse cx=\"102.9\" cy=\"277.8\" rx=\"104.15\" ry=\"10\"")
-                );
+                assert!(!output.contains("<ellipse"));
             }
         }
+        Ok(())
+    }
+
+    #[test]
+    fn custom_catalogs_can_still_render_cylinder_nodes() -> Result<(), Box<dyn std::error::Error>> {
+        let rect = Rect {
+            x: -1250,
+            y: 267_800,
+            width: 208_300,
+            height: 72_000,
+        };
+        let source = b"stack 1.0 diagram \"Shape\" { node a \"A\" { kind cache } }";
+        let diagram = stack_compiler::compile_bytes(source)
+            .diagram
+            .ok_or("valid diagram")?;
+        let mut catalog = stack_theme::catalog().clone();
+        catalog.themes[0].node_kind_fallbacks.cache.shape = stack_theme::NodeShape::Cylinder;
+        catalog.themes[0]
+            .node_kind_fallbacks
+            .cache
+            .corner_radius_milli_px = 0;
+        let resources =
+            Resources::resolve(&diagram, &catalog, &[]).map_err(|error| error.reason())?;
+        let mut output = String::new();
+
+        super::render_node_shape(
+            &mut output,
+            rect,
+            resources.node("a").ok_or("resolved node")?,
+            resources.theme,
+        );
+
+        assert!(output.contains(
+            "<path d=\"M -1.25 277.8 V 329.8 C -1.25 339.8 207.05 339.8 207.05 329.8 V 277.8 C 207.05 267.8 -1.25 267.8 -1.25 277.8 Z\""
+        ));
+        assert!(output.contains("<ellipse cx=\"102.9\" cy=\"277.8\" rx=\"104.15\" ry=\"10\""));
         Ok(())
     }
 
