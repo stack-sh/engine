@@ -5,6 +5,65 @@ use stack_theme::{Catalog, FontMetrics, NodeVisual, ProviderIcon, Theme};
 
 use crate::{ProviderNotice, ProviderNoticeIcon, ProviderNoticeSource, ProviderPack};
 
+#[cfg(test)]
+mod tests {
+    use super::{ResourceError, Resources};
+
+    #[test]
+    fn missing_catalog_records_return_explicit_resolution_errors()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let diagram =
+            stack_compiler::compile_bytes(b"stack 1.0 diagram \"Resources\" { node a \"A\" }")
+                .diagram
+                .ok_or("missing diagram")?;
+        for (case, expected) in [
+            (0, "missing-theme fallback is unavailable"),
+            (1, "resolved theme font metrics are unavailable"),
+            (
+                2,
+                "node-kind fallback icon is unavailable in the resolved theme",
+            ),
+            (3, "resolved icon bytes are not embedded in stack-theme"),
+            (
+                4,
+                "missing-icon fallback is unavailable in the resolved theme",
+            ),
+        ] {
+            let mut catalog = stack_theme::catalog().clone();
+            let mut diagram = diagram.clone();
+            match case {
+                0 => catalog.themes.clear(),
+                1 => catalog.font_metrics.clear(),
+                2 => {
+                    for theme in &mut catalog.themes {
+                        theme.icons.clear();
+                    }
+                }
+                3 => {
+                    for theme in &mut catalog.themes {
+                        for icon in &mut theme.icons {
+                            icon.asset.path = "missing.svg".into();
+                        }
+                    }
+                }
+                _ => {
+                    diagram.nodes[0].icon_id = Some("unknown".into());
+                    for theme in &mut catalog.themes {
+                        theme.icons.clear();
+                    }
+                }
+            }
+            assert_eq!(
+                Resources::resolve(&diagram, &catalog, &[])
+                    .map(|_| ())
+                    .map_err(ResourceError::reason),
+                Err(expected)
+            );
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ResourceWarning {
     MissingTheme(String),

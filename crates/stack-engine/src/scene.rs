@@ -18,7 +18,7 @@ const NODE_ICON_SIZE: i64 = 24_000;
 const NODE_ICON_GAP: i64 = 12_000;
 const NODE_DETAIL_GAP: i64 = 4_000;
 const ITEM_GAP: i64 = 24_000;
-const GROUP_PADDING: i64 = 24_000;
+pub(crate) const GROUP_PADDING: i64 = 40_000;
 const GROUP_LABEL_GAP: i64 = 12_000;
 const DIAGRAM_PADDING: i64 = 32_000;
 const DIAGRAM_TITLE_GAP: i64 = 20_000;
@@ -78,6 +78,8 @@ pub(crate) struct Scene {
     pub(crate) groups: Vec<SceneGroup>,
     pub(crate) edges: Vec<SceneEdge>,
     pub(crate) unsatisfied_orders: Vec<SceneScope>,
+    text_obstacles: Vec<Rect>,
+    connector_width: i64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -159,11 +161,22 @@ impl Scene {
             }
         }
 
-        if !routing::geometry_is_valid(&self.edges, &self.nodes, self.bounds) {
+        let frames = self
+            .groups
+            .iter()
+            .map(|group| group.rect)
+            .collect::<Vec<_>>();
+        if !routing::geometry_is_valid(&self.edges, &self.nodes, self.bounds, &frames) {
             return false;
         }
 
-        true
+        crate::labels::geometry_is_valid(
+            &self.edges,
+            &self.nodes,
+            self.bounds,
+            &label_obstacles(&self.text_obstacles, &frames),
+            self.connector_width,
+        )
     }
 
     fn parent_content_rect(&self, parent_group_id: Option<&str>) -> Option<Rect> {
@@ -226,6 +239,13 @@ struct Arrangement {
     items: Vec<PlacedItem>,
 }
 
+struct LayoutContext<'a> {
+    diagram: &'a Diagram,
+    theme: &'a Theme,
+    metrics: &'a FontMetrics,
+    gap_scale: i64,
+}
+
 pub(crate) fn layout(diagram: &Diagram, catalog: &Catalog) -> Result<Scene, SceneError> {
     let theme = selected_theme(diagram, catalog)?;
     let metrics = catalog
@@ -233,20 +253,42 @@ pub(crate) fn layout(diagram: &Diagram, catalog: &Catalog) -> Result<Scene, Scen
         .iter()
         .find(|metrics| metrics.id == theme.typography.font_metrics_id)
         .ok_or(SceneError::MissingFontMetrics)?;
+    for gap_scale in [1, 2, 3] {
+        let context = LayoutContext {
+            diagram,
+            theme,
+            metrics,
+            gap_scale,
+        };
+        match layout_attempt(&context) {
+            Err(SceneError::EdgeRoutingFailed) => continue,
+            result => return result,
+        }
+    }
+    Err(SceneError::EdgeRoutingFailed)
+}
+
+fn layout_attempt(context: &LayoutContext<'_>) -> Result<Scene, SceneError> {
+    let LayoutContext {
+        diagram,
+        theme,
+        metrics,
+        ..
+    } = *context;
 
     let mut sizes = BTreeMap::new();
     for node in &diagram.nodes {
         sizes.insert(node.id.clone(), node_size(node, theme, metrics));
     }
     for group in diagram.groups.iter().rev() {
-        let children = arrange(&group.children, group.layout.as_ref(), &sizes)?;
+        let children = arrange(&group.children, group.layout.as_ref(), &sizes, context)?;
         sizes.insert(
             group.id.clone(),
             group_size(group, children.size, &theme.typography, metrics),
         );
     }
 
-    let root = arrange(&diagram.children, diagram.layout.as_ref(), &sizes)?;
+    let root = arrange(&diagram.children, diagram.layout.as_ref(), &sizes, context)?;
     let title_height = line_height(
         theme.typography.group_label_size_milli_px,
         &theme.typography,
@@ -256,15 +298,34 @@ pub(crate) fn layout(diagram: &Diagram, catalog: &Catalog) -> Result<Scene, Scen
         theme.typography.group_label_size_milli_px,
         metrics,
     );
+    // A failed compact attempt can need an exterior label lane, not merely
+    // larger distances between ranks (for example a long skip connection).
+    let outer_label = diagram
+        .edges
+        .iter()
+        .filter_map(|edge| edge.label.as_ref())
+        .map(|label| crate::labels::dimensions(label, theme, metrics))
+        .fold(
+            Size {
+                width: 0,
+                height: 0,
+            },
+            |size, label| Size {
+                width: size.width.max(label.width),
+                height: size.height.max(label.height),
+            },
+        );
+    let horizontal_padding = DIAGRAM_PADDING + outer_label.width * (context.gap_scale - 1);
+    let vertical_padding = DIAGRAM_PADDING + outer_label.height * (context.gap_scale - 1);
     let bounds = Rect {
         x: 0,
         y: 0,
-        width: (root.size.width + 2 * DIAGRAM_PADDING).max(title_width + 2 * DIAGRAM_PADDING),
-        height: root.size.height + 2 * DIAGRAM_PADDING + title_height + DIAGRAM_TITLE_GAP,
+        width: (root.size.width + 2 * horizontal_padding).max(title_width + 2 * horizontal_padding),
+        height: root.size.height + 2 * vertical_padding + title_height + DIAGRAM_TITLE_GAP,
     };
     let root_origin = Point {
-        x: DIAGRAM_PADDING,
-        y: DIAGRAM_PADDING + title_height + DIAGRAM_TITLE_GAP,
+        x: horizontal_padding,
+        y: vertical_padding + title_height + DIAGRAM_TITLE_GAP,
     };
     let content_rect = Rect {
         x: root_origin.x,
@@ -272,7 +333,7 @@ pub(crate) fn layout(diagram: &Diagram, catalog: &Catalog) -> Result<Scene, Scen
         width: root.size.width,
         height: root.size.height,
     };
-    let mut placer = Placer::new(diagram, &sizes, theme);
+    let mut placer = Placer::new(context, &sizes);
     placer.place_scope(&diagram.children, diagram.layout.as_ref(), root_origin)?;
 
     let nodes = diagram
@@ -319,9 +380,39 @@ pub(crate) fn layout(diagram: &Diagram, catalog: &Catalog) -> Result<Scene, Scen
             })
         })
         .collect::<Result<Vec<_>, SceneError>>()?;
-    let edges = routing::route(&diagram.edges, &nodes, bounds)
+    let mut text_obstacles = vec![Rect {
+        x: horizontal_padding,
+        y: root_origin.y
+            - DIAGRAM_TITLE_GAP
+            - i64::from(theme.typography.group_label_size_milli_px),
+        width: title_width,
+        height: title_height,
+    }];
+    for group in &groups {
+        let authored = diagram
+            .groups
+            .iter()
+            .find(|entry| entry.id == group.id)
+            .ok_or(SceneError::InvalidIntermediateRepresentation)?;
+        text_obstacles.push(Rect {
+            x: group.rect.x + GROUP_PADDING,
+            y: group.rect.y + GROUP_PADDING,
+            width: text_width(
+                &authored.label,
+                theme.typography.group_label_size_milli_px,
+                metrics,
+            ),
+            height: title_height,
+        });
+    }
+    let frames = groups.iter().map(|group| group.rect).collect::<Vec<_>>();
+    let mut edges = routing::route(&diagram.edges, &nodes, bounds, &text_obstacles, &frames)
         .map_err(|_| SceneError::EdgeRoutingFailed)?;
-    let unsatisfied_orders = unsatisfied_orders(diagram, &nodes, &groups)?;
+    let label_obstacles = label_obstacles(&text_obstacles, &frames);
+    if crate::labels::place(&mut edges, &nodes, bounds, &label_obstacles, theme, metrics).is_err() {
+        edges = route_with_reserved_labels(context, &nodes, bounds, &text_obstacles, &frames)?;
+    }
+    let unsatisfied_orders = unsatisfied_orders(diagram, &nodes, &groups, root.direction)?;
 
     Ok(Scene {
         bounds,
@@ -331,19 +422,122 @@ pub(crate) fn layout(diagram: &Diagram, catalog: &Catalog) -> Result<Scene, Scen
         groups,
         edges,
         unsatisfied_orders,
+        text_obstacles,
+        connector_width: i64::from(theme.connector.width_milli_px),
     })
+}
+
+fn label_obstacles(fixed_text: &[Rect], frames: &[Rect]) -> Vec<Rect> {
+    // Label backgrounds must not mask group borders. Nine pixels conservatively
+    // reserve an 8px painted gap plus the current 1px frame stroke. These finite
+    // perimeter strips are label-only: routes may still cross frames normally.
+    const GAP: i64 = 9_000;
+    let mut obstacles = fixed_text.to_vec();
+    for frame in frames {
+        for y in [frame.y, frame.y + frame.height] {
+            obstacles.push(Rect {
+                x: frame.x - GAP,
+                y: y - GAP,
+                width: frame.width + 2 * GAP,
+                height: 2 * GAP,
+            });
+        }
+        for x in [frame.x, frame.x + frame.width] {
+            obstacles.push(Rect {
+                x: x - GAP,
+                y: frame.y - GAP,
+                width: 2 * GAP,
+                height: frame.height + 2 * GAP,
+            });
+        }
+    }
+    obstacles
+}
+
+fn route_with_reserved_labels(
+    context: &LayoutContext<'_>,
+    nodes: &[SceneNode],
+    bounds: Rect,
+    fixed_text: &[Rect],
+    frames: &[Rect],
+) -> Result<Vec<SceneEdge>, SceneError> {
+    let label_obstacles = label_obstacles(fixed_text, frames);
+    let mut order = (0..context.diagram.edges.len()).collect::<Vec<_>>();
+    order.sort_by_key(|index| {
+        let width = context.diagram.edges[*index]
+            .label
+            .as_ref()
+            .map_or(0, |label| {
+                crate::labels::dimensions(label, context.theme, context.metrics).width
+            });
+        (std::cmp::Reverse(width), *index)
+    });
+    let mut previous: Vec<SceneEdge> = Vec::with_capacity(order.len());
+    for &index in &order {
+        let mut obstacles = fixed_text.to_vec();
+        obstacles.extend(previous.iter().filter_map(|edge| edge.label_rect));
+        let mut edge = routing::route(
+            &context.diagram.edges[index..=index],
+            nodes,
+            bounds,
+            &obstacles,
+            frames,
+        )
+        .map_err(|_| SceneError::EdgeRoutingFailed)?
+        .pop()
+        .ok_or(SceneError::EdgeRoutingFailed)?;
+        if crate::labels::place_next(
+            &mut edge,
+            &previous,
+            nodes,
+            bounds,
+            &label_obstacles,
+            context.theme,
+            context.metrics,
+        )
+        .is_err()
+        {
+            edge = routing::alternative_routes(
+                &context.diagram.edges[index],
+                nodes,
+                bounds,
+                &obstacles,
+                frames,
+            )
+            .map_err(|_| SceneError::EdgeRoutingFailed)?
+            .into_iter()
+            .find_map(|mut alternative| {
+                crate::labels::place_next(
+                    &mut alternative,
+                    &previous,
+                    nodes,
+                    bounds,
+                    &label_obstacles,
+                    context.theme,
+                    context.metrics,
+                )
+                .is_ok()
+                .then_some(alternative)
+            })
+            .ok_or(SceneError::EdgeRoutingFailed)?;
+        }
+        previous.push(edge);
+    }
+    let mut indexed = order.into_iter().zip(previous).collect::<Vec<_>>();
+    indexed.sort_by_key(|(index, _)| *index);
+    Ok(indexed.into_iter().map(|(_, edge)| edge).collect())
 }
 
 fn unsatisfied_orders(
     diagram: &Diagram,
     nodes: &[SceneNode],
     groups: &[SceneGroup],
+    root_direction: SceneDirection,
 ) -> Result<Vec<SceneScope>, SceneError> {
     let mut unsatisfied = Vec::new();
     if let Some(layout) = &diagram.layout {
         if let Some(order) = &layout.order {
-            let direction = resolve_direction(diagram.children.len(), layout.direction);
-            if !order_is_satisfied(order, direction, nodes, groups) {
+            if !order_is_satisfied(order, root_direction, nodes, groups) {
                 unsatisfied.push(SceneScope::Diagram);
             }
         }
@@ -470,9 +664,8 @@ fn group_size(
 }
 
 struct Placer<'a> {
-    diagram: &'a Diagram,
+    context: &'a LayoutContext<'a>,
     sizes: &'a BTreeMap<String, Size>,
-    theme: &'a Theme,
     node_rects: BTreeMap<String, Rect>,
     group_rects: BTreeMap<String, Rect>,
     group_content_rects: BTreeMap<String, Rect>,
@@ -480,11 +673,10 @@ struct Placer<'a> {
 }
 
 impl<'a> Placer<'a> {
-    fn new(diagram: &'a Diagram, sizes: &'a BTreeMap<String, Size>, theme: &'a Theme) -> Self {
+    fn new(context: &'a LayoutContext<'a>, sizes: &'a BTreeMap<String, Size>) -> Self {
         Self {
-            diagram,
+            context,
             sizes,
-            theme,
             node_rects: BTreeMap::new(),
             group_rects: BTreeMap::new(),
             group_content_rects: BTreeMap::new(),
@@ -498,7 +690,7 @@ impl<'a> Placer<'a> {
         layout: Option<&Layout>,
         origin: Point,
     ) -> Result<(), SceneError> {
-        let arrangement = arrange(children, layout, self.sizes)?;
+        let arrangement = arrange(children, layout, self.sizes, self.context)?;
         for placed in arrangement.items {
             let child = children
                 .get(placed.index)
@@ -511,23 +703,34 @@ impl<'a> Placer<'a> {
             };
             match child {
                 ElementId::Node(identifier) => {
-                    if self.diagram.nodes.iter().all(|node| node.id != *identifier) {
+                    if self
+                        .context
+                        .diagram
+                        .nodes
+                        .iter()
+                        .all(|node| node.id != *identifier)
+                    {
                         return Err(SceneError::InvalidIntermediateRepresentation);
                     }
                     self.node_rects.insert(identifier.clone(), rect);
                 }
                 ElementId::Group(identifier) => {
                     let group = self
+                        .context
                         .diagram
                         .groups
                         .iter()
                         .find(|group| group.id == *identifier)
                         .ok_or(SceneError::InvalidIntermediateRepresentation)?;
-                    let child_arrangement =
-                        arrange(&group.children, group.layout.as_ref(), self.sizes)?;
+                    let child_arrangement = arrange(
+                        &group.children,
+                        group.layout.as_ref(),
+                        self.sizes,
+                        self.context,
+                    )?;
                     let label_height = line_height(
-                        self.theme.typography.group_label_size_milli_px,
-                        &self.theme.typography,
+                        self.context.theme.typography.group_label_size_milli_px,
+                        &self.context.theme.typography,
                     );
                     let content_origin = Point {
                         x: rect.x + GROUP_PADDING,
@@ -557,20 +760,118 @@ fn arrange(
     children: &[ElementId],
     layout: Option<&Layout>,
     sizes: &BTreeMap<String, Size>,
+    context: &LayoutContext<'_>,
 ) -> Result<Arrangement, SceneError> {
     if children.is_empty() {
         return Err(SceneError::InvalidIntermediateRepresentation);
     }
-    let direction = resolve_direction(children.len(), layout.and_then(|layout| layout.direction));
-    let ranks = ranks(children, layout);
+    let ranks = graph_ranks(children, layout, context.diagram);
+    let authored = layout.and_then(|layout| layout.direction);
+    let preferred = resolve_direction(children.len(), authored);
+    let first = arrange_direction(children, sizes, context, &ranks, preferred)?;
+    let incident = context.diagram.edges.iter().any(|edge| {
+        scope_owner(children, &edge.from, context.diagram).is_some()
+            || scope_owner(children, &edge.to, context.diagram).is_some()
+    });
+    let simple_unlabeled_pair = children.len() <= 2
+        && context
+            .diagram
+            .edges
+            .iter()
+            .all(|edge| edge.label.is_none());
+    if authored.is_some() || !incident || simple_unlabeled_pair {
+        return Ok(first);
+    }
+    let alternative = match preferred {
+        SceneDirection::Right => SceneDirection::Down,
+        SceneDirection::Down => SceneDirection::Right,
+    };
+    let second = arrange_direction(children, sizes, context, &ranks, alternative)?;
+    let cost = |arrangement: &Arrangement| {
+        (
+            arrangement.size.width.max(arrangement.size.height),
+            i128::from(arrangement.size.width) * i128::from(arrangement.size.height),
+        )
+    };
+    Ok(if cost(&second) < cost(&first) {
+        second
+    } else {
+        first
+    })
+}
+
+fn arrange_direction(
+    children: &[ElementId],
+    sizes: &BTreeMap<String, Size>,
+    context: &LayoutContext<'_>,
+    ranks: &[Vec<usize>],
+    direction: SceneDirection,
+) -> Result<Arrangement, SceneError> {
+    let label_size = context
+        .diagram
+        .edges
+        .iter()
+        .filter_map(|edge| {
+            let from = scope_owner(children, &edge.from, context.diagram)?;
+            let to = scope_owner(children, &edge.to, context.diagram)?;
+            if from == to {
+                return None;
+            }
+            edge.label
+                .as_ref()
+                .map(|label| crate::labels::dimensions(label, context.theme, context.metrics))
+        })
+        .fold(
+            Size {
+                width: 0,
+                height: 0,
+            },
+            |size, label| Size {
+                width: size.width.max(label.width),
+                height: size.height.max(label.height),
+            },
+        );
+    let primary_label = match direction {
+        SceneDirection::Right => label_size.width,
+        SceneDirection::Down => label_size.height,
+    };
+    let cross_label = match direction {
+        SceneDirection::Right => label_size.height,
+        SceneDirection::Down => label_size.width,
+    };
+    let primary_gap = ITEM_GAP.max(primary_label + if primary_label > 0 { 32_000 } else { 0 })
+        * context.gap_scale;
+    let cross_gap =
+        ITEM_GAP.max(cross_label + if cross_label > 0 { 16_000 } else { 0 }) * context.gap_scale;
     let mut items = Vec::with_capacity(children.len());
     let mut primary_cursor = 0;
-    let mut cross_extent = 0;
+    let cross_extent = ranks
+        .iter()
+        .map(|rank| {
+            rank.iter()
+                .map(|index| {
+                    sizes
+                        .get(children[*index].as_str())
+                        .map(|size| match direction {
+                            SceneDirection::Right => size.height,
+                            SceneDirection::Down => size.width,
+                        })
+                        .ok_or(SceneError::InvalidIntermediateRepresentation)
+                })
+                .collect::<Result<Vec<_>, _>>()
+                .map(|sizes| {
+                    sizes.into_iter().sum::<i64>() + cross_gap * rank.len().saturating_sub(1) as i64
+                })
+        })
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .max()
+        .unwrap_or(0);
 
     for rank in ranks {
         let mut primary_extent = 0;
         let mut rank_cross_cursor = 0;
-        for index in &rank {
+        for index in rank {
             let size = sizes
                 .get(children[*index].as_str())
                 .copied()
@@ -584,10 +885,10 @@ fn arrange(
                 SceneDirection::Down => size.width,
             };
         }
-        rank_cross_cursor += ITEM_GAP * (rank.len().saturating_sub(1) as i64);
+        rank_cross_cursor += cross_gap * (rank.len().saturating_sub(1) as i64);
 
-        let mut cross_cursor = 0;
-        for index in rank {
+        let mut cross_cursor = (cross_extent - rank_cross_cursor) / 2;
+        for &index in rank {
             let size = sizes
                 .get(children[index].as_str())
                 .copied()
@@ -607,16 +908,22 @@ fn arrange(
                 },
             };
             cross_cursor += match direction {
-                SceneDirection::Right => size.height + ITEM_GAP,
-                SceneDirection::Down => size.width + ITEM_GAP,
+                SceneDirection::Right => size.height + cross_gap,
+                SceneDirection::Down => size.width + cross_gap,
             };
             items.push(PlacedItem { index, rect });
         }
-        cross_extent = cross_extent.max(rank_cross_cursor);
-        primary_cursor += primary_extent + ITEM_GAP;
+        primary_cursor += primary_extent + primary_gap;
     }
 
-    primary_cursor -= ITEM_GAP;
+    primary_cursor -= primary_gap;
+    // Keep the node spine centered within its ranks while reserving space to
+    // its right for vertical edge labels, before computing parent bounds.
+    let cross_extent = if direction == SceneDirection::Down && label_size.width > 0 {
+        cross_extent.max(cross_extent / 2 + label_size.width + 16_000)
+    } else {
+        cross_extent
+    };
     let size = match direction {
         SceneDirection::Right => Size {
             width: primary_cursor,
@@ -632,6 +939,125 @@ fn arrange(
         direction,
         items,
     })
+}
+
+fn scope_owner(children: &[ElementId], node_id: &str, diagram: &Diagram) -> Option<usize> {
+    let mut identifier = node_id;
+    for _ in 0..=diagram.groups.len() + 1 {
+        if let Some(index) = children
+            .iter()
+            .position(|child| child.as_str() == identifier)
+        {
+            return Some(index);
+        }
+        identifier = diagram
+            .nodes
+            .iter()
+            .find(|node| node.id == identifier)
+            .and_then(|node| node.parent_group_id.as_deref())
+            .or_else(|| {
+                diagram
+                    .groups
+                    .iter()
+                    .find(|group| group.id == identifier)
+                    .and_then(|group| group.parent_group_id.as_deref())
+            })?;
+    }
+    None
+}
+
+fn graph_ranks(
+    children: &[ElementId],
+    layout: Option<&Layout>,
+    diagram: &Diagram,
+) -> Vec<Vec<usize>> {
+    let blocks = ranks(children, layout);
+    let count = blocks.len();
+    let mut reachable = vec![vec![false; count]; count];
+    let mut has_connection = false;
+    for edge in &diagram.edges {
+        let (Some(from), Some(to)) = (
+            scope_owner(children, &edge.from, diagram),
+            scope_owner(children, &edge.to, diagram),
+        ) else {
+            continue;
+        };
+        if from == to {
+            continue;
+        }
+        let source = blocks
+            .iter()
+            .position(|block| block.contains(&from))
+            .unwrap_or(0);
+        let target = blocks
+            .iter()
+            .position(|block| block.contains(&to))
+            .unwrap_or(0);
+        if source != target {
+            reachable[source][target] = true;
+            has_connection = true;
+        }
+    }
+    if !has_connection {
+        return blocks;
+    }
+
+    // Collapse strongly connected components before layering. This also makes
+    // cycles introduced by authored same-rank constraints deterministic.
+    let adjacency = reachable.clone();
+    for via in 0..count {
+        for from in 0..count {
+            for to in 0..count {
+                reachable[from][to] |= reachable[from][via] && reachable[via][to];
+            }
+        }
+    }
+    let component = (0..count)
+        .map(|index| {
+            (0..index)
+                .find(|other| reachable[index][*other] && reachable[*other][index])
+                .unwrap_or(index)
+        })
+        .collect::<Vec<_>>();
+    let mut depth = vec![0; count];
+    for _ in 0..count {
+        let mut changed = false;
+        for from in 0..count {
+            for to in 0..count {
+                let (source, target) = (component[from], component[to]);
+                if adjacency[from][to] && source != target && depth[target] <= depth[source] {
+                    depth[target] = depth[source] + 1;
+                    changed = true;
+                }
+            }
+        }
+        if !changed {
+            break;
+        }
+    }
+    let mut layers = BTreeMap::<usize, Vec<usize>>::new();
+    for (index, block) in blocks.into_iter().enumerate() {
+        layers
+            .entry(depth[component[index]])
+            .or_default()
+            .extend(block);
+    }
+    let order = layout.and_then(|layout| layout.order.as_deref());
+    layers
+        .into_values()
+        .map(|mut layer| {
+            layer.sort_by_key(|member| {
+                order
+                    .and_then(|order| {
+                        order
+                            .iter()
+                            .position(|entry| entry == children[*member].as_str())
+                    })
+                    .map_or((1, *member), |position| (0, position))
+            });
+            layer
+        })
+        .collect()
 }
 
 fn ranks(children: &[ElementId], layout: Option<&Layout>) -> Vec<Vec<usize>> {

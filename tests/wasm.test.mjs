@@ -38,8 +38,8 @@ function browserInput(input) {
   return Uint8Array.from(input.value);
 }
 
-function wasmOutputs() {
-  return cases.map((fixture) => {
+function wasmOutputs(fixtures = cases) {
+  return fixtures.map((fixture) => {
     const source = browserInput(fixture.input);
     return {
       name: fixture.name,
@@ -104,6 +104,21 @@ test("browser exports match native engine results for shared fixtures", () => {
     ),
   );
   assert.deepEqual(wasmOutputs(), native);
+});
+
+test("labelled DAG regressions render identically in native and WebAssembly", () => {
+  const path = join(repositoryRoot, "crates/stack-engine/tests/fixtures/labelled-dag-regressions.json");
+  const fixtures = JSON.parse(readFileSync(path, "utf8"));
+  assert.equal(fixtures.length, 60);
+  const native = JSON.parse(execFileSync("cargo", [
+    "run", "--quiet", "--locked", "-p", "stack-engine-wasm", "--example", "native-parity", "--", path,
+  ], { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 }));
+  const browser = wasmOutputs(fixtures);
+  for (const output of browser) {
+    assert.ok(output.render.svg, `${output.name}: missing SVG`);
+    assert.deepEqual(output.render.diagnostics, [], `${output.name}: diagnostics`);
+  }
+  assert.deepEqual(browser, native);
 });
 
 test("browser language intelligence matches native results for shared fixtures", () => {
@@ -195,7 +210,7 @@ test("browser diagnostics preserve actionable compiler guidance", () => {
   );
   assert.ok(actionable);
   assert.equal(actionable.render.svg, null);
-  assert.equal(actionable.check.metadata.engineVersion, "0.7.0");
+  assert.equal(actionable.check.metadata.engineVersion, "0.8.0");
   assert.deepEqual(actionable.check.diagnostics[0], {
     code: "STK2002",
     severity: "error",
@@ -217,11 +232,11 @@ test("browser rendering resolves the bundled explicit core icon", () => {
   assert.ok(explicitIcon);
   assert.deepEqual(explicitIcon.check.diagnostics, []);
   assert.deepEqual(explicitIcon.render.diagnostics, []);
-  assert.equal(explicitIcon.render.metadata.engineVersion, "0.7.0");
-  assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.5.0");
+  assert.equal(explicitIcon.render.metadata.engineVersion, "0.8.0");
+  assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.6.0");
   assert.equal(
     explicitIcon.render.metadata.themeCatalogRevision,
-    "sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53",
+    "sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1",
   );
   assert.match(explicitIcon.render.svg, /data-icon-id="gateway"/);
   assert.doesNotMatch(explicitIcon.render.svg, /data-icon-id="kind-external"/);

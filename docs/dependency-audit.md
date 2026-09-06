@@ -1,6 +1,6 @@
 # Dependency and host-I/O audit
 
-Audit date: 2026-09-05
+Audit date: 2026-09-06
 
 ## Runtime graph
 
@@ -8,7 +8,7 @@ Audit date: 2026-09-05
 
 - `stack-compiler` at `84ab5663a7f7c5b7dc0b5e9e2f04c8894ed02820` for byte decoding, parsing, validation, normalized IR, source maps, and compiler diagnostics;
 - the workspace-local `stack-formatter` for canonical source output;
-- `stack-theme` at `7e208d6a3c90d255799f390a4e8b86248c73caee` for the `0.5.0` embedded core catalog, 30 provider-neutral explicit icons, the local-only provider-pack contract, SVG bytes, deterministic font metrics, catalog version, and catalog revision;
+- `stack-theme` `0.6.0` from crates.io, source `dd366fbacfe1edceeb8c1bde04687027ccc99c24`, for the embedded core catalog with database cards, 30 provider-neutral explicit icons, the local-only provider-pack contract, SVG bytes, deterministic font metrics, catalog version, and catalog revision;
 - `roxmltree`, `serde_json`, and `sha2` for pure in-memory provider manifest serialization, processed-asset hash verification, pack revision computation, and defensive SVG validation. Vendor asset bytes are not included.
 
 `stack-engine-wasm` adds `serde`, `serde_json`, and the asset-free `stack-theme` types for its serializable native parity model and local provider-pack input, plus, only on `wasm32`, version-matched `wasm-bindgen` and `js-sys` for the JavaScript ABI, typed-array input, JSON-compatible local data, and plain object construction. It does not use `web-sys` or a WASI target.

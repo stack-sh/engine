@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="408" height="174.2" viewBox="0 0 408000 174200" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.7.0" data-theme-id="default" data-theme-version="0.5.0" data-theme-revision="sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53">
+<svg xmlns="http://www.w3.org/2000/svg" width="408" height="174.2" viewBox="0 0 408 174.2" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.8.0" data-theme-id="default" data-theme-version="0.6.0" data-theme-revision="sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1">
   <title id="stack-title">Default normalization</title>
   <desc id="stack-description">Architecture diagram with 2 nodes, 0 groups, and 1 relationship.</desc>
-  <metadata>stack-engine 0.7.0; language 1.0; theme 0.5.0 at sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53</metadata>
-  <rect x="0" y="0" width="408000" height="174200" fill="#F3F6FA"/>
+  <metadata>stack-engine 0.8.0; language 1.0; theme 0.6.0 at sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1</metadata>
+  <rect x="0" y="0" width="408" height="174.2" fill="#F3F6FA"/>
   <defs>
-    <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7000" markerHeight="7000" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
+    <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
       <path d="M 0 0 L 10000 5000 L 0 10000 z" fill="#475569"/>
     </marker>
   </defs>
-  <text x="32000" y="50200" fill="#142033" font-family="system-ui" font-size="13000" font-weight="600">Default normalization</text>
+  <text x="32" y="50.2" fill="#142033" font-family="system-ui" font-size="13" font-weight="600">Default normalization</text>
   <g data-stack-layer="groups">
   </g>
   <g data-stack-layer="edges">
     <g role="group" aria-label="Web app flows to API" data-edge-kind="flow" data-edge-direction="forward">
       <title>Web app flows to API</title>
-      <polyline points="192000,106200 216000,106200" fill="none" stroke="#475569" stroke-width="1500" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="192,106.2 216,106.2" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
   </g>
   <g data-stack-layer="nodes">
     <g role="group" aria-label="Web app" data-stack-id="web" data-node-kind="service">
       <title>Web app</title>
-      <rect x="32000" y="70200" width="160000" height="72000" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
-      <svg x="52000" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+      <rect x="32" y="70.2" width="160" height="72" rx="8" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1.5"/>
+      <svg x="52" y="94.2" width="24" height="24" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
   <rect x="4" y="15" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
   <path d="M8 9v6M16 9v6" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
-      <text x="88000" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">Web app</text>
+      <text x="88" y="106.2" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14" font-weight="600">Web app</text>
     </g>
     <g role="group" aria-label="API" data-stack-id="api" data-node-kind="service">
       <title>API</title>
-      <rect x="216000" y="70200" width="160000" height="72000" rx="8000" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1500"/>
-      <svg x="236000" y="94200" width="24000" height="24000" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+      <rect x="216" y="70.2" width="160" height="72" rx="8" fill="#FFFFFF" stroke="#1D63D8" stroke-width="1.5"/>
+      <svg x="236" y="94.2" width="24" height="24" viewBox="0 0 24 24" color="#1D63D8" aria-hidden="true" focusable="false" data-icon-id="kind-service"><rect x="4" y="4" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
   <rect x="4" y="15" width="16" height="5" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
   <path d="M8 9v6M16 9v6" fill="none" stroke="currentColor" stroke-width="1.75"/> </svg>
-      <text x="272000" y="106200" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14000" font-weight="600">API</text>
+      <text x="272" y="106.2" dominant-baseline="middle" fill="#142033" font-family="system-ui" font-size="14" font-weight="600">API</text>
     </g>
   </g>
   <g data-stack-layer="edge-labels" aria-hidden="true">

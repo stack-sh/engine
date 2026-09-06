@@ -4,6 +4,11 @@
 
 Accepted
 
+[ADR-0008](0008-compose-graphs-with-reserved-label-geometry.md) proposes replacing
+the original SVG millipixel user space with exact decimal CSS pixels and moving
+edge-label placement into the scene. That unreleased candidate preserves the
+integer scene and the safety/resource boundaries below.
+
 ## Context
 
 Native and browser consumers need the same portable render artifact. Depending on a DOM, host fonts, external images, or runtime resource discovery would make output target-dependent and would weaken the pure engine boundary. Authored labels and details are untrusted text, and catalog icons must not introduce script or external references into the generated document.
