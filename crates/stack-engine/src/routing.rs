@@ -1236,4 +1236,82 @@ mod tests {
         assert!(!invalid.geometry_is_valid());
         Ok(())
     }
+
+    #[test]
+    fn missing_endpoints_and_enclosed_terminals_fail_without_partial_routes() {
+        let nodes = [
+            test_node("source", 20_000, 100_000),
+            test_node("target", 320_000, 100_000),
+        ];
+        let edge = stack_compiler::ir::Edge {
+            from: "source".into(),
+            to: "target".into(),
+            direction: EdgeDirection::Forward,
+            kind: EdgeKind::Flow,
+            label: None,
+        };
+        assert!(super::route(std::slice::from_ref(&edge), &nodes, test_bounds(), &[], &[]).is_ok());
+        for missing in [0, 1] {
+            let mut corrupted = edge.clone();
+            if missing == 0 {
+                corrupted.from = "absent".into();
+            } else {
+                corrupted.to = "absent".into();
+            }
+            assert!(
+                super::route(
+                    std::slice::from_ref(&corrupted),
+                    &nodes,
+                    test_bounds(),
+                    &[],
+                    &[]
+                )
+                .is_err()
+            );
+            assert!(
+                super::alternative_routes(&corrupted, &nodes, test_bounds(), &[], &[]).is_err()
+            );
+        }
+        let covering_obstacle = [test_bounds()];
+        assert!(
+            super::route(
+                std::slice::from_ref(&edge),
+                &nodes,
+                test_bounds(),
+                &covering_obstacle,
+                &[]
+            )
+            .is_err()
+        );
+        assert_eq!(
+            super::alternative_routes(&edge, &nodes, test_bounds(), &covering_obstacle, &[]),
+            Ok(Vec::new())
+        );
+        let mut invalid = test_edge(&[(120_000, 150_000), (320_000, 150_000)]);
+        invalid.to = "absent".into();
+        assert!(!super::geometry_is_valid(
+            &[invalid],
+            &nodes,
+            test_bounds(),
+            &[]
+        ));
+    }
+
+    #[test]
+    fn unsupported_diagonal_segments_fail_closed_in_routing_predicates() {
+        let start = Point { x: 0, y: 0 };
+        let end = Point {
+            x: 400_000,
+            y: 400_000,
+        };
+        assert!(!super::segment_is_axis_aligned(start, end));
+        assert!(!super::point_is_on_segment(start, start, end));
+        assert!(super::segment_hits_rect(start, end, test_frame()));
+        assert!(super::segment_crosses_rect_interior(
+            start,
+            end,
+            test_frame()
+        ));
+        assert!(!super::frame_segment_is_clear(start, end, test_frame()));
+    }
 }

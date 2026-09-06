@@ -2,8 +2,8 @@
 
 ## Status
 
-Proposed; implemented as an unreleased visual-review candidate. Approved scene
-and SVG references remain unchanged until visual agreement.
+Accepted for Engine 0.8.0 after visual review. Scene and SVG references record
+the approved output with Theme 0.6.0.
 
 ## Context
 
@@ -48,8 +48,9 @@ exempt group frames. Measure 40px group padding to leave room for these internal
 lanes, and use that same padding for group-title serialization.
 
 The scene owns both each label rectangle and its attachment on an interior point
-of its own route segment. Candidate positions are finite, exactly 8px from that
-segment, and prefer above horizontal or right of vertical segments. Reject
+of its own route segment. Candidate positions are finite, 8px from that segment
+for core strokes, or the rounded-up stroke radius plus 1px when that is larger.
+They prefer above horizontal or right of vertical segments. Reject
 contact with nodes, titles, other labels, and every route's stroke envelope.
 Commit placement only when every label fits. SVG serialization must not relocate
 labels or hide route sections beneath label backgrounds.
@@ -81,7 +82,7 @@ elapsed time or accepts colliding fallback geometry.
 
 ## Consequences
 
-- This candidate replaces the automatic placement policy in ADR-0003, boundary
+- This policy replaces the automatic placement policy in ADR-0003, boundary
   contact and midpoint-label policy in ADR-0004, and SVG-owned label placement in
   ADR-0005, including its millipixel SVG user-space policy; their remaining
   integer-scene, semantic, diagnostic, and safety contracts
@@ -94,8 +95,8 @@ elapsed time or accepts colliding fallback geometry.
   requires a 16px painted gap, checks all four finite sides and nearby corners,
   and permits normal crossings away from corners. Hidden, transformed, missing,
   or otherwise unmeasured frame geometry fails closed.
-- Exact snapshots intentionally detect the changed output until new references
-  are explicitly approved. They are not automatically replaced by this work.
+- Exact snapshots record the visually approved output. Future reference changes
+  still require explicit visual review rather than automatic acceptance.
 - Finite heuristics are not a proof of feasible placement for every valid graph.
   A failure must remain explicit and become a regression fixture, never a hidden
   overlap, missing edge, or unmeasured text box.

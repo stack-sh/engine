@@ -11,6 +11,11 @@ const HORIZONTAL_PADDING: i64 = 6_000;
 const VERTICAL_PADDING: i64 = 4_000;
 const ROUTE_GAP: i64 = 8_000;
 
+// Preserve core geometry while keeping labels outside thicker custom strokes.
+fn route_gap(stroke_width: i64) -> i64 {
+    ROUTE_GAP.max(stroke_width / 2 + stroke_width % 2 + 1_000)
+}
+
 #[derive(Clone, Copy)]
 struct Placement {
     rect: Rect,
@@ -53,7 +58,7 @@ pub(crate) fn place(
     let stroke_width = i64::from(theme.connector.width_milli_px);
 
     for (index, size) in order {
-        let placement = candidates(&edges[index].path, size, bounds)
+        let placement = candidates(&edges[index].path, size, bounds, route_gap(stroke_width))
             .into_iter()
             .find(|candidate| rect_is_clear(candidate.rect, bounds, &occupied, edges, stroke_width))
             .ok_or(RoutingError)?;
@@ -87,19 +92,24 @@ pub(crate) fn place_next(
     occupied.extend_from_slice(fixed_text);
     occupied.extend(previous.iter().filter_map(|edge| edge.label_rect));
     let stroke_width = i64::from(theme.connector.width_milli_px);
-    let placement = candidates(&edge.path, dimensions(label, theme, metrics), bounds)
-        .into_iter()
-        .find(|candidate| {
-            rect_is_clear(candidate.rect, bounds, &occupied, previous, stroke_width)
-                && rect_is_clear(
-                    candidate.rect,
-                    bounds,
-                    &[],
-                    std::slice::from_ref(edge),
-                    stroke_width,
-                )
-        })
-        .ok_or(RoutingError)?;
+    let placement = candidates(
+        &edge.path,
+        dimensions(label, theme, metrics),
+        bounds,
+        route_gap(stroke_width),
+    )
+    .into_iter()
+    .find(|candidate| {
+        rect_is_clear(candidate.rect, bounds, &occupied, previous, stroke_width)
+            && rect_is_clear(
+                candidate.rect,
+                bounds,
+                &[],
+                std::slice::from_ref(edge),
+                stroke_width,
+            )
+    })
+    .ok_or(RoutingError)?;
     edge.label_rect = Some(placement.rect);
     edge.label_anchor = Some(placement.attachment);
     Ok(())
@@ -119,10 +129,15 @@ pub(crate) fn geometry_is_valid(
             (None, None, None) => {}
             (Some(_), Some(rect), Some(attachment)) => {
                 if !rect_is_clear(rect, bounds, &occupied, edges, stroke_width)
-                    || !edge
-                        .path
-                        .windows(2)
-                        .any(|segment| is_adjacent(rect, attachment, segment[0], segment[1]))
+                    || !edge.path.windows(2).any(|segment| {
+                        is_adjacent(
+                            rect,
+                            attachment,
+                            segment[0],
+                            segment[1],
+                            route_gap(stroke_width),
+                        )
+                    })
                 {
                     return false;
                 }
@@ -134,7 +149,7 @@ pub(crate) fn geometry_is_valid(
     true
 }
 
-fn candidates(path: &[Point], size: Rect, bounds: Rect) -> Vec<Placement> {
+fn candidates(path: &[Point], size: Rect, bounds: Rect, gap: i64) -> Vec<Placement> {
     let mut segments = path.windows(2).enumerate().collect::<Vec<_>>();
     segments.sort_by_key(|(index, segment)| {
         (
@@ -151,7 +166,7 @@ fn candidates(path: &[Point], size: Rect, bounds: Rect) -> Vec<Placement> {
         }
         if start.y == end.y {
             let positions = axis_positions(start.x, end.x, size.width, bounds.x, bounds.width);
-            for y in [start.y - ROUTE_GAP - size.height, start.y + ROUTE_GAP] {
+            for y in [start.y - gap - size.height, start.y + gap] {
                 for &x in &positions {
                     candidates.push(Placement {
                         rect: Rect {
@@ -165,7 +180,7 @@ fn candidates(path: &[Point], size: Rect, bounds: Rect) -> Vec<Placement> {
             }
         } else if start.x == end.x {
             let positions = axis_positions(start.y, end.y, size.height, bounds.y, bounds.height);
-            for x in [start.x + ROUTE_GAP, start.x - ROUTE_GAP - size.width] {
+            for x in [start.x + gap, start.x - gap - size.width] {
                 for &y in &positions {
                     candidates.push(Placement {
                         rect: Rect {
@@ -207,21 +222,19 @@ fn axis_positions(start: i64, end: i64, size: i64, origin: i64, extent: i64) -> 
     positions
 }
 
-fn is_adjacent(rect: Rect, attachment: Point, start: Point, end: Point) -> bool {
+fn is_adjacent(rect: Rect, attachment: Point, start: Point, end: Point, gap: i64) -> bool {
     if start.y == end.y && start.x != end.x {
         attachment.y == start.y
             && attachment.x > start.x.min(end.x)
             && attachment.x < start.x.max(end.x)
             && attachment.x == rect.x + rect.width / 2
-            && (rect.y + rect.height + ROUTE_GAP == attachment.y
-                || rect.y - ROUTE_GAP == attachment.y)
+            && (rect.y + rect.height + gap == attachment.y || rect.y - gap == attachment.y)
     } else if start.x == end.x && start.y != end.y {
         attachment.x == start.x
             && attachment.y > start.y.min(end.y)
             && attachment.y < start.y.max(end.y)
             && attachment.y == rect.y + rect.height / 2
-            && (rect.x - ROUTE_GAP == attachment.x
-                || rect.x + rect.width + ROUTE_GAP == attachment.x)
+            && (rect.x - gap == attachment.x || rect.x + rect.width + gap == attachment.x)
     } else {
         false
     }
@@ -353,6 +366,71 @@ mod tests {
             scene::line_height(theme.typography.edge_label_size_milli_px, &theme.typography)
                 + 8_000,
         );
+        Ok(())
+    }
+
+    #[test]
+    fn wide_connector_labels_clear_their_own_painted_stroke() -> TestResult {
+        let (theme, metrics) = resources()?;
+        for width in [1_500, 15_000, 15_999, 16_000, 32_000] {
+            let mut theme = theme.clone();
+            theme.connector.width_milli_px = width;
+            let mut edges = [edge(
+                Some("Call"),
+                &[(100_000, 300_000), (700_000, 300_000)],
+            )];
+            place(&mut edges, &[], bounds(), &[], &theme, metrics)
+                .map_err(|_| "wide connector label failed")?;
+            assert!(geometry_is_valid(
+                &edges,
+                &[],
+                bounds(),
+                &[],
+                i64::from(width)
+            ));
+            let label = edges[0].label_rect.ok_or("missing label rectangle")?;
+            let gap = 300_000 - label.y - label.height;
+            assert!(gap > (i64::from(width) + 1) / 2);
+            if width == 1_500 {
+                assert_eq!(gap, 8_000);
+            }
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn malformed_routes_cannot_produce_valid_label_attachments() -> TestResult {
+        let (theme, metrics) = resources()?;
+        for path in [
+            vec![],
+            vec![(100_000, 100_000)],
+            vec![(100_000, 100_000), (100_000, 100_000)],
+            vec![(100_000, 100_000), (200_000, 200_000)],
+        ] {
+            let original = edge(Some("Call"), &path);
+            let mut candidate = original.clone();
+            assert!(place_next(&mut candidate, &[], &[], bounds(), &[], theme, metrics).is_err());
+            assert_eq!(candidate, original);
+            assert!(!geometry_is_valid(&[candidate], &[], bounds(), &[], 1_500));
+        }
+        let rect = Rect {
+            x: 200_000,
+            y: 200_000,
+            width: 50_000,
+            height: 30_000,
+        };
+        let start = Point {
+            x: 100_000,
+            y: 100_000,
+        };
+        let end = Point {
+            x: 300_000,
+            y: 300_000,
+        };
+        assert!(super::stroke_hits_rect(start, end, rect, 1_500));
+        assert!(super::stroke_hits_rect(start, start, rect, -1));
+        assert!(!super::is_adjacent(rect, start, start, end, 8_000));
+        assert!(!super::is_adjacent(rect, start, start, start, 8_000));
         Ok(())
     }
 

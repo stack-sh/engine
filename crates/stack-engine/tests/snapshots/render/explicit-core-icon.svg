@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="224" height="174.6" viewBox="0 0 224000 174600" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.7.0" data-theme-id="dark" data-theme-version="0.5.0" data-theme-revision="sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53">
+<svg xmlns="http://www.w3.org/2000/svg" width="224" height="174.6" viewBox="0 0 224 174.6" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.8.0" data-theme-id="dark" data-theme-version="0.6.0" data-theme-revision="sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1">
   <title id="stack-title">Core icon</title>
   <desc id="stack-description">Architecture diagram with 1 node, 0 groups, and 0 relationships.</desc>
-  <metadata>stack-engine 0.7.0; language 1.0; theme 0.5.0 at sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53</metadata>
-  <rect x="0" y="0" width="224000" height="174600" fill="#0B1020"/>
+  <metadata>stack-engine 0.8.0; language 1.0; theme 0.6.0 at sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1</metadata>
+  <rect x="0" y="0" width="224" height="174.6" fill="#0B1020"/>
   <defs>
-    <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7500" markerHeight="7500" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
+    <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7.5" markerHeight="7.5" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
       <path d="M 0 0 L 10000 5000 L 0 10000 z" fill="#CBD5E1"/>
     </marker>
   </defs>
-  <text x="32000" y="50200" fill="#F8FAFC" font-family="system-ui" font-size="13000" font-weight="600">Core icon</text>
+  <text x="32" y="50.2" fill="#F8FAFC" font-family="system-ui" font-size="13" font-weight="600">Core icon</text>
   <g data-stack-layer="groups">
   </g>
   <g data-stack-layer="edges">
@@ -17,11 +17,11 @@
   <g data-stack-layer="nodes">
     <g role="group" aria-label="Gateway: Public API" data-stack-id="gateway" data-node-kind="service">
       <title>Gateway: Public API</title>
-      <rect x="32000" y="70200" width="160000" height="72400" rx="8000" fill="#141B2D" stroke="#69A7FF" stroke-width="1500"/>
-      <svg x="52000" y="94400" width="24000" height="24000" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="gateway"><rect x="8" y="4" width="8" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
+      <rect x="32" y="70.2" width="160" height="72.4" rx="8" fill="#141B2D" stroke="#69A7FF" stroke-width="1.5"/>
+      <svg x="52" y="94.4" width="24" height="24" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="gateway"><rect x="8" y="4" width="8" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>
   <path d="M3 8h5M5.5 5.5 8 8l-2.5 2.5M21 16h-5M18.5 13.5 16 16l2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/> </svg>
-      <text x="88000" y="97400" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14000" font-weight="600">Gateway</text>
-      <text x="88000" y="116400" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="12000" font-weight="400">Public API</text>
+      <text x="88" y="97.4" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14" font-weight="600">Gateway</text>
+      <text x="88" y="116.4" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="12" font-weight="400">Public API</text>
     </g>
   </g>
   <g data-stack-layer="edge-labels" aria-hidden="true">

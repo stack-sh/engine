@@ -665,6 +665,49 @@ mod tests {
     }
 
     #[test]
+    fn renderer_rejects_missing_semantic_and_resource_records()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let source = b"stack 1.0 diagram \"Integrity\" { group g \"Group\" { node a \"A\" node b \"B\" } edge a -> b }";
+        let diagram = stack_compiler::compile_bytes(source)
+            .diagram
+            .ok_or("missing diagram")?;
+        let scene = crate::scene::layout(&diagram, stack_theme::catalog())?;
+        let metadata = crate::Engine::bundled().check(source)?.metadata;
+        for (case, expected) in [
+            (0, "scene group has no normalized IR record"),
+            (1, "edge source has no normalized node"),
+            (2, "edge target has no normalized node"),
+            (3, "scene node has no normalized IR record"),
+            (4, "scene node has no resolved theme record"),
+        ] {
+            let mut invalid = diagram.clone();
+            let mut scene = scene.clone();
+            let mut resources = Resources::resolve(&diagram, stack_theme::catalog(), &[])
+                .map_err(|error| error.reason())?;
+            match case {
+                0 => invalid.groups.clear(),
+                1 => {
+                    invalid.nodes.remove(0);
+                }
+                2 => {
+                    invalid.nodes.remove(1);
+                }
+                3 => {
+                    scene.edges.clear();
+                    invalid.nodes.clear();
+                }
+                _ => resources.nodes.clear(),
+            }
+            assert_eq!(
+                super::render(&invalid, &scene, &resources, &metadata)
+                    .map_err(|error| error.reason()),
+                Err(expected)
+            );
+        }
+        Ok(())
+    }
+
+    #[test]
     fn serializes_every_node_shape_in_css_pixels() -> Result<(), Box<dyn std::error::Error>> {
         let rect = Rect {
             x: -1250,
@@ -683,7 +726,7 @@ mod tests {
             ),
             ("actor", "<circle cx=\"102.9\" cy=\"303.8\" r=\"36\""),
             (
-                "database",
+                "cache",
                 "<path d=\"M -1.25 277.8 V 329.8 C -1.25 339.8 207.05 339.8 207.05 329.8 V 277.8 C 207.05 267.8 -1.25 267.8 -1.25 277.8 Z\"",
             ),
             (
@@ -707,7 +750,7 @@ mod tests {
             );
             assert!(output.contains(expected), "{kind}: {output}");
             assert!(output.contains("stroke-width=\"1.5\""));
-            if kind == "database" {
+            if kind == "cache" {
                 assert!(
                     output.contains("<ellipse cx=\"102.9\" cy=\"277.8\" rx=\"104.15\" ry=\"10\"")
                 );

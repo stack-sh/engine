@@ -2,6 +2,7 @@
 
 use std::error::Error;
 
+#[cfg(feature = "conformance")]
 use crate::routing::Point;
 use crate::scene::{self, Rect, Scene, SceneDirection};
 
@@ -223,6 +224,7 @@ diagram "Deterministic cycle" {
     Ok(())
 }
 
+#[cfg(feature = "conformance")]
 fn contains(outer: Rect, inner: Rect) -> bool {
     inner.x >= outer.x
         && inner.y >= outer.y
@@ -230,6 +232,7 @@ fn contains(outer: Rect, inner: Rect) -> bool {
         && inner.y + inner.height <= outer.y + outer.height
 }
 
+#[cfg(feature = "conformance")]
 fn overlaps(left: Rect, right: Rect) -> bool {
     left.x < right.x + right.width
         && right.x < left.x + left.width
@@ -237,6 +240,7 @@ fn overlaps(left: Rect, right: Rect) -> bool {
         && right.y < left.y + left.height
 }
 
+#[cfg(feature = "conformance")]
 fn point_on_segment(point: Point, start: Point, end: Point) -> bool {
     if start.x == end.x {
         point.x == start.x && (start.y.min(end.y)..=start.y.max(end.y)).contains(&point.y)
@@ -247,6 +251,7 @@ fn point_on_segment(point: Point, start: Point, end: Point) -> bool {
     }
 }
 
+#[cfg(feature = "conformance")]
 fn segment_touches_rect(start: Point, end: Point, rect: Rect) -> bool {
     if start.x == end.x {
         (rect.x..=rect.x + rect.width).contains(&start.x)
@@ -263,6 +268,7 @@ fn segment_touches_rect(start: Point, end: Point, rect: Rect) -> bool {
 }
 
 #[test]
+#[cfg(feature = "conformance")]
 fn multilingual_labels_have_scene_rectangles_beside_their_routes_without_collisions_or_clipping()
 -> Result<(), Box<dyn Error>> {
     let catalog = stack_theme::catalog();

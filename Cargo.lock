@@ -196,7 +196,7 @@ checksum = "bdba45c0f7a85ef0ec0bfb766b387dbd90fc6141237ac74b559d08a424750bc6"
 
 [[package]]
 name = "stack-engine"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "roxmltree",
  "serde",
@@ -209,7 +209,7 @@ dependencies = [
 
 [[package]]
 name = "stack-engine-wasm"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "js-sys",
  "serde",
@@ -229,9 +229,9 @@ dependencies = [
 
 [[package]]
 name = "stack-theme"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f98e0418c819d61897beded19d5333b4f6c7a8dcf1be46d0a8c62409ff2e6db7"
+checksum = "87b3f19b223133b8da80e0a10c4cf5a7ec3024fb48105c1f9f2e0d635a9e8d56"
 dependencies = [
  "serde",
  "serde_json",

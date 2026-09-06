@@ -7,14 +7,19 @@ mod geometry;
 
 use std::collections::BTreeSet;
 use std::error::Error;
+#[cfg(feature = "conformance")]
 use std::fs;
+#[cfg(feature = "conformance")]
 use std::path::{Path, PathBuf};
 
 use roxmltree::{Document, Node};
+#[cfg(feature = "conformance")]
 use serde::Deserialize;
 use serde_json::{Value, json};
 
-use crate::{Engine, ProviderAsset, ProviderPack, scene};
+use crate::{Engine, scene};
+#[cfg(feature = "conformance")]
+use crate::{ProviderAsset, ProviderPack};
 use geometry::{Point, Rect};
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -346,6 +351,24 @@ fn node_envelopes(
         {
             return Err("node shape inventory drift".into());
         }
+        let mut paint_order = vec!["title"];
+        paint_order.extend_from_slice(expected_tags);
+        paint_order.push("svg");
+        paint_order.extend(
+            group
+                .children()
+                .filter(|node| node.has_tag_name("text"))
+                .map(|_| "text"),
+        );
+        if group
+            .children()
+            .filter(Node::is_element)
+            .map(|node| node.tag_name().name())
+            .collect::<Vec<_>>()
+            != paint_order
+        {
+            return Err("node paint order drift".into());
+        }
         let envelope = shape_envelope(shapes[0])?;
         if envelope != rect(expected.rect) {
             return Err("SVG/scene node envelope drift".into());
@@ -468,6 +491,23 @@ fn read_drawing(
     let groups_layer = drawing_layer(root, "groups")?;
     let edge_layer = drawing_layer(root, "edges")?;
     let labels_layer = drawing_layer(root, "edge-labels")?;
+    let paint_order = root
+        .children()
+        .filter(Node::is_element)
+        .filter(|node| {
+            !matches!(
+                node.tag_name().name(),
+                "title" | "desc" | "metadata" | "defs"
+            )
+        })
+        .map(|node| {
+            node.attribute("data-stack-layer")
+                .unwrap_or(node.tag_name().name())
+        })
+        .collect::<Vec<_>>();
+    if paint_order != ["rect", "text", "groups", "edges", "nodes", "edge-labels"] {
+        return Err("root paint order drift".into());
+    }
     for tag in ["title", "desc", "metadata", "rect", "defs", "text"] {
         if root
             .children()
@@ -540,6 +580,12 @@ fn read_drawing(
             )
             .into());
         }
+        if node.has_attribute("stroke-opacity")
+            || (node.has_attribute("fill-opacity")
+                && !(node.has_tag_name("rect") && in_group(groups_layer)))
+        {
+            return Err("unsupported drawing paint opacity".into());
+        }
         for attribute in [
             "transform",
             "style",
@@ -602,6 +648,9 @@ fn read_drawing(
             return Err("text uses unmeasured font family".into());
         }
         let size = u32::try_from(number(node, "font-size")?)?;
+        if !visible_color(required(node, "fill")?) {
+            return Err("invisible semantic text".into());
+        }
         let text_bounds = text_rectangle(node, prepared, size)?;
         let (id, owner, bounds) = if parent.has_attribute("data-edge-label") {
             if !parent.has_tag_name("g") || parent.parent_element() != Some(labels_layer) {
@@ -625,6 +674,15 @@ fn read_drawing(
                 .collect::<Vec<_>>();
             if backgrounds.len() != 1 {
                 return Err("edge label background inventory drift".into());
+            }
+            if parent
+                .children()
+                .filter(Node::is_element)
+                .map(|child| child.tag_name().name())
+                .collect::<Vec<_>>()
+                != ["rect", "text"]
+            {
+                return Err("edge label paint order drift".into());
             }
             let background = rectangle(backgrounds[0])?;
             if !geometry::contains(background, text_bounds) {
@@ -774,6 +832,9 @@ fn read_drawing(
             return Err("unsupported non-orthogonal or degenerate route".into());
         }
         let width = number(line, "stroke-width")?;
+        if !visible_color(required(line, "stroke")?) {
+            return Err("invisible edge stroke".into());
+        }
         if width <= 0 {
             return Err("invalid stroke width".into());
         }
@@ -799,6 +860,35 @@ fn read_drawing(
 
 fn rectangle_json(rect: Rect) -> Value {
     json!({"x":rect.x,"y":rect.y,"width":rect.width,"height":rect.height})
+}
+
+fn visible_color(color: &str) -> bool {
+    let Some(hex) = color.strip_prefix('#') else {
+        return false;
+    };
+    matches!(hex.len(), 6 | 8)
+        && hex.bytes().all(|byte| byte.is_ascii_hexdigit())
+        && (hex.len() == 6 || &hex[6..] != "00")
+}
+
+#[test]
+fn paint_colors_require_nontransparent_literal_hex() {
+    for color in ["#123456", "#ABCDEF", "#123456ff", "#12345601"] {
+        assert!(visible_color(color));
+    }
+    for color in [
+        "none",
+        "transparent",
+        "currentColor",
+        "url(#paint)",
+        "#123",
+        "#12345600",
+        "#12zzzz",
+        "#123456789",
+        "#123456é",
+    ] {
+        assert!(!visible_color(color));
+    }
 }
 
 fn composition_metrics(drawing: &Drawing) -> Value {
@@ -912,10 +1002,12 @@ fn frame_violations(drawing: &Drawing) -> Result<Vec<Value>> {
     Ok(violations)
 }
 
+#[cfg(feature = "conformance")]
 #[derive(Deserialize)]
 struct Catalog {
     cases: Vec<Case>,
 }
+#[cfg(feature = "conformance")]
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Case {
@@ -923,21 +1015,25 @@ struct Case {
     source: String,
     provider_fixture: Option<String>,
 }
+#[cfg(feature = "conformance")]
 #[derive(Deserialize)]
 struct PackInput {
     manifest: stack_theme::ProviderPack,
     assets: Vec<AssetInput>,
 }
+#[cfg(feature = "conformance")]
 #[derive(Deserialize)]
 struct AssetInput {
     path: String,
     svg: String,
 }
 
+#[cfg(feature = "conformance")]
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
+#[cfg(feature = "conformance")]
 fn run_corpus(gate: &str) -> Result<()> {
     let root = root();
     let catalog: Catalog =
@@ -1016,16 +1112,19 @@ fn run_corpus(gate: &str) -> Result<()> {
 }
 
 #[test]
+#[cfg(feature = "conformance")]
 fn corpus_text_quality() -> Result<()> {
     run_corpus("text")
 }
 
 #[test]
+#[cfg(feature = "conformance")]
 fn corpus_edge_quality() -> Result<()> {
     run_corpus("edge")
 }
 
 #[test]
+#[cfg(feature = "conformance")]
 fn corpus_frame_quality() -> Result<()> {
     run_corpus("frame")
 }
@@ -1459,8 +1558,238 @@ fn parser_reserves_logical_middle_baseline_text_boxes() -> Result<()> {
 }
 
 #[test]
+fn shape_parser_rejects_missing_malformed_and_overflowing_geometry() -> Result<()> {
+    for markup in [
+        "<rect y='0' width='1' height='1'/>",
+        "<rect x='0' width='1' height='1'/>",
+        "<rect x='0' y='0' height='1'/>",
+        "<rect x='0' y='0' width='1'/>",
+        "<rect x='0' y='0' width='-1' height='1'/>",
+        "<circle cx='0' cy='0' r='0'/>",
+        "<ellipse cx='0' cy='0' rx='1' ry='-1'/>",
+        "<circle cx='-9223372036854775.808' cy='0' r='1'/>",
+        "<circle cx='0' cy='-9223372036854775.808' r='1'/>",
+        "<ellipse cx='0' cy='0' rx='4611686018427388' ry='1'/>",
+        "<ellipse cx='0' cy='0' rx='1' ry='4611686018427388'/>",
+        "<polygon points=''/>",
+        "<polygon points='0,0 1,0'/>",
+        "<polygon points='0,0 0,1'/>",
+        "<polygon points='-9223372036854775.808,0 9223372036854775.807,1'/>",
+        "<polygon points='0,-9223372036854775.808 1,9223372036854775.807'/>",
+        "<polygon points='0 1'/>",
+        "<polygon points='bad,0 1,1'/>",
+        "<polygon points='0,bad 1,1'/>",
+        "<path d='M 0 0 L 1 1 Z'/>",
+        "<path d='M bad 0 V 1 C 0 1 1 1 1 1 V 0 C 1 0 0 0 0 0 Z'/>",
+        "<path d='M 0 bad V 1 C 0 1 1 1 1 1 V 0 C 1 0 0 0 0 0 Z'/>",
+        "<path d='M 0 0 V bad C 0 1 1 1 1 1 V 0 C 1 0 0 0 0 0 Z'/>",
+        "<path d='M 0 0 V 1 C bad 1 1 1 1 1 V 0 C 1 0 0 0 0 0 Z'/>",
+        "<path d='M 0 0 V 1 C 0 bad 1 1 1 1 V 0 C 1 0 0 0 0 0 Z'/>",
+        "<path d='M 0 0 V 1 C 0 1 1 1 1 1 V bad C 1 0 0 0 0 0 Z'/>",
+        "<line x1='0' y1='0' x2='1' y2='1'/>",
+    ] {
+        let document = Document::parse(markup)?;
+        assert!(shape_envelope(document.root_element()).is_err(), "{markup}");
+    }
+    Ok(())
+}
+
+#[test]
+fn parser_rejects_semantic_inventory_and_route_corruption() -> Result<()> {
+    let source = b"stack 1.0 diagram \"Example\" { group system \"System\" { node a \"A\" node b \"B\" } edge a -> b \"Request\" }";
+    let engine = Engine::bundled();
+    let svg = engine.render(source)?.svg.ok_or("missing SVG")?;
+    let compiled = stack_compiler::compile_bytes_with_source_map(source);
+    let diagram = compiled.diagram.as_ref().ok_or("missing diagram")?;
+    let prepared = engine.prepare_scene(
+        diagram,
+        compiled.source_map.as_ref().ok_or("missing source map")?,
+    )?;
+    let document = Document::parse(&svg)?;
+    let root = document.root_element();
+    let node = document
+        .descendants()
+        .find(|n| n.attribute("data-stack-id") == Some("a"))
+        .ok_or("missing mutation target")?;
+    let frame = document
+        .descendants()
+        .find(|n| n.attribute("data-stack-id") == Some("system"))
+        .ok_or("missing mutation target")?;
+    let label = document
+        .descendants()
+        .find(|n| n.has_attribute("data-edge-label"))
+        .ok_or("missing mutation target")?;
+    let line = document
+        .descendants()
+        .find(|n| n.has_tag_name("polyline"))
+        .ok_or("missing mutation target")?;
+    let node_text = node
+        .children()
+        .find(|n| n.has_tag_name("text"))
+        .ok_or("missing mutation target")?;
+    let edge_text = label
+        .children()
+        .find(|n| n.has_tag_name("text"))
+        .ok_or("missing mutation target")?;
+    let icon = node
+        .children()
+        .find(|n| n.has_tag_name("svg"))
+        .ok_or("missing mutation target")?;
+    let replace = |target: Node<'_, '_>, replacement: String| {
+        let mut mutant = svg.clone();
+        mutant.replace_range(target.range(), &replacement);
+        mutant
+    };
+    let attribute = |target: Node<'_, '_>, name: &str, value: &str| -> Result<String> {
+        let old = target.attribute(name).ok_or("missing mutation target")?;
+        Ok(replace(
+            target,
+            svg[target.range()].replacen(
+                &format!("{name}=\"{old}\""),
+                &format!("{name}=\"{value}\""),
+                1,
+            ),
+        ))
+    };
+    fn child<'a, 'input>(owner: Node<'a, 'input>, tag: &str) -> Result<Node<'a, 'input>> {
+        owner
+            .children()
+            .find(|n| n.has_tag_name(tag))
+            .ok_or_else(|| "missing mutation target".into())
+    }
+    let edge_group = line.parent_element().ok_or("missing mutation target")?;
+    let label_background = child(label, "rect")?;
+    let background = child(root, "rect")?;
+    let mut background_last = replace(background, String::new());
+    let end = background_last.rfind("</svg>").ok_or("missing root end")?;
+    background_last.insert_str(end, &svg[background.range()]);
+    let shape = child(node, "rect")?;
+    let node_shape_last = svg[node.range()]
+        .replace(&svg[shape.range()], "")
+        .replace("</g>", &format!("{}</g>", &svg[shape.range()]));
+    let label_background_last = svg[label.range()]
+        .replace(&svg[label_background.range()], "")
+        .replace("</g>", &format!("{}</g>", &svg[label_background.range()]));
+    let mutants = [
+        background_last,
+        replace(node, node_shape_last),
+        replace(label, label_background_last),
+        attribute(line, "stroke", "none")?,
+        attribute(line, "stroke", "transparent")?,
+        attribute(node_text, "fill", "none")?,
+        replace(
+            line,
+            svg[line.range()].replacen("<polyline ", "<polyline stroke-opacity=\"0\" ", 1),
+        ),
+        replace(
+            node_text,
+            svg[node_text.range()].replacen("<text ", "<text fill-opacity=\"0\" ", 1),
+        ),
+        svg.replace("http://www.w3.org/2000/svg", "urn:wrong"),
+        attribute(root, "viewBox", "0 0 1 1")?,
+        attribute(root, "width", "1")?,
+        svg.replacen("<rect ", "<rect xmlns=\"urn:wrong\" ", 1),
+        replace(
+            node,
+            svg[node.range()].replacen("<g ", "<g data-stack-layer=\"nodes\" ", 1),
+        ),
+        svg.replacen("<svg ", "<svg font-family=\"unknown\" ", 1),
+        attribute(node_text, "font-family", "unknown")?,
+        replace(
+            node_text,
+            svg[node_text.range()].replacen("<text ", "<text text-anchor=\"unsupported\" ", 1),
+        ),
+        attribute(node, "data-stack-id", "unknown")?,
+        attribute(frame, "data-stack-id", "unknown")?,
+        replace(
+            node_text,
+            format!(
+                "{}{}{}",
+                &svg[node_text.range()],
+                &svg[node_text.range()],
+                &svg[node_text.range()]
+            ),
+        ),
+        replace(node_text, String::new()),
+        replace(edge_text, String::new()),
+        attribute(label, "data-edge-label", "wrong")?,
+        attribute(edge_text, "font-size", "1")?,
+        replace(label_background, String::new()),
+        replace(
+            label_background,
+            format!(
+                "{}{}",
+                &svg[label_background.range()],
+                &svg[label_background.range()]
+            ),
+        ),
+        replace(node, String::new()),
+        replace(icon, String::new()),
+        attribute(icon, "data-icon-id", "unknown")?,
+        attribute(icon, "x", "-100")?,
+        replace(frame, String::new()),
+        replace(child(frame, "title")?, String::new()),
+        attribute(child(frame, "rect")?, "x", "-100")?,
+        attribute(line, "points", "0,0 1,0")?,
+        attribute(line, "stroke-width", "0")?,
+        replace(line, String::new()),
+        replace(
+            line,
+            format!("{}{}", &svg[line.range()], &svg[line.range()]),
+        ),
+        replace(edge_group, String::new()),
+        replace(
+            edge_group,
+            format!("{}{}", &svg[edge_group.range()], &svg[edge_group.range()]),
+        ),
+    ];
+    assert!(read_drawing(&svg, &prepared, diagram).is_ok());
+    for (index, mutant) in mutants.iter().enumerate() {
+        assert_ne!(mutant, &svg, "mutation {index} must change SVG");
+        assert!(
+            read_drawing(mutant, &prepared, diagram).is_err(),
+            "mutation {index}"
+        );
+    }
+    for (target, attributes) in [
+        (root, &["viewBox", "width", "height"][..]),
+        (shape, &["x", "y", "width", "height"][..]),
+        (icon, &["x", "y", "width", "height", "data-icon-id"][..]),
+        (
+            node_text,
+            &["x", "y", "font-family", "font-size", "fill"][..],
+        ),
+        (
+            edge_text,
+            &["x", "y", "font-family", "font-size", "fill"][..],
+        ),
+        (label_background, &["x", "y", "width", "height"][..]),
+        (
+            child(frame, "rect")?,
+            &["x", "y", "width", "height", "stroke", "stroke-width"][..],
+        ),
+        (line, &["points", "stroke", "stroke-width"][..]),
+    ] {
+        for name in attributes {
+            let value = required(target, name)?;
+            let mutant = replace(
+                target,
+                svg[target.range()].replacen(&format!(" {name}=\"{value}\""), "", 1),
+            );
+            assert_ne!(mutant, svg, "missing {name} must change SVG");
+            assert!(
+                read_drawing(&mutant, &prepared, diagram).is_err(),
+                "missing {name} on {}",
+                target.tag_name().name()
+            );
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn parser_reads_every_current_node_shape_envelope() -> Result<()> {
-    for kind in ["actor", "client", "function", "worker", "database"] {
+    for kind in ["actor", "client", "function", "worker", "database", "cache"] {
         let source = format!("stack 1.0 diagram \"Shape\" {{ node a \"A\" {{ kind {kind} }} }}");
         let engine = Engine::bundled();
         let svg = engine.render(source.as_bytes())?.svg.ok_or("missing SVG")?;

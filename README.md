@@ -53,6 +53,8 @@ npm run layout:gallery
 
 The review-first snapshot policy and corpus contract are documented in [`layout-corpus/README.md`](./layout-corpus/README.md).
 
+The independent text, edge, and frame quality gates run under the `conformance` feature with the repository's source corpus. CI runs these gates explicitly and includes them in its 95% line, function, and region coverage checks. Packaged crate unit tests do not require the repository-only corpus. See the [0.8.0 release notes](./docs/releases/v0.8.0.md) for the approved layout and SVG changes.
+
 `stack-formatter` is pure and accepts source bytes or UTF-8 text. Lexical and syntax errors return diagnostics without formatted output. Syntactically valid source remains formattable when semantic diagnostics exist.
 
 `stack-engine` exposes byte-oriented `format`, `check`, and `render` methods plus UTF-8 `completion` and `hover` methods through an engine bound to the embedded or a caller-provided validated catalog. Language-intelligence results implement schema version 1.0 from the pinned compiler and echo the caller's document version. The Engine derives completion entries from its core theme catalog and validated provider packs, while the compiler remains the single owner of grammar, context, diagnostics, hover semantics, and text edits. `ProviderPack::new` accepts a typed user-imported manifest and caller-owned SVG strings, verifies exact asset hashes and safe SVG structure, and computes a deterministic content revision before `Engine::with_provider_packs` can resolve namespaced IDs. Every normal format, check, or render output carries engine, authored language, theme catalog version, and theme catalog revision metadata. User-source failures stay in ordered portable diagnostics. Invalid provided catalogs or provider packs, invalid language-intelligence positions, and violated normalized pipeline invariants use a separate operational-error channel. Checks and renders resolve the requested theme and provider packs, validate deterministic integer geometry, and route ordered edges outside node interiors. Missing themes and icons produce source-mapped `STK6001` and `STK5001` warnings while a fallback SVG remains available. An unsatisfied authored order hint produces `STK4001` at its source-map range; a satisfied hint does not.
@@ -72,7 +74,7 @@ Public npm releases are produced from GitHub Releases after the repository check
 - [`docs/decisions/0005-serialize-safe-standalone-svg.md`](./docs/decisions/0005-serialize-safe-standalone-svg.md)
 - [`docs/decisions/0006-expose-one-typed-browser-wasm-adapter.md`](./docs/decisions/0006-expose-one-typed-browser-wasm-adapter.md)
 - [`docs/decisions/0007-adapt-language-intelligence-with-engine-catalogs.md`](./docs/decisions/0007-adapt-language-intelligence-with-engine-catalogs.md)
-- [`docs/decisions/0008-compose-graphs-with-reserved-label-geometry.md`](./docs/decisions/0008-compose-graphs-with-reserved-label-geometry.md) — unreleased visual-review candidate
+- [`docs/decisions/0008-compose-graphs-with-reserved-label-geometry.md`](./docs/decisions/0008-compose-graphs-with-reserved-label-geometry.md)
 - [`docs/dependency-audit.md`](./docs/dependency-audit.md)
 
 ## Licensing

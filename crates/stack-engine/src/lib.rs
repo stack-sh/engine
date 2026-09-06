@@ -646,6 +646,35 @@ mod tests {
     const VALID_SOURCE: &[u8] = b"stack 1.0 diagram \"API\" { node api \"API\" }";
 
     #[test]
+    fn valid_wide_connectors_render_labelled_edges_in_both_directions() -> Result<(), Box<dyn Error>>
+    {
+        for width in [1_500, 15_000, 15_998, 15_999, 16_000, 32_000] {
+            let mut catalog = stack_theme::catalog().clone();
+            for theme in &mut catalog.themes {
+                theme.connector.width_milli_px = width;
+            }
+            let engine = Engine::with_catalog(&catalog, stack_theme::CATALOG_REVISION)?;
+            for direction in ["right", "down"] {
+                let source = format!(
+                    "stack 1.0 diagram \"Wide stroke\" {{ layout {{ direction {direction} }} node a \"A\" node b \"B\" edge a -> b \"Request\" }}"
+                );
+                let output = engine.render(source.as_bytes())?;
+                assert!(
+                    output.diagnostics.is_empty(),
+                    "width={width}, direction={direction}"
+                );
+                assert!(
+                    output
+                        .svg
+                        .ok_or("missing wide-stroke SVG")?
+                        .contains("data-edge-label=\"Request\"")
+                );
+            }
+        }
+        Ok(())
+    }
+
+    #[test]
     fn bundled_engine_reports_all_version_metadata() {
         let engine = Engine::bundled();
         let result = engine.check(VALID_SOURCE);
@@ -657,7 +686,7 @@ mod tests {
                 output.metadata.language_version,
                 Some(LanguageVersion { major: 1, minor: 0 })
             );
-            assert_eq!(output.metadata.theme_catalog_version, "0.5.0");
+            assert_eq!(output.metadata.theme_catalog_version, "0.6.0");
             assert_eq!(
                 output.metadata.theme_catalog_revision,
                 stack_theme::CATALOG_REVISION
@@ -701,10 +730,10 @@ mod tests {
             ("ai", "Artificial intelligence system"),
         ];
         let catalog = stack_theme::catalog();
-        assert_eq!(catalog.catalog_version, "0.5.0");
+        assert_eq!(catalog.catalog_version, "0.6.0");
         assert_eq!(
             stack_theme::CATALOG_REVISION,
-            "sha256:3bfd66e1a96628b29b95b7273b54373bcce952f7285aefa506b4255a629eaf53"
+            "sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1"
         );
         for theme in &catalog.themes {
             for (identifier, subject) in expected_icons {
@@ -723,7 +752,7 @@ mod tests {
         let rendered = Engine::bundled().render(source)?;
         assert!(checked.diagnostics.is_empty());
         assert!(rendered.diagnostics.is_empty());
-        assert_eq!(rendered.metadata.theme_catalog_version, "0.5.0");
+        assert_eq!(rendered.metadata.theme_catalog_version, "0.6.0");
         assert_eq!(
             rendered.metadata.theme_catalog_revision,
             stack_theme::CATALOG_REVISION
