@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1391.3" height="397" viewBox="0 0 1391.3 397" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.8.0" data-theme-id="default" data-theme-version="0.6.0" data-theme-revision="sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1">
+<svg xmlns="http://www.w3.org/2000/svg" width="1391.3" height="397" viewBox="0 0 1391.3 397" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.9.0" data-theme-id="default" data-theme-version="0.7.0" data-theme-revision="sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a">
   <title id="stack-title">Fan-out and cross edges</title>
   <desc id="stack-description">Architecture diagram with 8 nodes, 0 groups, and 10 relationships.</desc>
-  <metadata>stack-engine 0.8.0; language 1.0; theme 0.6.0 at sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1</metadata>
+  <metadata>stack-engine 0.9.0; language 1.0; theme 0.7.0 at sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a</metadata>
   <rect x="0" y="0" width="1391.3" height="397" fill="#F3F6FA"/>
   <defs>
     <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
@@ -15,7 +15,7 @@
   <g data-stack-layer="edges">
     <g role="group" aria-label="Ingress flows to Identity service: Authenticate" data-edge-kind="request" data-edge-direction="forward">
       <title>Ingress flows to Identity service: Authenticate</title>
-      <polyline points="192,217.6 200,217.6 200,106.2 304.75,106.2" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="152,181.6 152,124.2 304.75,124.2" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Ingress flows to Catalog service: Browse" data-edge-kind="request" data-edge-direction="forward">
       <title>Ingress flows to Catalog service: Browse</title>
@@ -23,19 +23,19 @@
     </g>
     <g role="group" aria-label="Ingress flows to Checkout service: Purchase" data-edge-kind="request" data-edge-direction="forward">
       <title>Ingress flows to Checkout service: Purchase</title>
-      <polyline points="192,217.6 200,217.6 200,329 304.75,329" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="152,253.6 152,311 304.75,311" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Identity service flows to Primary database: Session" data-edge-kind="data" data-edge-direction="forward">
       <title>Identity service flows to Primary database: Session</title>
-      <polyline points="486.45,106.2 1058.85,106.2 1058.85,161.9 1163.6,161.9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="486.45,124.2 1058.85,124.2 1058.85,143.9 1163.6,143.9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Catalog service flows to Primary database: Products" data-edge-kind="data" data-edge-direction="forward">
       <title>Catalog service flows to Primary database: Products</title>
-      <polyline points="485.75,217.6 603.8,217.6 603.8,173.6 1155.6,173.6 1155.6,161.9 1163.6,161.9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="485.75,217.6 603.8,217.6 603.8,161.9 1163.6,161.9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Checkout service flows to Order events: OrderPlaced" data-edge-kind="event" data-edge-direction="forward">
       <title>Checkout service flows to Order events: OrderPlaced</title>
-      <polyline points="499.05,329 693.2,329 693.2,253.6" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="499.05,311 693.2,311 693.2,253.6" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Order events flows to Order worker: Dispatch" data-edge-kind="event" data-edge-direction="forward">
       <title>Order events flows to Order worker: Dispatch</title>
@@ -43,15 +43,15 @@
     </g>
     <g role="group" aria-label="Order worker flows to Primary database: Persist" data-edge-kind="data" data-edge-direction="forward">
       <title>Order worker flows to Primary database: Persist</title>
-      <polyline points="1050.85,217.6 1261.45,217.6 1261.45,197.9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="1050.85,217.6 1212.525,217.6 1212.525,197.9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Identity service flows to Audit archive: Access log" data-edge-kind="data" data-edge-direction="forward">
       <title>Identity service flows to Audit archive: Access log</title>
-      <polyline points="486.45,106.2 494.45,106.2 494.45,273.3 1163.6,273.3" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="441.025,142.2 441.025,173.6 1058.85,173.6 1058.85,255.3 1163.6,255.3" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Checkout service flows to Audit archive: Checkout log" data-edge-kind="data" data-edge-direction="forward">
       <title>Checkout service flows to Audit archive: Checkout log</title>
-      <polyline points="499.05,329 507.05,329 507.05,317.3 1245.7,317.3 1245.7,309.3" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="499.05,329 1058.85,329 1058.85,291.3 1163.6,291.3" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
   </g>
   <g data-stack-layer="nodes">
@@ -118,44 +118,44 @@
   </g>
   <g data-stack-layer="edge-labels" aria-hidden="true">
     <g data-edge-label="Authenticate">
-      <rect x="208" y="150.2" width="79.1" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="247.55" y="161.9" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Authenticate</text>
+      <rect x="188.825" y="92.8" width="79.1" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="228.375" y="104.5" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Authenticate</text>
     </g>
     <g data-edge-label="Browse">
       <rect x="222.575" y="186.2" width="51.6" height="23.4" rx="4" fill="#F3F6FA"/>
       <text x="248.375" y="197.9" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Browse</text>
     </g>
     <g data-edge-label="Purchase">
-      <rect x="208" y="261.6" width="62.6" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="239.3" y="273.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Purchase</text>
+      <rect x="197.075" y="279.6" width="62.6" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="228.375" y="291.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Purchase</text>
     </g>
     <g data-edge-label="Session">
-      <rect x="745.475" y="74.8" width="54.35" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="772.65" y="86.5" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Session</text>
+      <rect x="745.475" y="92.8" width="54.35" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="772.65" y="104.5" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Session</text>
     </g>
     <g data-edge-label="Products">
-      <rect x="849.775" y="142.2" width="59.85" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="879.7" y="153.9" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Products</text>
+      <rect x="853.775" y="130.5" width="59.85" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="883.7" y="142.2" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Products</text>
     </g>
     <g data-edge-label="OrderPlaced">
-      <rect x="557.95" y="337" width="76.35" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="596.125" y="348.7" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">OrderPlaced</text>
+      <rect x="557.95" y="279.6" width="76.35" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="596.125" y="291.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">OrderPlaced</text>
     </g>
     <g data-edge-label="Dispatch">
       <rect x="801.875" y="186.2" width="58.2" height="23.4" rx="4" fill="#F3F6FA"/>
       <text x="830.975" y="197.9" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Dispatch</text>
     </g>
     <g data-edge-label="Persist">
-      <rect x="1096.35" y="186.2" width="49.4" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="1121.05" y="197.9" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Persist</text>
+      <rect x="1106.987" y="186.2" width="49.4" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="1131.687" y="197.9" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Persist</text>
     </g>
     <g data-edge-label="Access log">
-      <rect x="793.875" y="241.9" width="70.3" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="829.025" y="253.6" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Access log</text>
+      <rect x="1076.075" y="223.9" width="70.3" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="1111.225" y="235.6" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Access log</text>
     </g>
     <g data-edge-label="Checkout log">
-      <rect x="836" y="285.9" width="80.75" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="876.375" y="297.6" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Checkout log</text>
+      <rect x="738.575" y="297.6" width="80.75" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="778.95" y="309.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Checkout log</text>
     </g>
   </g>
 </svg>

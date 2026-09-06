@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="664.15" height="1343" viewBox="0 0 664.15 1343" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.8.0" data-theme-id="dark" data-theme-version="0.6.0" data-theme-revision="sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1">
+<svg xmlns="http://www.w3.org/2000/svg" width="664.15" height="1343" viewBox="0 0 664.15 1343" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.9.0" data-theme-id="dark" data-theme-version="0.7.0" data-theme-revision="sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a">
   <title id="stack-title">Complete semantics</title>
   <desc id="stack-description">Architecture diagram with 10 nodes, 3 groups, and 8 relationships.</desc>
-  <metadata>stack-engine 0.8.0; language 1.0; theme 0.6.0 at sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1</metadata>
+  <metadata>stack-engine 0.9.0; language 1.0; theme 0.7.0 at sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a</metadata>
   <rect x="0" y="0" width="664.15" height="1343" fill="#0B1020"/>
   <defs>
     <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7.5" markerHeight="7.5" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
@@ -38,11 +38,11 @@
     </g>
     <g role="group" aria-label="API flows to Function: Invoke" data-edge-kind="dependency" data-edge-direction="forward">
       <title>API flows to Function: Invoke</title>
-      <polyline points="376.05,375.8 368.05,375.8 368.05,573.4 272,573.4" fill="none" stroke="#CBD5E1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="376.05,393.8 330,393.8 330,573.4 272,573.4" fill="none" stroke="#CBD5E1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Function flows to Database: SQL" data-edge-kind="data" data-edge-direction="forward">
       <title>Function flows to Database: SQL</title>
-      <polyline points="272,573.4 280,573.4 280,832.8 332.075,832.8 332.075,871" fill="none" stroke="#CBD5E1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="232,609.4 232,625.4 332.075,625.4 332.075,871" fill="none" stroke="#CBD5E1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Function flows to Queue: Job" data-edge-kind="event" data-edge-direction="forward">
       <title>Function flows to Queue: Job</title>
@@ -54,11 +54,11 @@
     </g>
     <g role="group" aria-label="API flows to Cache: Read" data-edge-kind="data" data-edge-direction="forward">
       <title>API flows to Cache: Read</title>
-      <polyline points="456.05,411.8 456.05,459.2 391.95,459.2 391.95,863 420.075,863 420.075,1003 412.075,1003" fill="none" stroke="#CBD5E1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="416.05,411.8 416.05,459.2 391.95,459.2 391.95,863 420.075,863 420.075,1003 412.075,1003" fill="none" stroke="#CBD5E1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="API flows to External provider: API" data-edge-kind="request" data-edge-direction="forward">
       <title>API flows to External provider: API</title>
-      <polyline points="456.05,411.8 456.05,419.8 496.05,419.8 496.05,467.2" fill="none" stroke="#CBD5E1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="496.05,411.8 496.05,467.2" fill="none" stroke="#CBD5E1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
   </g>
   <g data-stack-layer="nodes">
@@ -106,8 +106,7 @@
     </g>
     <g role="group" aria-label="Cache" data-stack-id="cache" data-node-kind="cache">
       <title>Cache</title>
-      <path d="M 252.075 977 V 1029 C 252.075 1039 412.075 1039 412.075 1029 V 977 C 412.075 967 252.075 967 252.075 977 Z" fill="#1E293B" stroke="#94A3B8" stroke-width="1.5"/>
-      <ellipse cx="332.075" cy="977" rx="80" ry="10" fill="none" stroke="#94A3B8" stroke-width="1.5"/>
+      <rect x="252.075" y="967" width="160" height="72" rx="8" fill="#1E293B" stroke="#94A3B8" stroke-width="1.5"/>
       <svg x="272.075" y="991" width="24" height="24" viewBox="0 0 24 24" color="#69A7FF" aria-hidden="true" focusable="false" data-icon-id="kind-cache"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> </svg>
       <text x="308.075" y="1003" dominant-baseline="middle" fill="#F8FAFC" font-family="system-ui" font-size="14" font-weight="600">Cache</text>
     </g>
@@ -143,12 +142,12 @@
       <text x="332.075" y="356.1" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11">WebSocket</text>
     </g>
     <g data-edge-label="Invoke">
-      <rect x="376.05" y="429.966" width="48.3" height="23.4" rx="4" fill="#0B1020"/>
-      <text x="400.2" y="441.666" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11">Invoke</text>
+      <rect x="338" y="471.9" width="48.3" height="23.4" rx="4" fill="#0B1020"/>
+      <text x="362.15" y="483.6" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11">Invoke</text>
     </g>
     <g data-edge-label="SQL">
-      <rect x="290.137" y="840.8" width="31.8" height="23.4" rx="4" fill="#0B1020"/>
-      <text x="306.037" y="852.5" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11">SQL</text>
+      <rect x="340.075" y="736.5" width="31.8" height="23.4" rx="4" fill="#0B1020"/>
+      <text x="355.975" y="748.2" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11">SQL</text>
     </g>
     <g data-edge-label="Job">
       <rect x="112" y="824.5" width="31.8" height="23.4" rx="4" fill="#0B1020"/>
@@ -163,8 +162,8 @@
       <text x="419.15" y="661.1" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11">Read</text>
     </g>
     <g data-edge-label="API">
-      <rect x="504.05" y="431.8" width="28.5" height="23.4" rx="4" fill="#0B1020"/>
-      <text x="518.3" y="443.5" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11">API</text>
+      <rect x="504.05" y="427.8" width="28.5" height="23.4" rx="4" fill="#0B1020"/>
+      <text x="518.3" y="439.5" text-anchor="middle" dominant-baseline="middle" fill="#CBD5E1" font-family="system-ui" font-size="11">API</text>
     </g>
   </g>
 </svg>

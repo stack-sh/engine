@@ -5,7 +5,7 @@
 | Component | Revision | License | Source | Notes |
 | --- | --- | --- | --- | --- |
 | `stack-compiler` | `0.1.0 (crates.io)` | Apache-2.0 | <https://github.com/stack-sh/compiler> | Unmodified Rust dependency; its license and notice obligations apply to distributions that include it. |
-| `stack-theme` | `0.6.0 (crates.io)` | Apache-2.0 | <https://github.com/stack-sh/theme> | Unmodified Rust dependency with repository-authored core assets and the asset-free provider-pack contract. |
+| `stack-theme` | `0.7.0 (crates.io)` | Apache-2.0 | <https://github.com/stack-sh/theme> | Unmodified Rust dependency with repository-authored core assets and the asset-free provider-pack contract. |
 | `roxmltree` | `0.21.1` | MIT OR Apache-2.0 | <https://github.com/RazrFalcon/roxmltree> | Parses caller-owned processed provider SVG before allowlisted in-memory embedding. |
 | `sha2`, `digest`, `block-buffer`, `crypto-common`, `hybrid-array`, `const-oid`, `typenum` | `0.11.0`, `0.11.3`, `0.12.1`, `0.2.2`, `0.4.14`, `0.10.2`, `1.20.1` | MIT OR Apache-2.0 | <https://github.com/RustCrypto> | Verifies provider asset hashes and computes deterministic provider-pack revisions. |
 | `libc` / `cpufeatures` | `0.2.189`, `0.3.1` | MIT OR Apache-2.0 | <https://github.com/rust-lang/libc>, <https://github.com/RustCrypto/utils> | Target-specific SHA-256 acceleration support. |

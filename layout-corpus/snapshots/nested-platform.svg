@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="876.15" height="1093.2" viewBox="0 0 876.15 1093.2" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.8.0" data-theme-id="default" data-theme-version="0.6.0" data-theme-revision="sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1">
+<svg xmlns="http://www.w3.org/2000/svg" width="876.15" height="1093.2" viewBox="0 0 876.15 1093.2" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.9.0" data-theme-id="default" data-theme-version="0.7.0" data-theme-revision="sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a">
   <title id="stack-title">Nested platform boundaries</title>
   <desc id="stack-description">Architecture diagram with 7 nodes, 4 groups, and 6 relationships.</desc>
-  <metadata>stack-engine 0.8.0; language 1.0; theme 0.6.0 at sha256:4d4e9dcda36bf2a5187a233c0be74c9e9302f41d5021e1fa2a73712837ff55c1</metadata>
+  <metadata>stack-engine 0.9.0; language 1.0; theme 0.7.0 at sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a</metadata>
   <rect x="0" y="0" width="876.15" height="1093.2" fill="#F3F6FA"/>
   <defs>
     <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
@@ -43,7 +43,7 @@
     </g>
     <g role="group" aria-label="Public API flows to Checkout: Invoke" data-edge-kind="dependency" data-edge-direction="forward">
       <title>Public API flows to Checkout: Invoke</title>
-      <polyline points="470.675,374 437.125,374 437.125,567.6 429,567.6 429,575.6" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="510.675,410 510.675,567.6 469,567.6 469,575.6" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Checkout flows to Order events: OrderPlaced" data-edge-kind="event" data-edge-direction="forward">
       <title>Checkout flows to Order events: OrderPlaced</title>
@@ -51,11 +51,11 @@
     </g>
     <g role="group" aria-label="Checkout flows to Orders: Transaction" data-edge-kind="data" data-edge-direction="forward">
       <title>Checkout flows to Orders: Transaction</title>
-      <polyline points="509,611.6 556.575,611.6 556.575,813.2" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
+      <polyline points="469,647.6 469,775 556.575,775 556.575,813.2" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#stack-arrow)" />
     </g>
     <g role="group" aria-label="Public API is associated with Error monitoring: Telemetry" data-edge-kind="data" data-edge-direction="association">
       <title>Public API is associated with Error monitoring: Telemetry</title>
-      <polyline points="470.675,374 341,374 341,945.2 463.975,945.2" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 6" />
+      <polyline points="470.675,392 341,392 341,945.2 463.975,945.2" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 6" />
     </g>
   </g>
   <g data-stack-layer="nodes">
@@ -118,20 +118,20 @@
       <text x="602.35" y="310.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Live checkout</text>
     </g>
     <g data-edge-label="Invoke">
-      <rect x="445.125" y="459.1" width="48.3" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="469.275" y="470.8" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Invoke</text>
+      <rect x="518.675" y="544.2" width="48.3" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="542.825" y="555.9" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Invoke</text>
     </g>
     <g data-edge-label="OrderPlaced">
       <rect x="517" y="580.2" width="76.35" height="23.4" rx="4" fill="#F3F6FA"/>
       <text x="555.175" y="591.9" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">OrderPlaced</text>
     </g>
     <g data-edge-label="Transaction">
-      <rect x="564.575" y="700.7" width="75.8" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="602.475" y="712.4" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Transaction</text>
+      <rect x="477" y="699.6" width="75.8" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="514.9" y="711.3" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Transaction</text>
     </g>
     <g data-edge-label="Telemetry">
-      <rect x="349" y="647.9" width="65.9" height="23.4" rx="4" fill="#F3F6FA"/>
-      <text x="381.95" y="659.6" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Telemetry</text>
+      <rect x="349" y="749.1" width="65.9" height="23.4" rx="4" fill="#F3F6FA"/>
+      <text x="381.95" y="760.8" text-anchor="middle" dominant-baseline="middle" fill="#475569" font-family="system-ui" font-size="11">Telemetry</text>
     </g>
   </g>
 </svg>

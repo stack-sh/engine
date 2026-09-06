@@ -1642,8 +1642,13 @@ mod tests {
         )?;
         let scene = scene_from(&source)?;
         let actual = scene_snapshot(&scene);
-        let expected = include_str!("../tests/snapshots/complete-semantics.scene.txt");
-        assert_eq!(actual, expected);
+        let snapshot = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/snapshots/complete-semantics.scene.txt");
+        if std::env::var_os("UPDATE_STACK_SNAPSHOTS").is_some() {
+            std::fs::write(&snapshot, &actual)?;
+        } else {
+            assert_eq!(actual, std::fs::read_to_string(&snapshot)?);
+        }
         Ok(())
     }
 
