@@ -19,6 +19,9 @@ use geometry::{Point, Rect};
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
+const MINIMUM_PAINTED_FRAME_CLEARANCE: i64 = 16_000;
+const MINIMUM_LABEL_FRAME_CLEARANCE: i64 = 8_000;
+
 #[derive(Debug)]
 struct TextBox {
     id: String,
@@ -35,10 +38,18 @@ struct Route {
 }
 
 #[derive(Debug)]
+struct GroupFrame {
+    id: String,
+    rect: Rect,
+    radius: i64,
+}
+
+#[derive(Debug)]
 struct Drawing {
     bounds: Rect,
     texts: Vec<TextBox>,
     nodes: Vec<(String, Rect)>,
+    frames: Vec<GroupFrame>,
     routes: Vec<Route>,
 }
 
@@ -56,8 +67,45 @@ fn required<'a>(node: Node<'a, '_>, name: &str) -> Result<&'a str> {
         .ok_or_else(|| format!("missing {name} on {}", node.tag_name().name()).into())
 }
 
+fn pixel_value(value: &str) -> Result<i64> {
+    // SVG uses pixel decimals; geometry stays in exact integer milli-pixels.
+    // Reject SVG's wider numeric grammar rather than silently rounding it.
+    let (negative, magnitude) = value
+        .strip_prefix('-')
+        .map_or((false, value), |magnitude| (true, magnitude));
+    let (whole, fraction) = match magnitude.split_once('.') {
+        Some((whole, fraction)) => {
+            if fraction.is_empty()
+                || fraction.len() > 3
+                || !fraction.bytes().all(|digit| digit.is_ascii_digit())
+            {
+                return Err("unsupported pixel fraction".into());
+            }
+            (whole, fraction)
+        }
+        None => (magnitude, ""),
+    };
+    if whole.is_empty()
+        || !whole.bytes().all(|digit| digit.is_ascii_digit())
+        || (whole.len() > 1 && whole.starts_with('0'))
+    {
+        return Err("unsupported pixel integer".into());
+    }
+    let whole: i128 = whole.parse()?;
+    let fraction = fraction
+        .bytes()
+        .chain(std::iter::repeat_n(b'0', 3 - fraction.len()))
+        .fold(0_i128, |value, digit| value * 10 + i128::from(digit - b'0'));
+    let magnitude = whole
+        .checked_mul(1000)
+        .and_then(|value| value.checked_add(fraction))
+        .ok_or("pixel coordinate overflow")?;
+    let value = if negative { -magnitude } else { magnitude };
+    Ok(i64::try_from(value)?)
+}
+
 fn number(node: Node<'_, '_>, name: &str) -> Result<i64> {
-    Ok(required(node, name)?.parse()?)
+    pixel_value(required(node, name)?)
 }
 
 fn rectangle(node: Node<'_, '_>) -> Result<Rect> {
@@ -94,21 +142,24 @@ fn text_rectangle(
         / i64::from(metrics.units_per_em);
     let height =
         scene::line_height(size, &prepared.resources.theme.typography).max(ascent + descent);
-    let mut x = number(node, "x")?;
-    match node.attribute("text-anchor").unwrap_or("start") {
-        "start" => {}
-        "middle" => x -= width / 2,
-        "end" => x -= width,
+    let offset = match node.attribute("text-anchor").unwrap_or("start") {
+        "start" => 0,
+        "middle" => width / 2,
+        "end" => width,
         _ => return Err("unsupported text-anchor".into()),
-    }
+    };
+    let x = number(node, "x")?
+        .checked_sub(offset)
+        .ok_or("text coordinate overflow")?;
     let y = number(node, "y")?;
-    let top = match node.attribute("dominant-baseline").unwrap_or("alphabetic") {
-        "alphabetic" => y - ascent - (height - ascent - descent) / 2,
+    let offset = match node.attribute("dominant-baseline").unwrap_or("alphabetic") {
+        "alphabetic" => ascent + (height - ascent - descent) / 2,
         // A deterministic layout reservation, not the browser's exact glyph box:
         // SVG middle depends on the font's x-height, absent from current metrics.
-        "middle" => y - height / 2,
+        "middle" => height / 2,
         _ => return Err("unsupported dominant-baseline".into()),
     };
+    let top = y.checked_sub(offset).ok_or("text coordinate overflow")?;
     Ok(Rect {
         x,
         y: top,
@@ -123,8 +174,8 @@ fn point_list(value: &str) -> Result<Vec<Point>> {
         .map(|pair| {
             let (x, y) = pair.split_once(',').ok_or("invalid point")?;
             Ok(Point {
-                x: x.parse()?,
-                y: y.parse()?,
+                x: pixel_value(x)?,
+                y: pixel_value(y)?,
             })
         })
         .collect()
@@ -213,7 +264,7 @@ fn shape_envelope(node: Node<'_, '_>) -> Result<Rect> {
             {
                 return Err("unsupported node path grammar".into());
             }
-            let n = |index: usize| -> Result<i64> { Ok(tokens[index].parse()?) };
+            let n = |index: usize| pixel_value(tokens[index]);
             let mut points = vec![Point { x: n(1)?, y: n(2)? }, Point { x: n(1)?, y: n(4)? }];
             for start in [6, 8, 10, 15, 17, 19] {
                 points.push(Point {
@@ -243,21 +294,7 @@ fn drawing_layer<'a, 'input>(root: Node<'a, 'input>, name: &str) -> Result<Node<
 }
 
 fn viewport_dimension(node: Node<'_, '_>, name: &str) -> Result<i64> {
-    let value = required(node, name)?;
-    let (whole, fraction) = value.split_once('.').unwrap_or((value, ""));
-    if whole.is_empty()
-        || !whole.bytes().all(|value| value.is_ascii_digit())
-        || fraction.len() > 3
-        || !fraction.bytes().all(|value| value.is_ascii_digit())
-    {
-        return Err("unsupported viewport dimension".into());
-    }
-    let whole: i64 = whole.parse()?;
-    let fraction: i64 = format!("{fraction:0<3}").parse()?;
-    let value = whole
-        .checked_mul(1000)
-        .and_then(|value| value.checked_add(fraction))
-        .ok_or("viewport overflow")?;
+    let value = number(node, name)?;
     if value <= 0 {
         return Err("non-positive viewport".into());
     }
@@ -338,6 +375,69 @@ fn node_envelopes(
     Ok(nodes)
 }
 
+fn group_frames(
+    root: Node<'_, '_>,
+    prepared: &crate::PreparedScene<'_>,
+) -> Result<Vec<GroupFrame>> {
+    let groups = drawing_layer(root, "groups")?
+        .children()
+        .filter(Node::is_element)
+        .collect::<Vec<_>>();
+    if groups.len() != prepared.scene.groups.len() {
+        return Err("group frame inventory drift".into());
+    }
+    let mut frames = Vec::new();
+    for (group, expected) in groups.into_iter().zip(&prepared.scene.groups) {
+        if !group.has_tag_name("g")
+            || group.has_attribute("data-node-kind")
+            || required(group, "data-stack-id")? != expected.id
+        {
+            return Err("group frame owner drift".into());
+        }
+        let elements = group
+            .children()
+            .filter(Node::is_element)
+            .collect::<Vec<_>>();
+        if elements
+            .iter()
+            .map(|element| element.tag_name().name())
+            .collect::<Vec<_>>()
+            != ["title", "rect", "text"]
+        {
+            return Err("group frame shape inventory drift".into());
+        }
+        let element = elements[1];
+        let envelope = rectangle(element)?;
+        if envelope != rect(expected.rect) {
+            return Err("SVG/scene group frame drift".into());
+        }
+        if matches!(required(element, "stroke")?, "none" | "transparent")
+            || element.ancestors().any(|ancestor| {
+                [
+                    "stroke-opacity",
+                    "stroke-dasharray",
+                    "stroke-dashoffset",
+                    "vector-effect",
+                ]
+                .iter()
+                .any(|attribute| ancestor.has_attribute(*attribute))
+            })
+        {
+            return Err("unsupported group frame stroke".into());
+        }
+        let width = number(element, "stroke-width")?;
+        if width <= 0 {
+            return Err("non-positive group frame stroke width".into());
+        }
+        frames.push(GroupFrame {
+            id: expected.id.clone(),
+            rect: envelope,
+            radius: width / 2 + width % 2,
+        });
+    }
+    Ok(frames)
+}
+
 fn read_drawing(
     svg: &str,
     prepared: &crate::PreparedScene<'_>,
@@ -353,8 +453,8 @@ fn read_drawing(
     }
     let view_box = required(root, "viewBox")?
         .split_whitespace()
-        .map(str::parse)
-        .collect::<std::result::Result<Vec<i64>, _>>()?;
+        .map(pixel_value)
+        .collect::<Result<Vec<_>>>()?;
     let expected = prepared.scene.bounds;
     if view_box != [expected.x, expected.y, expected.width, expected.height] {
         return Err("SVG/scene bounds drift".into());
@@ -378,8 +478,8 @@ fn read_drawing(
             return Err(format!("unexpected root {tag} inventory").into());
         }
     }
-    // The owned drawing currently uses untransformed integer coordinates. A new
-    // transform or text positioning mode must be supported, not silently skipped.
+    // The owned drawing uses untransformed pixel decimals. A new transform or
+    // text positioning mode must be supported, not silently skipped.
     for node in root
         .descendants()
         .filter(Node::is_element)
@@ -501,7 +601,7 @@ fn read_drawing(
         if required(node, "font-family")? != prepared.resources.metrics.family {
             return Err("text uses unmeasured font family".into());
         }
-        let size: u32 = required(node, "font-size")?.parse()?;
+        let size = u32::try_from(number(node, "font-size")?)?;
         let text_bounds = text_rectangle(node, prepared, size)?;
         let (id, owner, bounds) = if parent.has_attribute("data-edge-label") {
             if !parent.has_tag_name("g") || parent.parent_element() != Some(labels_layer) {
@@ -639,6 +739,7 @@ fn read_drawing(
         return Err("semantic text inventory drift".into());
     }
     let nodes = node_envelopes(root, prepared)?;
+    let frames = group_frames(root, prepared)?;
     let mut routes = Vec::new();
     for (index, group) in edge_layer.children().filter(Node::is_element).enumerate() {
         if !group.has_tag_name("g") {
@@ -681,7 +782,7 @@ fn read_drawing(
             from: expected.from.clone(),
             to: expected.to.clone(),
             points,
-            radius: (width + 1) / 2,
+            radius: width / 2 + width % 2,
         });
     }
     if routes.len() != diagram.edges.len() {
@@ -691,6 +792,7 @@ fn read_drawing(
         bounds: rect(expected),
         texts,
         nodes,
+        frames,
         routes,
     })
 }
@@ -756,6 +858,54 @@ fn edge_violations(drawing: &Drawing) -> Result<Vec<Value>> {
                     violations.push(json!({"kind":"edge-node-collision","entities":[route.id,id],"rect":rectangle_json(*bounds)}));
                     break;
                 }
+            }
+        }
+    }
+    Ok(violations)
+}
+
+fn frame_violations(drawing: &Drawing) -> Result<Vec<Value>> {
+    let mut violations = Vec::new();
+    for route in &drawing.routes {
+        for frame in &drawing.frames {
+            let clearance = MINIMUM_PAINTED_FRAME_CLEARANCE
+                .checked_add(route.radius)
+                .and_then(|value| value.checked_add(frame.radius))
+                .ok_or("frame clearance overflow")?;
+            for (index, pair) in route.points.windows(2).enumerate() {
+                if geometry::parallel_frame_contact(pair[0], pair[1], frame.rect, clearance)? {
+                    violations.push(json!({
+                        "kind":"edge-group-frame-clearance",
+                        "entities":[route.id,frame.id],
+                        "segmentIndex":index,
+                        "segment":[{"x":pair[0].x,"y":pair[0].y},{"x":pair[1].x,"y":pair[1].y}],
+                        "rect":rectangle_json(frame.rect),
+                        "requiredCenterlineClearanceMilliPx":clearance,
+                        "routeStrokeRadiusMilliPx":route.radius,
+                        "frameStrokeRadiusMilliPx":frame.radius
+                    }));
+                }
+            }
+        }
+    }
+    for label in drawing
+        .texts
+        .iter()
+        .filter(|text| text.id.starts_with("edge-label:"))
+    {
+        for frame in &drawing.frames {
+            let clearance = MINIMUM_LABEL_FRAME_CLEARANCE
+                .checked_add(frame.radius)
+                .ok_or("label frame clearance overflow")?;
+            if geometry::label_frame_contact(label.rect, frame.rect, clearance)? {
+                violations.push(json!({
+                    "kind":"label-group-frame-clearance",
+                    "entities":[label.id,frame.id],
+                    "labelRect":rectangle_json(label.rect),
+                    "frameRect":rectangle_json(frame.rect),
+                    "requiredCenterlineClearanceMilliPx":clearance,
+                    "frameStrokeRadiusMilliPx":frame.radius
+                }));
             }
         }
     }
@@ -829,21 +979,31 @@ fn run_corpus(gate: &str) -> Result<()> {
             compiled.source_map.as_ref().ok_or("no source map")?,
         )?;
         let drawing = read_drawing(&svg, &prepared, diagram)?;
-        let violations = if gate == "text" {
-            text_violations(&drawing)
-        } else {
-            edge_violations(&drawing)?
+        let violations = match gate {
+            "text" => text_violations(&drawing),
+            "edge" => edge_violations(&drawing)?,
+            "frame" => frame_violations(&drawing)?,
+            _ => return Err("unknown layout quality gate".into()),
         };
         count += violations.len();
         fs::write(output_dir.join(format!("{}.svg", case.id)), svg)?;
         eprintln!("{}: {} {gate} violation(s)", case.id, violations.len());
         results.push(json!({"id":case.id,"violations":violations,"composition":composition_metrics(&drawing)}));
     }
+    let mut report = json!({"schemaVersion":"1.0","gate":gate,"units":"1/1000 CSS px","engineVersion":crate::ENGINE_VERSION,"limitations":["logical text envelopes, not raster glyph bounds","middle-baseline reservation is centered line height, not font x-height measurement","node SVG and Bezier control-point envelopes, not exact painted shape outlines","arrowheads and group frame collisions are not measured","global composition metrics are not a beauty score"],"violations":count,"cases":results});
+    if gate == "frame" {
+        report["minimumPaintedClearanceMilliPx"] = json!(MINIMUM_PAINTED_FRAME_CLEARANCE);
+        report["minimumLabelPaintedFrameClearanceMilliPx"] = json!(MINIMUM_LABEL_FRAME_CLEARANCE);
+        report["limitations"] = json!([
+            "finite group frame centerline rectangles with conservative rounded-corner clearance",
+            "perpendicular crossings away from corners are allowed",
+            "arrowheads are not measured",
+            "global composition metrics are not a beauty score"
+        ]);
+    }
     fs::write(
         output_dir.join("report.json"),
-        serde_json::to_vec_pretty(
-            &json!({"schemaVersion":"1.0","gate":gate,"units":"1/1000 CSS px","engineVersion":crate::ENGINE_VERSION,"limitations":["logical text envelopes, not raster glyph bounds","middle-baseline reservation is centered line height, not font x-height measurement","node SVG and Bezier control-point envelopes, not exact painted shape outlines","arrowheads and group frame collisions are not measured","global composition metrics are not a beauty score"],"violations":count,"cases":results}),
-        )?,
+        serde_json::to_vec_pretty(&report)?,
     )?;
     if count > 0 {
         return Err(format!(
@@ -863,6 +1023,11 @@ fn corpus_text_quality() -> Result<()> {
 #[test]
 fn corpus_edge_quality() -> Result<()> {
     run_corpus("edge")
+}
+
+#[test]
+fn corpus_frame_quality() -> Result<()> {
+    run_corpus("frame")
 }
 
 #[test]
@@ -895,6 +1060,7 @@ fn detector_flags_text_collision_and_clipping_without_requiring_a_snapshot() {
             },
         ],
         nodes: vec![],
+        frames: vec![],
         routes: vec![],
     };
     let violations = text_violations(&drawing);
@@ -941,6 +1107,7 @@ fn detector_allows_separated_text_inside_the_canvas() {
             },
         ],
         nodes: vec![],
+        frames: vec![],
         routes: vec![],
     };
     assert!(text_violations(&drawing).is_empty());
@@ -957,6 +1124,7 @@ fn metrics_do_not_trade_collisions_for_a_smaller_drawing() {
         },
         texts: vec![],
         nodes: vec![],
+        frames: vec![],
         routes: vec![Route {
             id: "edge:0".into(),
             from: "a".into(),
@@ -995,6 +1163,7 @@ fn detector_does_not_exempt_an_edges_own_label() -> Result<()> {
             },
         }],
         nodes: vec![],
+        frames: vec![],
         routes: vec![Route {
             id: "edge:0".into(),
             from: "a".into(),
@@ -1039,6 +1208,7 @@ fn detector_allows_only_terminal_node_contact() -> Result<()> {
                 },
             ),
         ],
+        frames: vec![],
         routes: vec![Route {
             id: "edge:0".into(),
             from: "a".into(),
@@ -1095,7 +1265,7 @@ fn parser_rejects_unmeasured_geometry_and_dropped_content() -> Result<()> {
         svg.replacen("<svg ", "<svg transform=\"scale(2)\" ", 1),
         svg.replacen(">Example</text>", ">Wrong</text>", 1),
         svg.replacen("<polyline ", "<path ", 1),
-        svg.replacen("<text ", "<text dx=\"100\" ", 1),
+        svg.replacen("<text ", "<text dx=\"0.1\" ", 1),
         svg.replacen("data-node-kind=", "removed-node-kind=", 1),
     ] {
         assert_ne!(mutant, svg, "mutation must exercise the checker");
@@ -1151,17 +1321,17 @@ fn parser_rejects_reviewed_false_green_mutations() -> Result<()> {
     let edge_markup = &svg[edge_text.range()];
     let moved_edge = edge_markup.replacen(
         &format!("x=\"{}\"", required(edge_text, "x")?),
-        "x=\"-999999\"",
+        "x=\"-999.999\"",
         1,
     );
     let oversized_edge = edge_markup.replacen(
         &format!("font-size=\"{}\"", required(edge_text, "font-size")?),
-        "font-size=\"900000\"",
+        "font-size=\"900\"",
         1,
     );
     let moved_shape = svg[shape.range()].replacen(
         &format!("x=\"{}\"", required(shape, "x")?),
-        "x=\"-999999\"",
+        "x=\"-999.999\"",
         1,
     );
     let mut duplicated_title = replace(label, "");
@@ -1243,7 +1413,7 @@ fn parser_rejects_reviewed_false_green_mutations() -> Result<()> {
                 1,
             ),
         ),
-        ("extra root route", svg.replacen("</metadata>", "</metadata><polyline points=\"0,0 999999,0\" stroke=\"black\" stroke-width=\"1500\"/>", 1)),
+        ("extra root route", svg.replacen("</metadata>", "</metadata><polyline points=\"0,0 999.999,0\" stroke=\"black\" stroke-width=\"1.5\"/>", 1)),
         ("unmeasured trailing text", svg.replacen(">Example</text>", ">Example<!-- split -->UNMEASURED</text>", 1)),
         ("unverified nested SVG", replace(owner, &svg[owner.range()].replacen("</title>", "</title><svg><text x=\"0\" y=\"0\">UNMEASURED</text></svg>", 1))),
         ("document stylesheet", svg.replacen("<svg ", "<?xml-stylesheet type=\"text/css\" href=\"data:text/css,text%7Bdisplay%3Anone%7D\"?><svg ", 1)),
@@ -1305,6 +1475,349 @@ fn parser_reads_every_current_node_shape_envelope() -> Result<()> {
             drawing.nodes,
             vec![("a".to_owned(), rect(prepared.scene.nodes[0].rect))],
             "{kind}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn frame_detector_includes_both_stroke_radii_without_terminal_exemptions() -> Result<()> {
+    let mut drawing = Drawing {
+        bounds: Rect {
+            x: 0,
+            y: 0,
+            width: 500_000,
+            height: 800_000,
+        },
+        texts: vec![],
+        nodes: vec![],
+        frames: vec![GroupFrame {
+            id: "a".into(),
+            rect: Rect {
+                x: 100_000,
+                y: 200_000,
+                width: 300_000,
+                height: 400_000,
+            },
+            radius: 500,
+        }],
+        routes: vec![Route {
+            id: "edge:0".into(),
+            from: "a".into(),
+            to: "b".into(),
+            points: vec![
+                Point {
+                    x: 150_000,
+                    y: 182_751,
+                },
+                Point {
+                    x: 350_000,
+                    y: 182_751,
+                },
+            ],
+            radius: 750,
+        }],
+    };
+    let violations = frame_violations(&drawing)?;
+    assert_eq!(violations.len(), 1);
+    assert_eq!(violations[0]["requiredCenterlineClearanceMilliPx"], 17_250);
+    for point in &mut drawing.routes[0].points {
+        point.y = 182_750;
+    }
+    assert!(frame_violations(&drawing)?.is_empty());
+    for point in &mut drawing.routes[0].points {
+        point.y = 200_000;
+    }
+    assert_eq!(frame_violations(&drawing)?.len(), 1);
+    drawing.routes[0].points = vec![
+        Point { x: 0, y: 400_000 },
+        Point {
+            x: 500_000,
+            y: 400_000,
+        },
+    ];
+    assert!(frame_violations(&drawing)?.is_empty());
+    Ok(())
+}
+
+#[test]
+fn parser_measures_final_svg_group_frames_and_rejects_missing_or_hidden_frames() -> Result<()> {
+    let source = b"stack 1.0 diagram \"Frame\" { group system \"System\" { node a \"A\" } }";
+    let engine = Engine::bundled();
+    let svg = engine.render(source)?.svg.ok_or("missing SVG")?;
+    let compiled = stack_compiler::compile_bytes_with_source_map(source);
+    let diagram = compiled.diagram.as_ref().ok_or("missing diagram")?;
+    let prepared = engine.prepare_scene(
+        diagram,
+        compiled.source_map.as_ref().ok_or("missing source map")?,
+    )?;
+    let document = Document::parse(&svg)?;
+    let owner = document
+        .descendants()
+        .find(|node| node.attribute("data-stack-id") == Some("system"))
+        .ok_or("missing group frame owner")?;
+    let frame = owner
+        .children()
+        .find(|node| node.has_tag_name("rect"))
+        .ok_or("missing group frame")?;
+    let frame_markup = &svg[frame.range()];
+    let replace = |node: Node<'_, '_>, replacement: &str| {
+        let mut mutant = svg.clone();
+        mutant.replace_range(node.range(), replacement);
+        mutant
+    };
+    let drawing = read_drawing(&svg, &prepared, diagram)?;
+    assert_eq!(drawing.frames.len(), 1);
+    assert_eq!(drawing.frames[0].rect, rectangle(frame)?);
+    assert_eq!(drawing.frames[0].radius, 500);
+
+    let wider_stroke = replace(
+        frame,
+        &frame_markup.replacen(
+            &format!("stroke-width=\"{}\"", required(frame, "stroke-width")?),
+            "stroke-width=\"1.001\"",
+            1,
+        ),
+    );
+    assert_ne!(wider_stroke, svg, "mutation must widen the frame stroke");
+    let wider = read_drawing(&wider_stroke, &prepared, diagram)?;
+    assert_eq!(wider.frames[0].radius, 501);
+
+    let mutations = [
+        ("removed frame", replace(frame, "")),
+        (
+            "duplicate frame",
+            replace(frame, &format!("{frame_markup}{frame_markup}")),
+        ),
+        (
+            "moved frame",
+            replace(
+                frame,
+                &frame_markup.replacen(
+                    &format!("x=\"{}\"", required(frame, "x")?),
+                    "x=\"-999.999\"",
+                    1,
+                ),
+            ),
+        ),
+        (
+            "zero frame width",
+            replace(
+                frame,
+                &frame_markup.replacen(
+                    &format!("width=\"{}\"", required(frame, "width")?),
+                    "width=\"0\"",
+                    1,
+                ),
+            ),
+        ),
+        (
+            "zero frame stroke",
+            replace(
+                frame,
+                &frame_markup.replacen(
+                    &format!("stroke-width=\"{}\"", required(frame, "stroke-width")?),
+                    "stroke-width=\"0\"",
+                    1,
+                ),
+            ),
+        ),
+        (
+            "invisible frame stroke",
+            replace(
+                frame,
+                &frame_markup.replacen(
+                    &format!("stroke=\"{}\"", required(frame, "stroke")?),
+                    "stroke=\"none\"",
+                    1,
+                ),
+            ),
+        ),
+        (
+            "inherited invisible frame",
+            replace(
+                owner,
+                &svg[owner.range()].replacen("<g ", "<g stroke-opacity=\"0\" ", 1),
+            ),
+        ),
+        (
+            "missing owner id",
+            replace(
+                owner,
+                &svg[owner.range()].replacen("data-stack-id=", "removed-stack-id=", 1),
+            ),
+        ),
+    ];
+    for (name, mutant) in mutations {
+        assert_ne!(mutant, svg, "mutation must exercise {name}");
+        assert!(
+            read_drawing(&mutant, &prepared, diagram).is_err(),
+            "accepted {name}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn frame_detector_measures_edge_label_backgrounds_without_excluding_group_interiors() -> Result<()>
+{
+    let mut drawing = Drawing {
+        bounds: Rect {
+            x: 0,
+            y: 0,
+            width: 500_000,
+            height: 800_000,
+        },
+        texts: vec![TextBox {
+            id: "edge-label:0:Request".into(),
+            rect: Rect {
+                x: 150_000,
+                y: 190_000,
+                width: 100_000,
+                height: 20_000,
+            },
+        }],
+        nodes: vec![],
+        frames: vec![GroupFrame {
+            id: "system".into(),
+            rect: Rect {
+                x: 100_000,
+                y: 200_000,
+                width: 300_000,
+                height: 400_000,
+            },
+            radius: 500,
+        }],
+        routes: vec![],
+    };
+    let violations = frame_violations(&drawing)?;
+    assert_eq!(violations.len(), 1);
+    assert_eq!(violations[0]["kind"], "label-group-frame-clearance");
+    assert_eq!(violations[0]["requiredCenterlineClearanceMilliPx"], 8_500);
+    drawing.texts[0].rect.y = 208_500;
+    assert!(frame_violations(&drawing)?.is_empty());
+    drawing.texts[0].rect.y -= 1;
+    assert_eq!(frame_violations(&drawing)?.len(), 1);
+    drawing.texts[0].rect.y = 171_500;
+    assert!(frame_violations(&drawing)?.is_empty());
+    Ok(())
+}
+
+#[test]
+fn px_parser_restores_exact_milli_pixels_without_floating_point() -> Result<()> {
+    for (value, expected) in [
+        ("0", 0),
+        ("-0", 0),
+        ("32", 32_000),
+        ("-32", -32_000),
+        ("1.5", 1_500),
+        ("1.25", 1_250),
+        ("1.001", 1_001),
+        ("0.001", 1),
+        ("-0.001", -1),
+        ("123.000", 123_000),
+        ("9223372036854775.807", i64::MAX),
+        ("-9223372036854775.808", i64::MIN),
+    ] {
+        assert_eq!(pixel_value(value)?, expected, "{value}");
+    }
+    Ok(())
+}
+
+#[test]
+fn px_parser_rejects_invalid_signs_precision_and_overflow() {
+    for value in [
+        "",
+        "+1",
+        "--1",
+        "-+1",
+        "1-",
+        "-",
+        ".5",
+        "-.5",
+        "1.",
+        "1.2.3",
+        "1.0001",
+        "-0.0001",
+        "1e3",
+        "NaN",
+        "Infinity",
+        "1px",
+        "1%",
+        " 1",
+        "1 ",
+        "1\n",
+        "1,5",
+        "１２",
+        "01",
+        "00.5",
+        "9223372036854775.808",
+        "-9223372036854775.809",
+        "9223372036854776",
+        "-9223372036854776",
+        "999999999999999999999999999999999999999999999999",
+    ] {
+        assert!(
+            pixel_value(value).is_err(),
+            "accepted unsupported px value {value:?}"
+        );
+    }
+}
+
+#[test]
+fn px_parser_scales_rectangle_points_and_absolute_path_coordinates() -> Result<()> {
+    assert_eq!(
+        point_list("-1.125,2.5 4,5.875")?,
+        vec![
+            Point {
+                x: -1_125,
+                y: 2_500
+            },
+            Point { x: 4_000, y: 5_875 }
+        ]
+    );
+    for (markup, expected) in [
+        (
+            r#"<rect x="-1.125" y="2.5" width="4" height="5.875"/>"#,
+            Rect {
+                x: -1_125,
+                y: 2_500,
+                width: 4_000,
+                height: 5_875,
+            },
+        ),
+        (
+            r#"<ellipse cx="2.125" cy="4.5" rx="1.125" ry="2.5"/>"#,
+            Rect {
+                x: 1_000,
+                y: 2_000,
+                width: 2_250,
+                height: 5_000,
+            },
+        ),
+        (
+            r#"<polygon points="-1.125,2.5 4,5.875 1,1.25"/>"#,
+            Rect {
+                x: -1_125,
+                y: 1_250,
+                width: 5_125,
+                height: 4_625,
+            },
+        ),
+        (
+            r#"<path d="M 1.25 2.5 V 6.75 C 1.25 7.5 5.875 7.5 5.875 6.75 V 2.5 C 5.875 1.125 1.25 1.125 1.25 2.5 Z"/>"#,
+            Rect {
+                x: 1_250,
+                y: 1_125,
+                width: 4_625,
+                height: 6_375,
+            },
+        ),
+    ] {
+        assert_eq!(
+            shape_envelope(Document::parse(markup)?.root_element())?,
+            expected,
+            "{markup}"
         );
     }
     Ok(())

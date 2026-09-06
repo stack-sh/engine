@@ -38,8 +38,8 @@ function browserInput(input) {
   return Uint8Array.from(input.value);
 }
 
-function wasmOutputs() {
-  return cases.map((fixture) => {
+function wasmOutputs(fixtures = cases) {
+  return fixtures.map((fixture) => {
     const source = browserInput(fixture.input);
     return {
       name: fixture.name,
@@ -104,6 +104,21 @@ test("browser exports match native engine results for shared fixtures", () => {
     ),
   );
   assert.deepEqual(wasmOutputs(), native);
+});
+
+test("labelled DAG regressions render identically in native and WebAssembly", () => {
+  const path = join(repositoryRoot, "crates/stack-engine/tests/fixtures/labelled-dag-regressions.json");
+  const fixtures = JSON.parse(readFileSync(path, "utf8"));
+  assert.equal(fixtures.length, 60);
+  const native = JSON.parse(execFileSync("cargo", [
+    "run", "--quiet", "--locked", "-p", "stack-engine-wasm", "--example", "native-parity", "--", path,
+  ], { cwd: repositoryRoot, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 }));
+  const browser = wasmOutputs(fixtures);
+  for (const output of browser) {
+    assert.ok(output.render.svg, `${output.name}: missing SVG`);
+    assert.deepEqual(output.render.diagnostics, [], `${output.name}: diagnostics`);
+  }
+  assert.deepEqual(browser, native);
 });
 
 test("browser language intelligence matches native results for shared fixtures", () => {

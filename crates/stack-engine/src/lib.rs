@@ -24,6 +24,7 @@ use std::fmt;
 
 use stack_compiler::diagnostic as compiler_diagnostic;
 
+mod labels;
 mod resources;
 mod routing;
 mod scene;
@@ -31,6 +32,9 @@ mod svg;
 
 #[cfg(test)]
 mod layout_quality;
+
+#[cfg(test)]
+mod placement_quality;
 
 mod language;
 mod provider;
@@ -830,7 +834,7 @@ mod tests {
     #[test]
     fn layout_warnings_follow_compiler_warnings() -> Result<(), Box<dyn Error>> {
         let mut source = String::from(
-            "stack 1.0 diagram \"Warnings\" { layout { direction right order [n1, n0] } node hub \"Hub\" ",
+            "stack 1.0 diagram \"Warnings\" { layout { direction right order [hub, n0] } node hub \"Hub\" ",
         );
         for index in 0..13 {
             source.push_str(&format!(

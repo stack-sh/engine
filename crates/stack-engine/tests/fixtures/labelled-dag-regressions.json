@@ -1,0 +1,422 @@
+[
+  {
+    "name": "dag-00",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-01",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" edge n0 -> n1 \"Connection 0\" edge n1 -> n3 \"Connection 1\" edge n2 -> n3 \"Connection 2\" }"
+    }
+  },
+  {
+    "name": "dag-02",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" edge n2 -> n3 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" edge n1 -> n4 \"retry request after timeout\" edge n2 -> n4 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-03",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" edge n0 -> n5 \"Connection 0\" edge n1 -> n4 \"Connection 1\" edge n3 -> n5 \"Connection 2\" edge n2 -> n3 \"Connection 3\" edge n1 -> n2 \"Connection 4\" }"
+    }
+  },
+  {
+    "name": "dag-04",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" edge n2 -> n5 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" edge n3 -> n5 \"retry request after timeout\" edge n0 -> n5 \"retry request after timeout\" edge n0 -> n6 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-05",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" node n7 \"Node 7\" edge n2 -> n5 \"Connection 0\" edge n1 -> n3 \"Connection 1\" edge n0 -> n1 \"Connection 2\" edge n0 -> n2 \"Connection 3\" edge n0 -> n3 \"Connection 4\" edge n4 -> n6 \"Connection 5\" edge n2 -> n4 \"Connection 6\" }"
+    }
+  },
+  {
+    "name": "dag-06",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" edge n0 -> n1 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-07",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" edge n0 -> n2 \"Connection 0\" edge n0 -> n1 \"Connection 1\" edge n2 -> n3 \"Connection 2\" edge n0 -> n3 \"Connection 3\" edge n1 -> n3 \"Connection 4\" edge n1 -> n2 \"Connection 5\" }"
+    }
+  },
+  {
+    "name": "dag-08",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" edge n1 -> n4 \"retry request after timeout\" edge n0 -> n4 \"retry request after timeout\" edge n2 -> n4 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n3 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-09",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" edge n3 -> n5 \"Connection 0\" edge n0 -> n1 \"Connection 1\" edge n0 -> n4 \"Connection 2\" edge n2 -> n5 \"Connection 3\" edge n0 -> n3 \"Connection 4\" edge n1 -> n4 \"Connection 5\" edge n1 -> n3 \"Connection 6\" edge n1 -> n5 \"Connection 7\" edge n4 -> n5 \"Connection 8\" edge n0 -> n2 \"Connection 9\" edge n0 -> n5 \"Connection 10\" }"
+    }
+  },
+  {
+    "name": "dag-10",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" edge n0 -> n4 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n3 \"retry request after timeout\" edge n4 -> n6 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n3 -> n6 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" edge n4 -> n5 \"retry request after timeout\" edge n5 -> n6 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" edge n3 -> n5 \"retry request after timeout\" edge n1 -> n5 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-11",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" node n7 \"Node 7\" edge n2 -> n5 \"Connection 0\" edge n0 -> n3 \"Connection 1\" edge n6 -> n7 \"Connection 2\" edge n5 -> n6 \"Connection 3\" edge n3 -> n6 \"Connection 4\" edge n1 -> n2 \"Connection 5\" edge n1 -> n6 \"Connection 6\" edge n4 -> n7 \"Connection 7\" edge n2 -> n3 \"Connection 8\" edge n5 -> n7 \"Connection 9\" edge n0 -> n6 \"Connection 10\" edge n3 -> n4 \"Connection 11\" edge n0 -> n7 \"Connection 12\" }"
+    }
+  },
+  {
+    "name": "dag-12",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-13",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" edge n0 -> n2 \"Connection 0\" edge n2 -> n3 \"Connection 1\" edge n0 -> n1 \"Connection 2\" }"
+    }
+  },
+  {
+    "name": "dag-14",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" edge n1 -> n4 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-15",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" edge n1 -> n4 \"Connection 0\" edge n0 -> n1 \"Connection 1\" edge n3 -> n5 \"Connection 2\" edge n4 -> n5 \"Connection 3\" edge n0 -> n2 \"Connection 4\" }"
+    }
+  },
+  {
+    "name": "dag-16",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" edge n2 -> n5 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" edge n4 -> n6 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" edge n1 -> n6 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-17",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" node n7 \"Node 7\" edge n0 -> n7 \"Connection 0\" edge n4 -> n5 \"Connection 1\" edge n6 -> n7 \"Connection 2\" edge n2 -> n4 \"Connection 3\" edge n1 -> n3 \"Connection 4\" edge n3 -> n5 \"Connection 5\" edge n0 -> n1 \"Connection 6\" }"
+    }
+  },
+  {
+    "name": "dag-18",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" edge n0 -> n2 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-19",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" edge n0 -> n3 \"Connection 0\" edge n2 -> n3 \"Connection 1\" edge n1 -> n2 \"Connection 2\" edge n0 -> n2 \"Connection 3\" edge n0 -> n1 \"Connection 4\" edge n1 -> n3 \"Connection 5\" }"
+    }
+  },
+  {
+    "name": "dag-20",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" edge n2 -> n3 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" edge n0 -> n3 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" edge n1 -> n4 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" edge n2 -> n4 \"retry request after timeout\" edge n0 -> n4 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-21",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" edge n3 -> n4 \"Connection 0\" edge n3 -> n5 \"Connection 1\" edge n1 -> n3 \"Connection 2\" edge n0 -> n4 \"Connection 3\" edge n0 -> n1 \"Connection 4\" edge n0 -> n2 \"Connection 5\" edge n1 -> n5 \"Connection 6\" edge n0 -> n5 \"Connection 7\" edge n0 -> n3 \"Connection 8\" edge n2 -> n5 \"Connection 9\" edge n1 -> n4 \"Connection 10\" }"
+    }
+  },
+  {
+    "name": "dag-22",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" edge n0 -> n1 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n3 -> n6 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" edge n5 -> n6 \"retry request after timeout\" edge n0 -> n5 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n6 \"retry request after timeout\" edge n0 -> n3 \"retry request after timeout\" edge n0 -> n4 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-23",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" node n7 \"Node 7\" edge n1 -> n7 \"Connection 0\" edge n4 -> n6 \"Connection 1\" edge n3 -> n7 \"Connection 2\" edge n2 -> n5 \"Connection 3\" edge n1 -> n4 \"Connection 4\" edge n1 -> n2 \"Connection 5\" edge n1 -> n6 \"Connection 6\" edge n0 -> n7 \"Connection 7\" edge n2 -> n7 \"Connection 8\" edge n1 -> n5 \"Connection 9\" edge n3 -> n6 \"Connection 10\" edge n4 -> n5 \"Connection 11\" edge n1 -> n3 \"Connection 12\" }"
+    }
+  },
+  {
+    "name": "dag-24",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-25",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" edge n1 -> n2 \"Connection 0\" edge n0 -> n1 \"Connection 1\" edge n1 -> n3 \"Connection 2\" }"
+    }
+  },
+  {
+    "name": "dag-26",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" edge n0 -> n3 \"retry request after timeout\" edge n1 -> n4 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n2 -> n4 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-27",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" edge n1 -> n2 \"Connection 0\" edge n2 -> n3 \"Connection 1\" edge n1 -> n4 \"Connection 2\" edge n0 -> n3 \"Connection 3\" edge n4 -> n5 \"Connection 4\" }"
+    }
+  },
+  {
+    "name": "dag-28",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" edge n0 -> n1 \"retry request after timeout\" edge n2 -> n6 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n4 -> n6 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-29",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" node n7 \"Node 7\" edge n2 -> n5 \"Connection 0\" edge n1 -> n6 \"Connection 1\" edge n3 -> n7 \"Connection 2\" edge n2 -> n3 \"Connection 3\" edge n6 -> n7 \"Connection 4\" edge n0 -> n1 \"Connection 5\" edge n3 -> n5 \"Connection 6\" }"
+    }
+  },
+  {
+    "name": "dag-30",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" edge n0 -> n1 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-31",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" edge n1 -> n3 \"Connection 0\" edge n2 -> n3 \"Connection 1\" edge n0 -> n1 \"Connection 2\" edge n0 -> n3 \"Connection 3\" edge n1 -> n2 \"Connection 4\" edge n0 -> n2 \"Connection 5\" }"
+    }
+  },
+  {
+    "name": "dag-32",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" edge n1 -> n4 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n4 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" edge n0 -> n3 \"retry request after timeout\" edge n2 -> n4 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-33",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" edge n2 -> n4 \"Connection 0\" edge n0 -> n3 \"Connection 1\" edge n3 -> n5 \"Connection 2\" edge n3 -> n4 \"Connection 3\" edge n0 -> n2 \"Connection 4\" edge n2 -> n5 \"Connection 5\" edge n1 -> n5 \"Connection 6\" edge n2 -> n3 \"Connection 7\" edge n1 -> n2 \"Connection 8\" edge n0 -> n1 \"Connection 9\" edge n0 -> n4 \"Connection 10\" }"
+    }
+  },
+  {
+    "name": "dag-34",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" edge n2 -> n6 \"retry request after timeout\" edge n0 -> n6 \"retry request after timeout\" edge n2 -> n5 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" edge n3 -> n5 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" edge n4 -> n6 \"retry request after timeout\" edge n5 -> n6 \"retry request after timeout\" edge n3 -> n6 \"retry request after timeout\" edge n4 -> n5 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-35",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" node n7 \"Node 7\" edge n0 -> n1 \"Connection 0\" edge n0 -> n4 \"Connection 1\" edge n2 -> n6 \"Connection 2\" edge n1 -> n5 \"Connection 3\" edge n1 -> n6 \"Connection 4\" edge n0 -> n2 \"Connection 5\" edge n2 -> n7 \"Connection 6\" edge n1 -> n4 \"Connection 7\" edge n2 -> n5 \"Connection 8\" edge n1 -> n2 \"Connection 9\" edge n3 -> n7 \"Connection 10\" edge n2 -> n4 \"Connection 11\" edge n3 -> n5 \"Connection 12\" }"
+    }
+  },
+  {
+    "name": "dag-36",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-37",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" edge n1 -> n3 \"Connection 0\" edge n1 -> n2 \"Connection 1\" edge n0 -> n3 \"Connection 2\" }"
+    }
+  },
+  {
+    "name": "dag-38",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" edge n1 -> n3 \"retry request after timeout\" edge n1 -> n4 \"retry request after timeout\" edge n2 -> n4 \"retry request after timeout\" edge n0 -> n3 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-39",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" edge n1 -> n3 \"Connection 0\" edge n0 -> n5 \"Connection 1\" edge n2 -> n4 \"Connection 2\" edge n2 -> n3 \"Connection 3\" edge n2 -> n5 \"Connection 4\" }"
+    }
+  },
+  {
+    "name": "dag-40",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" edge n1 -> n3 \"retry request after timeout\" edge n5 -> n6 \"retry request after timeout\" edge n3 -> n6 \"retry request after timeout\" edge n0 -> n6 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n0 -> n5 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-41",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" node n7 \"Node 7\" edge n0 -> n6 \"Connection 0\" edge n0 -> n4 \"Connection 1\" edge n2 -> n5 \"Connection 2\" edge n4 -> n6 \"Connection 3\" edge n0 -> n7 \"Connection 4\" edge n5 -> n7 \"Connection 5\" edge n1 -> n4 \"Connection 6\" }"
+    }
+  },
+  {
+    "name": "dag-42",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" edge n0 -> n1 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-43",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" edge n0 -> n3 \"Connection 0\" edge n0 -> n2 \"Connection 1\" edge n1 -> n2 \"Connection 2\" edge n2 -> n3 \"Connection 3\" edge n0 -> n1 \"Connection 4\" edge n1 -> n3 \"Connection 5\" }"
+    }
+  },
+  {
+    "name": "dag-44",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" edge n2 -> n4 \"retry request after timeout\" edge n0 -> n3 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n4 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" edge n1 -> n4 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-45",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" edge n0 -> n1 \"Connection 0\" edge n4 -> n5 \"Connection 1\" edge n1 -> n4 \"Connection 2\" edge n0 -> n5 \"Connection 3\" edge n0 -> n4 \"Connection 4\" edge n3 -> n5 \"Connection 5\" edge n0 -> n2 \"Connection 6\" edge n2 -> n4 \"Connection 7\" edge n2 -> n3 \"Connection 8\" edge n0 -> n3 \"Connection 9\" edge n2 -> n5 \"Connection 10\" }"
+    }
+  },
+  {
+    "name": "dag-46",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" edge n0 -> n1 \"retry request after timeout\" edge n4 -> n5 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n4 -> n6 \"retry request after timeout\" edge n2 -> n4 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n1 -> n6 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n0 -> n3 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" edge n3 -> n5 \"retry request after timeout\" edge n2 -> n5 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-47",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" node n7 \"Node 7\" edge n3 -> n7 \"Connection 0\" edge n2 -> n4 \"Connection 1\" edge n2 -> n5 \"Connection 2\" edge n0 -> n6 \"Connection 3\" edge n5 -> n6 \"Connection 4\" edge n1 -> n6 \"Connection 5\" edge n2 -> n7 \"Connection 6\" edge n6 -> n7 \"Connection 7\" edge n1 -> n4 \"Connection 8\" edge n0 -> n1 \"Connection 9\" edge n4 -> n5 \"Connection 10\" edge n0 -> n3 \"Connection 11\" edge n1 -> n3 \"Connection 12\" }"
+    }
+  },
+  {
+    "name": "dag-48",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" edge n0 -> n1 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-49",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" edge n0 -> n3 \"Connection 0\" edge n0 -> n2 \"Connection 1\" edge n0 -> n1 \"Connection 2\" }"
+    }
+  },
+  {
+    "name": "dag-50",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" edge n0 -> n4 \"retry request after timeout\" edge n2 -> n4 \"retry request after timeout\" edge n0 -> n3 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-51",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" edge n1 -> n5 \"Connection 0\" edge n0 -> n4 \"Connection 1\" edge n2 -> n3 \"Connection 2\" edge n0 -> n3 \"Connection 3\" edge n0 -> n1 \"Connection 4\" }"
+    }
+  },
+  {
+    "name": "dag-52",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" edge n0 -> n4 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n0 -> n5 \"retry request after timeout\" edge n5 -> n6 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-53",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" node n7 \"Node 7\" edge n5 -> n7 \"Connection 0\" edge n0 -> n3 \"Connection 1\" edge n1 -> n2 \"Connection 2\" edge n3 -> n7 \"Connection 3\" edge n3 -> n5 \"Connection 4\" edge n5 -> n6 \"Connection 5\" edge n1 -> n7 \"Connection 6\" }"
+    }
+  },
+  {
+    "name": "dag-54",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" edge n1 -> n2 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-55",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" edge n2 -> n3 \"Connection 0\" edge n0 -> n1 \"Connection 1\" edge n1 -> n3 \"Connection 2\" edge n0 -> n2 \"Connection 3\" edge n0 -> n3 \"Connection 4\" edge n1 -> n2 \"Connection 5\" }"
+    }
+  },
+  {
+    "name": "dag-56",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" edge n0 -> n1 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n2 -> n4 \"retry request after timeout\" edge n0 -> n3 \"retry request after timeout\" edge n0 -> n4 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" edge n1 -> n4 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-57",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction right } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" edge n2 -> n3 \"Connection 0\" edge n3 -> n5 \"Connection 1\" edge n1 -> n3 \"Connection 2\" edge n1 -> n2 \"Connection 3\" edge n1 -> n5 \"Connection 4\" edge n3 -> n4 \"Connection 5\" edge n2 -> n5 \"Connection 6\" edge n2 -> n4 \"Connection 7\" edge n0 -> n3 \"Connection 8\" edge n0 -> n5 \"Connection 9\" edge n1 -> n4 \"Connection 10\" }"
+    }
+  },
+  {
+    "name": "dag-58",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" { layout { direction down } node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" edge n2 -> n4 \"retry request after timeout\" edge n0 -> n6 \"retry request after timeout\" edge n0 -> n5 \"retry request after timeout\" edge n0 -> n1 \"retry request after timeout\" edge n0 -> n2 \"retry request after timeout\" edge n3 -> n4 \"retry request after timeout\" edge n4 -> n5 \"retry request after timeout\" edge n1 -> n5 \"retry request after timeout\" edge n1 -> n2 \"retry request after timeout\" edge n2 -> n3 \"retry request after timeout\" edge n1 -> n3 \"retry request after timeout\" edge n3 -> n5 \"retry request after timeout\" }"
+    }
+  },
+  {
+    "name": "dag-59",
+    "input": {
+      "kind": "string",
+      "value": "stack 1.0 diagram \"Probe\" {  node n0 \"Node 0\" node n1 \"Node 1\" node n2 \"Node 2\" node n3 \"Node 3\" node n4 \"Node 4\" node n5 \"Node 5\" node n6 \"Node 6\" node n7 \"Node 7\" edge n2 -> n5 \"Connection 0\" edge n3 -> n6 \"Connection 1\" edge n1 -> n2 \"Connection 2\" edge n1 -> n5 \"Connection 3\" edge n4 -> n6 \"Connection 4\" edge n2 -> n6 \"Connection 5\" edge n1 -> n6 \"Connection 6\" edge n2 -> n4 \"Connection 7\" edge n0 -> n4 \"Connection 8\" edge n0 -> n6 \"Connection 9\" edge n0 -> n1 \"Connection 10\" edge n3 -> n7 \"Connection 11\" edge n1 -> n7 \"Connection 12\" }"
+    }
+  }
+]

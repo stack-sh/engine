@@ -131,6 +131,104 @@ pub(super) fn segment_hits_rect(
     Err(GeometryError::DiagonalSegment)
 }
 
+/// Detects a segment running parallel to a finite group frame side without the
+/// requested centerline clearance. The projection extends by the same clearance
+/// around each corner, so a nearby bend cannot use a perpendicular crossing to
+/// hide its adjacent parallel segment. Ordinary perpendicular crossings away
+/// from corners remain valid. Exact clearance is allowed; travel on the frame
+/// is always contact. There are no source/target terminal exemptions.
+pub(super) fn parallel_frame_contact(
+    start: Point,
+    end: Point,
+    frame: Rect,
+    clearance: i64,
+) -> Result<bool, GeometryError> {
+    if frame.width <= 0 || frame.height <= 0 {
+        return Err(GeometryError::InvalidRect);
+    }
+    if clearance < 0 {
+        return Err(GeometryError::NegativeRadius);
+    }
+    if start == end {
+        return Ok(false);
+    }
+    let frame = Bounds::new(frame);
+    let clearance = i128::from(clearance);
+    let contact = |coordinate: i64, first: i64, last: i64, sides: [i128; 2], low, high| {
+        let coordinate = i128::from(coordinate);
+        let projected_length = i128::from(first.min(last)).max(low - clearance)
+            < i128::from(first.max(last)).min(high + clearance);
+        projected_length
+            && sides.iter().any(|side| {
+                let distance = (coordinate - side).abs();
+                distance == 0 || distance < clearance
+            })
+    };
+    if start.y == end.y {
+        return Ok(contact(
+            start.y,
+            start.x,
+            end.x,
+            [frame.top, frame.bottom],
+            frame.left,
+            frame.right,
+        ));
+    }
+    if start.x == end.x {
+        return Ok(contact(
+            start.x,
+            start.y,
+            end.y,
+            [frame.left, frame.right],
+            frame.top,
+            frame.bottom,
+        ));
+    }
+    Err(GeometryError::DiagonalSegment)
+}
+
+/// Detects a label rectangle touching or approaching the finite frame perimeter.
+/// The frame interior remains usable: only its four sides and their corner
+/// clearance constrain labels. Callers include the painted frame stroke radius
+/// in the required clearance. Exact clearance is allowed.
+pub(super) fn label_frame_contact(
+    label: Rect,
+    frame: Rect,
+    clearance: i64,
+) -> Result<bool, GeometryError> {
+    if label.width <= 0 || label.height <= 0 || frame.width <= 0 || frame.height <= 0 {
+        return Err(GeometryError::InvalidRect);
+    }
+    if clearance < 0 {
+        return Err(GeometryError::NegativeRadius);
+    }
+    let label = Bounds::new(label);
+    let frame = Bounds::new(frame);
+    let clearance = i128::from(clearance);
+    let near_interval = |side: i128, low: i128, high: i128| {
+        let distance = if side < low {
+            low - side
+        } else if side > high {
+            side - high
+        } else {
+            0
+        };
+        distance == 0 || distance < clearance
+    };
+    let horizontal_projection =
+        label.left.max(frame.left - clearance) < label.right.min(frame.right + clearance);
+    let vertical_projection =
+        label.top.max(frame.top - clearance) < label.bottom.min(frame.bottom + clearance);
+    Ok((horizontal_projection
+        && [frame.top, frame.bottom]
+            .iter()
+            .any(|side| near_interval(*side, label.top, label.bottom)))
+        || (vertical_projection
+            && [frame.left, frame.right]
+                .iter()
+                .any(|side| near_interval(*side, label.left, label.right))))
+}
+
 /// Allows only a real terminal's normal departure or arrival at the original
 /// node boundary. Callers must enable these flags only on the first/last path
 /// segment for that segment's actual source/target node. Every other segment
@@ -523,6 +621,186 @@ mod tests {
         );
         assert_eq!(
             segment_hits_rect(point(i64::MIN, 5), point(i64::MAX, 5), high, i64::MAX),
+            Ok(true)
+        );
+    }
+
+    const FRAME: Rect = rect(100, 200, 300, 400);
+
+    fn assert_frame_contact(start: Point, end: Point, clearance: i64, expected: bool) {
+        assert_eq!(
+            parallel_frame_contact(start, end, FRAME, clearance),
+            Ok(expected),
+            "forward frame contact: {start:?} -> {end:?}, clearance {clearance}"
+        );
+        assert_eq!(
+            parallel_frame_contact(end, start, FRAME, clearance),
+            Ok(expected),
+            "reverse frame contact: {end:?} -> {start:?}, clearance {clearance}"
+        );
+    }
+
+    #[test]
+    fn frame_parallel_clearance_applies_inside_and_outside_all_four_sides() {
+        for offset in [-17_i64, -16, -15, 0, 15, 16, 17] {
+            let expected = offset.abs() < 16;
+            for (start, end) in [
+                (point(150, 200 + offset), point(350, 200 + offset)),
+                (point(150, 600 + offset), point(350, 600 + offset)),
+                (point(100 + offset, 250), point(100 + offset, 550)),
+                (point(400 + offset, 250), point(400 + offset, 550)),
+            ] {
+                assert_frame_contact(start, end, 16, expected);
+            }
+        }
+        assert_frame_contact(point(150, 200), point(350, 200), 0, true);
+    }
+
+    #[test]
+    fn frame_perpendicular_crossings_are_allowed_away_from_corners() {
+        for (start, end) in [
+            (point(0, 400), point(500, 400)),
+            (point(250, 100), point(250, 700)),
+            (point(0, 400), point(100, 400)),
+            (point(400, 400), point(500, 400)),
+            (point(250, 100), point(250, 200)),
+            (point(250, 600), point(250, 700)),
+        ] {
+            assert_frame_contact(start, end, 16, false);
+        }
+    }
+
+    #[test]
+    fn frame_corner_bends_cannot_hide_behind_a_perpendicular_crossing() {
+        for path in [
+            [point(50, 190), point(90, 190), point(90, 250)],
+            [point(450, 190), point(410, 190), point(410, 250)],
+            [point(50, 610), point(90, 610), point(90, 550)],
+            [point(450, 610), point(410, 610), point(410, 550)],
+        ] {
+            for segment in path.windows(2) {
+                assert_frame_contact(segment[0], segment[1], 16, true);
+            }
+        }
+    }
+
+    #[test]
+    fn frame_sides_have_finite_projections_including_corner_clearance() {
+        for (start, end, expected) in [
+            (point(0, 200), point(84, 200), false),
+            (point(0, 200), point(85, 200), true),
+            (point(416, 600), point(500, 600), false),
+            (point(415, 600), point(500, 600), true),
+            (point(100, 100), point(100, 184), false),
+            (point(100, 100), point(100, 185), true),
+            (point(400, 616), point(400, 700), false),
+            (point(400, 615), point(400, 700), true),
+        ] {
+            assert_frame_contact(start, end, 16, expected);
+        }
+    }
+
+    #[test]
+    fn frame_detector_rejects_invalid_geometry_and_uses_wide_intermediates() {
+        assert_eq!(
+            parallel_frame_contact(point(0, 0), point(1, 1), FRAME, 16),
+            Err(GeometryError::DiagonalSegment)
+        );
+        assert_eq!(
+            parallel_frame_contact(point(0, 0), point(1, 0), FRAME, -1),
+            Err(GeometryError::NegativeRadius)
+        );
+        assert_eq!(
+            parallel_frame_contact(point(0, 0), point(1, 0), rect(0, 0, 0, 1), 16),
+            Err(GeometryError::InvalidRect)
+        );
+        assert_frame_contact(point(100, 200), point(100, 200), 16, false);
+        assert_eq!(
+            parallel_frame_contact(
+                point(i64::MAX - 3, -5),
+                point(i64::MAX, -5),
+                rect(i64::MAX - 5, 0, 10, 10),
+                16
+            ),
+            Ok(true)
+        );
+        assert_eq!(
+            parallel_frame_contact(
+                point(i64::MIN, -5),
+                point(i64::MIN + 3, -5),
+                rect(i64::MIN + 2, 0, 10, 10),
+                16
+            ),
+            Ok(true)
+        );
+    }
+
+    #[test]
+    fn label_frame_clearance_rejects_masking_and_nearby_labels_on_all_sides() {
+        for gap in [0, 7, 8, 9] {
+            for label in [
+                rect(150, 180 - gap, 100, 20),
+                rect(150, 600 + gap, 100, 20),
+                rect(80 - gap, 250, 20, 100),
+                rect(400 + gap, 250, 20, 100),
+                rect(150, 200 + gap, 100, 20),
+                rect(150, 580 - gap, 100, 20),
+                rect(100 + gap, 250, 20, 100),
+                rect(380 - gap, 250, 20, 100),
+            ] {
+                assert_eq!(
+                    label_frame_contact(label, FRAME, 8),
+                    Ok(gap < 8),
+                    "{label:?}"
+                );
+            }
+        }
+        for label in [
+            rect(150, 195, 100, 20),
+            rect(150, 595, 100, 20),
+            rect(95, 250, 20, 100),
+            rect(395, 250, 20, 100),
+        ] {
+            assert_eq!(label_frame_contact(label, FRAME, 8), Ok(true), "{label:?}");
+        }
+    }
+
+    #[test]
+    fn label_frame_clearance_uses_finite_sides_and_preserves_interior_space() {
+        for label in [
+            rect(150, 250, 100, 100),
+            rect(0, 0, 50, 50),
+            rect(0, 195, 90, 20),
+            rect(410, 195, 90, 20),
+        ] {
+            assert_eq!(label_frame_contact(label, FRAME, 8), Ok(false), "{label:?}");
+        }
+        for label in [
+            rect(80, 180, 15, 15),
+            rect(405, 180, 15, 15),
+            rect(80, 605, 15, 15),
+            rect(405, 605, 15, 15),
+        ] {
+            assert_eq!(label_frame_contact(label, FRAME, 8), Ok(true), "{label:?}");
+        }
+    }
+
+    #[test]
+    fn label_frame_clearance_validates_inputs_and_avoids_coordinate_overflow() {
+        assert_eq!(
+            label_frame_contact(rect(0, 0, 0, 1), FRAME, 8),
+            Err(GeometryError::InvalidRect)
+        );
+        assert_eq!(
+            label_frame_contact(rect(0, 0, 1, 1), FRAME, -1),
+            Err(GeometryError::NegativeRadius)
+        );
+        assert_eq!(
+            label_frame_contact(
+                rect(i64::MAX - 2, -4, 5, 2),
+                rect(i64::MAX - 5, 0, 10, 10),
+                8
+            ),
             Ok(true)
         );
     }

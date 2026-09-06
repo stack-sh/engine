@@ -80,6 +80,28 @@ struct ProviderAssetInput {
 }
 
 #[test]
+fn svg_viewport_and_geometry_use_the_same_pixel_units() -> Result<(), Box<dyn Error>> {
+    let root = repository_root();
+    let catalog = load_catalog(&root)?;
+    let case = &catalog.cases[0];
+    let source = fs::read(root.join("layout-corpus").join(&case.source))?;
+    let svg = Engine::bundled()
+        .render(&source)?
+        .svg
+        .ok_or("missing SVG")?;
+    let document = roxmltree::Document::parse(&svg)?;
+    let element = document.root_element();
+    let width = element.attribute("width").ok_or("missing width")?;
+    let height = element.attribute("height").ok_or("missing height")?;
+    assert_eq!(
+        element.attribute("viewBox"),
+        Some(format!("0 0 {width} {height}").as_str())
+    );
+    validate_svg(case, &svg)?;
+    Ok(())
+}
+
+#[test]
 fn layout_corpus_matches_approved_snapshots() -> Result<(), Box<dyn Error>> {
     let root = repository_root();
     let catalog = load_catalog(&root)?;
@@ -327,7 +349,7 @@ fn validate_svg(case: &LayoutCase, svg: &str) -> Result<(), Box<dyn Error>> {
         .attribute("viewBox")
         .ok_or_else(|| format!("{} has no viewBox", case.id))?
         .split_ascii_whitespace()
-        .map(str::parse::<i64>)
+        .map(svg_dimension_milli_px)
         .collect::<Result<Vec<_>, _>>()?;
     if view_box.len() != 4
         || view_box[0] != 0
@@ -399,6 +421,46 @@ fn validate_svg(case: &LayoutCase, svg: &str) -> Result<(), Box<dyn Error>> {
     }
     if case.provider_fixture.is_some() && !svg.contains("data-icon-id=\"example:storage\"") {
         return Err(format!("{} did not embed its caller-owned provider icon", case.id).into());
+    }
+    Ok(())
+}
+
+fn svg_dimension_milli_px(value: &str) -> Result<i64, Box<dyn Error>> {
+    let (whole, fraction) = value.split_once('.').unwrap_or((value, ""));
+    if whole.is_empty()
+        || !whole.bytes().all(|byte| byte.is_ascii_digit())
+        || fraction.len() > 3
+        || !fraction.bytes().all(|byte| byte.is_ascii_digit())
+        || (value.contains('.') && fraction.is_empty())
+    {
+        return Err("unsupported SVG pixel dimension".into());
+    }
+    let whole: i64 = whole.parse()?;
+    let fraction: i64 = format!("{fraction:0<3}").parse()?;
+    whole
+        .checked_mul(1000)
+        .and_then(|whole| whole.checked_add(fraction))
+        .ok_or_else(|| "SVG pixel dimension overflow".into())
+}
+
+#[test]
+fn svg_pixel_dimensions_preserve_exact_millipixels() -> Result<(), Box<dyn Error>> {
+    for (value, expected) in [("0", 0), ("733.7", 733_700), ("1.001", 1001)] {
+        assert_eq!(svg_dimension_milli_px(value)?, expected);
+    }
+    for value in [
+        "",
+        ".1",
+        "1.",
+        "1.0001",
+        "NaN",
+        "inf",
+        "1e3",
+        "-1",
+        "1.2.3",
+        "9223372036854776",
+    ] {
+        assert!(svg_dimension_milli_px(value).is_err(), "{value}");
     }
     Ok(())
 }

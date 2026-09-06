@@ -72,6 +72,7 @@ Public npm releases are produced from GitHub Releases after the repository check
 - [`docs/decisions/0005-serialize-safe-standalone-svg.md`](./docs/decisions/0005-serialize-safe-standalone-svg.md)
 - [`docs/decisions/0006-expose-one-typed-browser-wasm-adapter.md`](./docs/decisions/0006-expose-one-typed-browser-wasm-adapter.md)
 - [`docs/decisions/0007-adapt-language-intelligence-with-engine-catalogs.md`](./docs/decisions/0007-adapt-language-intelligence-with-engine-catalogs.md)
+- [`docs/decisions/0008-compose-graphs-with-reserved-label-geometry.md`](./docs/decisions/0008-compose-graphs-with-reserved-label-geometry.md) — unreleased visual-review candidate
 - [`docs/dependency-audit.md`](./docs/dependency-audit.md)
 
 ## Licensing
