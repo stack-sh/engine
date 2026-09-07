@@ -8,6 +8,10 @@ use stack_compiler::ir::{Edge, EdgeDirection, EdgeKind};
 use crate::scene::{Rect, SceneNode};
 
 const ROUTE_MARGIN: i64 = 8_000;
+// Keep the marker clear of a preceding orthogonal bend. The largest built-in
+// arrow is 7.5px long, so a 16px terminal lead-in leaves about 8px of visible
+// connector before the marker footprint.
+const ARROW_TERMINAL_STUB_LENGTH: i64 = 16_000;
 const BEND_PENALTY: i64 = 32_000;
 const CROSSING_PENALTY: i64 = 48_000;
 const SHARED_LENGTH_PENALTY: i64 = 3;
@@ -61,7 +65,9 @@ pub(crate) fn route(
         .map(|edge| {
             let source = node_rect(nodes, &edge.from).ok_or(RoutingError)?;
             let target = node_rect(nodes, &edge.to).ok_or(RoutingError)?;
-            let path = router.route(source, target).ok_or(RoutingError)?;
+            let path = router
+                .route(source, target, edge.direction)
+                .ok_or(RoutingError)?;
             Ok(scene_edge(edge, path))
         })
         .collect()
@@ -88,7 +94,9 @@ pub(crate) fn route_next(
         reserved_edges,
     );
     router.reserve_edges(reserved_edges);
-    let path = router.route(source, target).ok_or(RoutingError)?;
+    let path = router
+        .route(source, target, edge.direction)
+        .ok_or(RoutingError)?;
     Ok(scene_edge(edge, path))
 }
 
@@ -229,9 +237,12 @@ pub(crate) fn alternative_routes_with_context(
         .partition(|(_, source_port, target_port)| source_port % 3 == 0 && target_port % 3 == 0);
     let mut paths = Vec::new();
     for (_, source_port, target_port) in midpoint_pairs {
-        if let Some((cost, path)) =
-            router.route_between_with_cost(source, target, Some((source_port, target_port)))
-        {
+        if let Some((cost, path)) = router.route_between_with_cost(
+            source,
+            target,
+            Some((source_port, target_port)),
+            edge.direction,
+        ) {
             paths.push((cost, path));
         }
     }
@@ -239,9 +250,12 @@ pub(crate) fn alternative_routes_with_context(
         if paths.len() >= ALTERNATIVE_PORT_PAIR_LIMIT {
             break;
         }
-        if let Some((cost, path)) =
-            router.route_between_with_cost(source, target, Some((source_port, target_port)))
-        {
+        if let Some((cost, path)) = router.route_between_with_cost(
+            source,
+            target,
+            Some((source_port, target_port)),
+            edge.direction,
+        ) {
             paths.push((cost, path));
         }
     }
@@ -868,17 +882,13 @@ impl<'a> GridRouter<'a> {
         router
     }
 
-    fn route(&mut self, source: Rect, target: Rect) -> Option<Vec<Point>> {
-        self.route_between(source, target, None)
-    }
-
-    fn route_between(
+    fn route(
         &mut self,
         source: Rect,
         target: Rect,
-        port_pair: Option<(usize, usize)>,
+        direction: EdgeDirection,
     ) -> Option<Vec<Point>> {
-        self.route_between_with_cost(source, target, port_pair)
+        self.route_between_with_cost(source, target, None, direction)
             .map(|(_, path)| path)
     }
 
@@ -887,7 +897,9 @@ impl<'a> GridRouter<'a> {
         source: Rect,
         target: Rect,
         port_pair: Option<(usize, usize)>,
+        direction: EdgeDirection,
     ) -> Option<(i64, Vec<Point>)> {
+        let (start_marker, end_marker) = markers(direction);
         let state_count = self.valid.len() * 3;
         let mut distances = vec![i64::MAX; state_count];
         let mut parents = vec![None; state_count];
@@ -1008,6 +1020,7 @@ impl<'a> GridRouter<'a> {
         {
             push_point(&mut path, point);
         }
+        self.apply_marker_clearance(&mut path, source, target, start_marker, end_marker);
         if port_pair.is_none() {
             self.reserve_path(&path);
             for port in [source_port, target_port] {
@@ -1015,6 +1028,52 @@ impl<'a> GridRouter<'a> {
             }
         }
         Some((cost, path))
+    }
+
+    fn apply_marker_clearance(
+        &self,
+        path: &mut Vec<Point>,
+        source: Rect,
+        target: Rect,
+        start_marker: Marker,
+        end_marker: Marker,
+    ) {
+        let original = path.clone();
+        if !ensure_marker_clearance(path, start_marker, end_marker)
+            || !self.path_is_clear(path, source, target)
+        {
+            *path = original;
+        }
+    }
+
+    fn path_is_clear(&self, path: &[Point], source: Rect, target: Rect) -> bool {
+        path.len() >= 2
+            && path.iter().all(|point| self.bounds.contains_point(*point))
+            && path.windows(2).enumerate().all(|(index, segment)| {
+                segment[0] != segment[1]
+                    && segment_is_axis_aligned(segment[0], segment[1])
+                    && self
+                        .frames
+                        .iter()
+                        .all(|frame| frame_segment_is_clear(segment[0], segment[1], *frame))
+                    && self.nodes.iter().all(|node| {
+                        !segment_hits_rect(segment[0], segment[1], node.rect)
+                            || (index == 0
+                                && node.rect == source
+                                && departs_normally(segment[0], segment[1], source))
+                            || (index + 2 == path.len()
+                                && node.rect == target
+                                && departs_normally(segment[1], segment[0], target))
+                    })
+                    && self.fixed_obstacles.iter().all(|rect| {
+                        !segment_crosses_rect_interior(segment[0], segment[1], expanded(*rect))
+                    })
+            })
+            && path.windows(3).all(|points| {
+                self.frames
+                    .iter()
+                    .all(|frame| frame_bend_is_clear(points[1], *frame))
+            })
     }
 
     fn stub_is_clear(&self, port: Point, stub: Point, terminal: Rect) -> bool {
@@ -1140,6 +1199,90 @@ fn push_point(path: &mut Vec<Point>, point: Point) {
         }
     }
     path.push(point);
+}
+
+fn ensure_marker_clearance(path: &mut [Point], start: Marker, end: Marker) -> bool {
+    if start == Marker::Arrow {
+        path.reverse();
+        let extended = extend_terminal_segment(path);
+        path.reverse();
+        if !extended {
+            return false;
+        }
+    }
+    end != Marker::Arrow || extend_terminal_segment(path)
+}
+
+fn extend_terminal_segment(path: &mut [Point]) -> bool {
+    let Some((&terminal, prefix)) = path.split_last() else {
+        return false;
+    };
+    let Some(&bend) = prefix.last() else {
+        return false;
+    };
+    let length = manhattan(bend, terminal);
+    if length >= ARROW_TERMINAL_STUB_LENGTH {
+        return true;
+    }
+    if path.len() < 4 {
+        return false;
+    }
+
+    let bend_index = path.len() - 2;
+    let previous_index = path.len() - 3;
+    let anchor = path[path.len() - 4];
+    let previous = path[previous_index];
+    let delta = ARROW_TERMINAL_STUB_LENGTH - length;
+    let (old_span, new_span, shifted_previous, shifted_bend) = if bend.x == terminal.x {
+        let direction = (terminal.y - bend.y).signum();
+        if direction == 0 {
+            return false;
+        }
+        let offset = direction * delta;
+        let shifted_previous = Point {
+            x: previous.x,
+            y: previous.y - offset,
+        };
+        let shifted_bend = Point {
+            x: bend.x,
+            y: bend.y - offset,
+        };
+        (
+            previous.y - anchor.y,
+            shifted_previous.y - anchor.y,
+            shifted_previous,
+            shifted_bend,
+        )
+    } else if bend.y == terminal.y {
+        let direction = (terminal.x - bend.x).signum();
+        if direction == 0 {
+            return false;
+        }
+        let offset = direction * delta;
+        let shifted_previous = Point {
+            x: previous.x - offset,
+            y: previous.y,
+        };
+        let shifted_bend = Point {
+            x: bend.x - offset,
+            y: bend.y,
+        };
+        (
+            previous.x - anchor.x,
+            shifted_previous.x - anchor.x,
+            shifted_previous,
+            shifted_bend,
+        )
+    } else {
+        return false;
+    };
+    if old_span == 0 || old_span.signum() != new_span.signum() {
+        return false;
+    }
+
+    path[previous_index] = shifted_previous;
+    path[bend_index] = shifted_bend;
+    true
 }
 
 #[cfg(test)]
@@ -1317,7 +1460,7 @@ mod tests {
         ));
         let mut router = super::GridRouter::new(&nodes, test_bounds(), &[], &frames);
         edge.path = router
-            .route(nodes[0].rect, nodes[1].rect)
+            .route(nodes[0].rect, nodes[1].rect, EdgeDirection::Forward)
             .ok_or("no clear route beside the frame")?;
         assert!(super::geometry_is_valid(
             &[edge],
@@ -1342,7 +1485,7 @@ mod tests {
         }];
         let mut router = super::GridRouter::new(&nodes, test_bounds(), &[], &frames);
         let path = router
-            .route(nodes[0].rect, nodes[1].rect)
+            .route(nodes[0].rect, nodes[1].rect, EdgeDirection::Forward)
             .ok_or("normal frame crossing is missing")?;
         let edge = test_edge(&[(120_000, 210_000), (220_000, 210_000)]);
         assert_eq!(path, edge.path);
@@ -1353,6 +1496,112 @@ mod tests {
             &frames,
         ));
         Ok(())
+    }
+
+    #[test]
+    fn target_bends_leave_room_for_arrow_markers() -> Result<(), Box<dyn Error>> {
+        let nodes = [
+            test_node("source", 120_000, 20_000),
+            test_node("target", 100_000, 260_000),
+        ];
+        let mut router = super::GridRouter::new(&nodes, test_bounds(), &[], &[]);
+        let path = router
+            .route(nodes[0].rect, nodes[1].rect, EdgeDirection::Forward)
+            .ok_or("no route between vertically offset nodes")?;
+        if path.len() < 3 {
+            return Err("expected a bend before the target terminal".into());
+        }
+
+        let bend = path[path.len() - 2];
+        let target = path[path.len() - 1];
+        assert!(
+            super::manhattan(bend, target) >= 16_000,
+            "the final segment must keep the arrow marker clear of its preceding bend: {path:?}"
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn bidirectional_markers_receive_clearance_at_both_ends() {
+        let mut path = vec![
+            Point { x: 0, y: 0 },
+            Point { x: 8_000, y: 0 },
+            Point {
+                x: 8_000,
+                y: 40_000,
+            },
+            Point {
+                x: 92_000,
+                y: 40_000,
+            },
+            Point { x: 92_000, y: 0 },
+            Point { x: 100_000, y: 0 },
+        ];
+
+        assert!(super::ensure_marker_clearance(
+            &mut path,
+            Marker::Arrow,
+            Marker::Arrow
+        ));
+        assert_eq!(super::manhattan(path[0], path[1]), 16_000);
+        assert_eq!(
+            super::manhattan(path[path.len() - 2], path[path.len() - 1]),
+            16_000
+        );
+    }
+
+    #[test]
+    fn marker_clearance_keeps_the_original_path_when_the_shift_is_blocked() {
+        let nodes = [
+            test_node("source", 20_000, 100_000),
+            test_node("target", 320_000, 100_000),
+        ];
+        let obstacle = Rect {
+            x: 296_000,
+            y: 100_000,
+            width: 4_000,
+            height: 40_000,
+        };
+        let router =
+            super::GridRouter::new(&nodes, test_bounds(), std::slice::from_ref(&obstacle), &[]);
+        let mut path = vec![
+            Point {
+                x: 120_000,
+                y: 150_000,
+            },
+            Point {
+                x: 200_000,
+                y: 150_000,
+            },
+            Point {
+                x: 200_000,
+                y: 92_000,
+            },
+            Point {
+                x: 312_000,
+                y: 92_000,
+            },
+            Point {
+                x: 312_000,
+                y: 150_000,
+            },
+            Point {
+                x: 320_000,
+                y: 150_000,
+            },
+        ];
+        let original = path.clone();
+
+        router.apply_marker_clearance(
+            &mut path,
+            nodes[0].rect,
+            nodes[1].rect,
+            Marker::None,
+            Marker::Arrow,
+        );
+
+        assert_eq!(path, original);
     }
 
     #[test]
@@ -1452,7 +1701,7 @@ mod tests {
         ];
         let mut router = super::GridRouter::new(&nodes, test_bounds(), &[], &[]);
         let path = router
-            .route(nodes[0].rect, nodes[2].rect)
+            .route(nodes[0].rect, nodes[2].rect, EdgeDirection::Forward)
             .ok_or("no route around the intervening node")?;
         assert!(path.len() >= 4);
         let mut edge = test_edge(&[]);
@@ -1481,7 +1730,7 @@ mod tests {
         let fixed = [title];
         let mut router = super::GridRouter::new(&nodes, test_bounds(), &fixed, &[]);
         let path = router
-            .route(nodes[0].rect, nodes[1].rect)
+            .route(nodes[0].rect, nodes[1].rect, EdgeDirection::Forward)
             .ok_or("no route around the reserved title")?;
         assert!(
             path.windows(2)
@@ -1506,10 +1755,10 @@ mod tests {
         ];
         let mut router = super::GridRouter::new(&nodes, test_bounds(), &[], &[]);
         let first = router
-            .route(nodes[0].rect, nodes[1].rect)
+            .route(nodes[0].rect, nodes[1].rect, EdgeDirection::Forward)
             .ok_or("first route is missing")?;
         let second = router
-            .route(nodes[0].rect, nodes[1].rect)
+            .route(nodes[0].rect, nodes[1].rect, EdgeDirection::Forward)
             .ok_or("second route is missing")?;
         assert_ne!(first, second);
         for path in [first, second] {
@@ -1630,7 +1879,7 @@ mod tests {
         let nodes = [test_node("source", 100_000, 100_000)];
         let mut router = super::GridRouter::new(&nodes, test_bounds(), &[], &[]);
         let path = router
-            .route(nodes[0].rect, nodes[0].rect)
+            .route(nodes[0].rect, nodes[0].rect, EdgeDirection::Forward)
             .ok_or("self route is missing")?;
         assert_ne!(path.first(), path.last());
         let mut edge = test_edge(&[]);
