@@ -1,6 +1,6 @@
 # Cargo publication
 
-The native `stack-formatter` 0.1.0 and `stack-engine` 0.9.0 crates use exact registry dependencies. The workspace retains local paths for development, with registry versions declared for Cargo packaging. `stack-engine-wasm` is not published to crates.io; its browser output remains the npm package.
+The native `stack-formatter` 0.1.0 and `stack-engine` 0.9.1 crates use exact registry dependencies. The workspace retains local paths for development, with registry versions declared for Cargo packaging. `stack-engine-wasm` is not published to crates.io; its browser output remains the npm package.
 
 ## Initial publication
 

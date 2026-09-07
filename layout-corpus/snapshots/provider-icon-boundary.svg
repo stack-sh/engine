@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="587.5" height="411.8" viewBox="0 0 587.5 411.8" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.9.0" data-theme-id="default" data-theme-version="0.7.0" data-theme-revision="sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a">
+<svg xmlns="http://www.w3.org/2000/svg" width="587.5" height="411.8" viewBox="0 0 587.5 411.8" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.9.1" data-theme-id="default" data-theme-version="0.7.0" data-theme-revision="sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a">
   <title id="stack-title">Provider icon boundary</title>
   <desc id="stack-description">Architecture diagram with 3 nodes, 1 group, and 2 relationships.</desc>
-  <metadata>stack-engine 0.9.0; language 1.0; theme 0.7.0 at sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a; providers example at sha256:6e05b396567a5fa3f141df079c515a8866033b98d11ec4027f486af31f14fa43 using example:storage</metadata>
+  <metadata>stack-engine 0.9.1; language 1.0; theme 0.7.0 at sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a; providers example at sha256:6e05b396567a5fa3f141df079c515a8866033b98d11ec4027f486af31f14fa43 using example:storage</metadata>
   <rect x="0" y="0" width="587.5" height="411.8" fill="#F3F6FA"/>
   <defs>
     <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">

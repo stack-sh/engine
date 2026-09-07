@@ -16,7 +16,7 @@ Both packages provide format, check, render, completion, and hover operations ov
 ## Rust quick start
 
 ```sh
-cargo add stack-engine@0.9.0
+cargo add stack-engine@0.9.1
 ```
 
 ```rust
@@ -43,7 +43,7 @@ The crate supports Rust 1.85 or newer.
 ## Browser quick start
 
 ```sh
-npm install @stack-sh/engine@0.9.0
+npm install @stack-sh/engine@0.9.1
 ```
 
 ```js
