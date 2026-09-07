@@ -210,7 +210,7 @@ test("browser diagnostics preserve actionable compiler guidance", () => {
   );
   assert.ok(actionable);
   assert.equal(actionable.render.svg, null);
-  assert.equal(actionable.check.metadata.engineVersion, "0.9.0");
+  assert.equal(actionable.check.metadata.engineVersion, "0.9.1");
   assert.deepEqual(actionable.check.diagnostics[0], {
     code: "STK2002",
     severity: "error",
@@ -232,7 +232,7 @@ test("browser rendering resolves the bundled explicit core icon", () => {
   assert.ok(explicitIcon);
   assert.deepEqual(explicitIcon.check.diagnostics, []);
   assert.deepEqual(explicitIcon.render.diagnostics, []);
-  assert.equal(explicitIcon.render.metadata.engineVersion, "0.9.0");
+  assert.equal(explicitIcon.render.metadata.engineVersion, "0.9.1");
   assert.equal(explicitIcon.render.metadata.themeCatalogVersion, "0.7.0");
   assert.equal(
     explicitIcon.render.metadata.themeCatalogRevision,

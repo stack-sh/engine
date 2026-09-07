@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="876.15" height="1093.2" viewBox="0 0 876.15 1093.2" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.9.0" data-theme-id="default" data-theme-version="0.7.0" data-theme-revision="sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a">
+<svg xmlns="http://www.w3.org/2000/svg" width="876.15" height="1093.2" viewBox="0 0 876.15 1093.2" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.9.1" data-theme-id="default" data-theme-version="0.7.0" data-theme-revision="sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a">
   <title id="stack-title">Nested platform boundaries</title>
   <desc id="stack-description">Architecture diagram with 7 nodes, 4 groups, and 6 relationships.</desc>
-  <metadata>stack-engine 0.9.0; language 1.0; theme 0.7.0 at sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a</metadata>
+  <metadata>stack-engine 0.9.1; language 1.0; theme 0.7.0 at sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a</metadata>
   <rect x="0" y="0" width="876.15" height="1093.2" fill="#F3F6FA"/>
   <defs>
     <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">

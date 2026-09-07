@@ -4,7 +4,7 @@ Pure Rust layout and SVG rendering for Stack diagrams. The engine reuses the reg
 
 ```toml
 [dependencies]
-stack-engine = "=0.9.0"
+stack-engine = "=0.9.1"
 ```
 
 Rust 1.85 or newer is supported. See the [API documentation](https://docs.rs/stack-engine) and [repository documentation](https://github.com/stack-sh/engine) for rendering, limits, and compatibility. The browser adapter is distributed separately as `@stack-sh/engine` on npm; this crate is the native library.

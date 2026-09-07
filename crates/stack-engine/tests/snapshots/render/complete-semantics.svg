@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="664.15" height="1343" viewBox="0 0 664.15 1343" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.9.0" data-theme-id="dark" data-theme-version="0.7.0" data-theme-revision="sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a">
+<svg xmlns="http://www.w3.org/2000/svg" width="664.15" height="1343" viewBox="0 0 664.15 1343" role="img" aria-labelledby="stack-title stack-description" data-engine-version="0.9.1" data-theme-id="dark" data-theme-version="0.7.0" data-theme-revision="sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a">
   <title id="stack-title">Complete semantics</title>
   <desc id="stack-description">Architecture diagram with 10 nodes, 3 groups, and 8 relationships.</desc>
-  <metadata>stack-engine 0.9.0; language 1.0; theme 0.7.0 at sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a</metadata>
+  <metadata>stack-engine 0.9.1; language 1.0; theme 0.7.0 at sha256:4a8b94b746c6b120998bfbe701edd722449a28c89c424b0a33f67561756ded5a</metadata>
   <rect x="0" y="0" width="664.15" height="1343" fill="#0B1020"/>
   <defs>
     <marker id="stack-arrow" markerUnits="userSpaceOnUse" markerWidth="7.5" markerHeight="7.5" refX="9000" refY="5000" viewBox="0 0 10000 10000" orient="auto-start-reverse">
