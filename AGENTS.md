@@ -16,6 +16,7 @@ Write repository content, code comments, commit messages, issues, and pull reque
 ## Delivery
 
 - Use a topic branch and pull request; squash merge after approval.
+- Write pull request titles and bodies in English, and follow `.github/pull_request_template.md` without removing or renaming its sections.
 - Work in small increments that keep the workspace buildable and tested.
 - Add repository-specific formatting, linting, tests, target builds, and artifact checks with the code that needs them.
 - Record third-party dependency and bundled-asset obligations in `THIRD_PARTY_LICENSES.md` before publishing native or WASM artifacts.
